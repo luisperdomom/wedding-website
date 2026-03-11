@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { db } from "../firebase"
 import { collection, addDoc } from "firebase/firestore"
@@ -24,7 +24,7 @@ function Divider(){
   )
 }
 
-export default function Home(){
+function PageContent(){
 
 const weddingDate = new Date("2027-03-14")
 
@@ -633,4 +633,11 @@ Confirmar asistencia
 
 )
 
+}
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Cargando invitación...</div>}>
+      <PageContent />
+    </Suspense>
+  )
 }

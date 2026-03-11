@@ -91,7 +91,11 @@ setPlaying(!playing)
 
 return(
 
-<div style={{fontFamily:"serif"}}>
+<div style={{
+fontFamily:"serif",
+background:"#faf8f5",
+color:"#333"
+}}>
 
 {/* NAVBAR */}
 
@@ -99,7 +103,7 @@ return(
 position:"fixed",
 top:0,
 width:"100%",
-background:"rgba(255,255,255,0.9)",
+background:"#ffffff",
 display:"flex",
 justifyContent:"center",
 gap:"30px",
@@ -130,7 +134,7 @@ color:"white"
 }}>
 
 <div style={{
-background:"rgba(0,0,0,0.35)",
+background:"rgba(0,0,0,0.25)",
 padding:"60px",
 borderRadius:"10px"
 }}>

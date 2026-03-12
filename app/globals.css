@@ -1,31 +1,130 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f6f5f0;
-  --foreground: #2f3b2f;
-  --olive: #6b7d5c;
+/* =========================
+   DESIGN SYSTEM
+========================= */
+
+:root{
+
+  --cream:#F5F1EA;
+  --brown:#3A2A23;
+  --olive:#7A8468;
+  --gold:#C7A27C;
+
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* base */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
 html,
 body{
   scroll-behavior: smooth;
+}
+
+body{
+  background:var(--cream);
+  color:var(--brown);
+  line-height:1.7;
+  font-family:var(--font-body);
+}
+
+/* títulos elegantes */
+
+h1,h2,h3{
+  font-family:var(--font-title);
+}
+
+/* script font */
+
+.script{
+  font-family:var(--font-script);
+  font-weight:400;
+}
+
+/* secciones claras */
+
+.section-light{
+  background:var(--cream);
+  color:var(--brown);
+  padding:120px 20px;
+  text-align:center;
+}
+
+/* secciones oscuras */
+
+.section-dark{
+  background:#3A2A23;
+  color:white;
+  padding:120px 20px;
+  text-align:center;
+}
+
+/* títulos */
+
+.section-title{
+  font-size:48px;
+  margin-bottom:30px;
+}
+
+/* texto */
+
+.section-text{
+  max-width:650px;
+  margin:auto;
+  font-size:20px;
+  line-height:1.8;
+}
+
+/* divider elegante */
+
+.divider{
+  width:120px;
+  height:1px;
+  background:var(--gold);
+  margin:70px auto;
+}
+
+/* botones */
+
+.button{
+  padding:12px 28px;
+  border-radius:30px;
+  text-decoration:none;
+  font-size:14px;
+  letter-spacing:1px;
+}
+
+/* botón claro */
+
+.button-light{
+  border:1px solid white;
+  color:white;
+}
+
+/* botón oscuro */
+
+.button-dark{
+  background:var(--olive);
+  color:white;
+}
+
+/* navbar */
+
+.navbar{
+  position:fixed;
+  top:0;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  padding:25px;
+  background:transparent;
+  z-index:1000;
+}
+
+.navbar a{
+  color:white;
+  text-decoration:none;
+  letter-spacing:2px;
+  font-size:13px;
+  text-transform:uppercase;
 }

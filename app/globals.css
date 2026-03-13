@@ -143,9 +143,19 @@ h1,h2,h3{
 
 .menu-toggle{
 display:none;
-font-size:24px;
+flex-direction:column;
+gap:5px;
 cursor:pointer;
-color:white;
+position:absolute;
+left:20px;
+top:20px;
+}
+
+.menu-toggle span{
+width:26px;
+height:2px;
+background:white;
+display:block;
 }
 
 .nav-links{
@@ -168,8 +178,8 @@ left:0;
 width:100%;
 background:#3A2A23;
 flex-direction:column;
-align-items:center;
-padding:30px 0;
+align-items:flex-start;
+padding:30px 40px;
 gap:20px;
 
 transform:translateY(-120%);
@@ -178,6 +188,14 @@ transition:transform .3s ease;
 
 .nav-links.open{
 transform:translateY(0);
+}
+
+}
+
+@media (max-width:768px){
+
+.menu-toggle{
+display:flex;
 }
 
 }

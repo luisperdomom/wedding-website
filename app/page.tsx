@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { db } from "../firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
@@ -20,11 +20,95 @@ function Divider(){
     />
   )
 }
+
 function PageContent(){
 
+// wedding date
 const weddingDate = new Date("2026-12-12T16:00:00")
 
+// invitados permitidos
+const guestList: Record<string,{name:string,token:string}> = {
+
+"luis-perdomo": {
+name:"Luis Perdomo",
+token:"A82J9K"
+},
+
+"ailyn-santana": {
+name:"Ailyn Santana",
+token:"X9Q3LM"
+},
+
+"juan-perez": {
+name:"Juan Perez",
+token:"P4T7ZD"
+},
+
+"maria-gomez": {
+name:"Maria Gomez",
+token:"K8W2BV"
+},
+
+"benito-martinez": {
+name:"Benito Martinez",
+token:"M5N1XY"
+},
+
+"sofia-ramirez": {
+name:"Sofia Ramirez",
+token:"Q8W2BV"
+},
+
+"aaron-judge": {
+name:"Aaron Judge",
+token:"R9T3LM"
+}
+
+}
+
+// leer parametro del link
+const params = useSearchParams()
+const guestId = params.get("guest")
+const token = params.get("token") 
+
+// verificar si está invitado
+const guest = guestId ? guestList[guestId] : null
+const guestName = guest?.name
+
+//Validar Token
+const isValidGuest = guest && token === guest.token
+
+//Respuesta registrada
+const [alreadyAnswered,setAlreadyAnswered] = useState(false)
+
+useEffect(()=>{
+
+async function checkRSVP(){
+
+if(!guestName) return
+
+const q = query(
+collection(db,"rsvp"),
+where("guestId","==",guestId)
+)
+
+const snapshot = await getDocs(q)
+
+if(!snapshot.empty){
+setAlreadyAnswered(true)
+}
+
+}
+
+checkRSVP()
+
+},[guestName])
+
+// estados
+const [attending,setAttending] = useState("Sí asistiré")
 const [timeLeft, setTimeLeft] = useState("")
+
+
 
 useEffect(() => {
 
@@ -46,8 +130,6 @@ return () => clearInterval(interval)
 },[])
 
 const [time,setTime] = useState("")
-const [name,setName] = useState("")
-const [attending,setAttending] = useState("Sí asistiré")
 const [submitted,setSubmitted] = useState(false)
 const [playing,setPlaying] = useState(false)
 
@@ -55,9 +137,6 @@ const [showGift,setShowGift] = useState(false)
 
 const totalPhotos = 22
 const [selectedImage,setSelectedImage] = useState<number | null>(null)
-
-const params = useSearchParams()
-const guest = params.get("guest")
 
 const [menuOpen,setMenuOpen] = useState(false)
 
@@ -87,10 +166,18 @@ async function handleSubmit(e:any){
 
 e.preventDefault()
 
+if(alreadyAnswered){
+alert("Ya hemos recibido tu confirmación.")
+return
+}
+
 await addDoc(collection(db,"rsvp"),{
-name:name,
-attending:attending,
-created:new Date()
+
+guestId: guestId,
+guestName: guestName,
+attending: attending,
+created: new Date()
+
 })
 
 setSubmitted(true)
@@ -129,7 +216,9 @@ color:"#333"
 className="menu-toggle"
 onClick={()=>setMenuOpen(!menuOpen)}
 >
-☰
+<span></span>
+<span></span>
+<span></span>
 </div>
 
 {/* LINKS */}
@@ -797,10 +886,15 @@ San José de Ocoa, República Dominicana
 {/* MAPA */}
 
 <div style={{
-display:"inline-block",
-padding:"12px",
+marginTop:"160px",
+display:"block",
+marginLeft:"auto",
+marginRight:"auto",
+width:"fit-content",
+padding:"14px",
 background:"#c7a27c",
-borderRadius:"4px"
+borderRadius:"6px",
+boxShadow:"0 15px 40px rgba(0,0,0,0.25)"
 }}>
 
 <iframe
@@ -818,7 +912,7 @@ src="/venue1.jpg"
 style={{
 position:"absolute",
 left:"10%",
-top:"160px",
+top:"220px",
 width:"clamp(120px, 28vw, 220px)",
 padding:"12px",
 background:"white",
@@ -833,7 +927,7 @@ src="/venue2.jpg"
 style={{
 position:"absolute",
 right:"10%",
-top:"180px",
+top:"240px",
 width:"clamp(120px, 28vw, 220px)",
 padding:"12px",
 background:"white",
@@ -1106,6 +1200,17 @@ textAlign:"left"
 Confirmar Asistencia
 </h2>
 
+{guestName && (
+<p style={{
+marginBottom:"25px",
+fontSize:"18px",
+color:"#6b635b"
+}}>
+Hola <strong>{guestName}</strong>, confirma tu asistencia
+</p>
+)}
+
+
 <p style={{
 fontSize:"15px",
 color:"#6b635b",
@@ -1114,10 +1219,31 @@ margin:"0 auto 30px auto",
 lineHeight:"1.7"
 }}>
 Invitación personal e intransferible.  
-Debido a la capacidad del evento, no será posible incluir acompañantes adicionales.
+Debido a la capacidad del evento, no será posible incluir acompañantes adicionales a menos de ser indicado.
 </p>
 
-{submitted ? (
+{!isValidGuest ? (
+
+<p style={{
+marginTop:"30px",
+fontSize:"18px",
+color:"#6b635b"
+}}>
+Esta invitación es personal.  
+Por favor utiliza el enlace que recibiste para confirmar tu asistencia.
+</p>
+
+) : alreadyAnswered ? (
+
+<p style={{
+fontSize:"22px",
+marginTop:"30px"
+}}>
+Ya hemos recibido tu confirmación.  
+¡Muchas gracias! 💛
+</p>
+
+) : submitted ? (
 
 <p style={{
 fontSize:"22px",
@@ -1138,18 +1264,6 @@ flexDirection:"column",
 gap:"16px"
 }}
 >
-
-<input
-placeholder="Nombre"
-value={name}
-onChange={(e)=>setName(e.target.value)}
-style={{
-padding:"12px",
-borderRadius:"6px",
-border:"1px solid #e5e0d8",
-fontSize:"15px"
-}}
-/>
 
 <select
 value={attending}

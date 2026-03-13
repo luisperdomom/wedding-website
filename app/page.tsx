@@ -59,6 +59,8 @@ const [selectedImage,setSelectedImage] = useState<number | null>(null)
 const params = useSearchParams()
 const guest = params.get("guest")
 
+const [menuOpen,setMenuOpen] = useState(false)
+
 useEffect(()=>{
 
 AOS.init()
@@ -121,12 +123,27 @@ color:"#333"
 
 <div className="navbar">
 
+{/* BOTON HAMBURGUESA */}
+
+<div
+className="menu-toggle"
+onClick={()=>setMenuOpen(!menuOpen)}
+>
+☰
+</div>
+
+{/* LINKS */}
+
+<div className={`nav-links ${menuOpen ? "open" : ""}`}>
+
 <a href="#inicio">Inicio</a>
 <a href="#historia">Historia</a>
 <a href="#galeria">Galería</a>
 <a href="#evento">Evento</a>
 <a href="#faq">FAQ</a>
 <a href="#rsvp">RSVP</a>
+
+</div>
 
 </div>
 
@@ -174,11 +191,12 @@ background:"linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%
 position:"relative",
 zIndex:2,
 maxWidth:"800px",
-margin:"auto"
+margin:"auto",
+padding:"0 20px"
 }}>
 
 <p style={{
-letterSpacing:"8px",
+letterSpacing:"6px",
 fontSize:"12px",
 marginBottom:"20px",
 opacity:0.85
@@ -187,7 +205,7 @@ NUESTRA BODA
 </p>
 
 <h1 className="script" style={{
-fontSize:"130px",
+fontSize:"clamp(48px, 12vw, 130px)",
 lineHeight:"1.1",
 marginBottom:"10px"
 }}>
@@ -196,32 +214,30 @@ Luis & Ailyn
 
 </div>
 
-{/* INFO BOTTOM LEFT */}
+{/* INFO BOTTOM */}
 <div style={{
 position:"absolute",
-bottom:"40px",
-left:"40px",
-letterSpacing:"3px",
+bottom:"30px",
+width:"100%",
+display:"flex",
+justifyContent:"space-between",
+padding:"0 20px",
 fontSize:"12px",
+letterSpacing:"3px",
 opacity:0.9
 }}>
-12 DE DICIEMBRE 2026
-</div>
 
-{/* INFO BOTTOM RIGHT */}
-<div style={{
-position:"absolute",
-bottom:"40px",
-right:"40px",
-letterSpacing:"3px",
-fontSize:"12px",
-opacity:0.9
-}}>
+<span>
+12 DE DICIEMBRE 2026
+</span>
+
+<span>
 SAN JOSÉ DE OCOA, RD
+</span>
+
 </div>
 
 </section>
-
 
 {/* INVITACION */}
 
@@ -377,9 +393,10 @@ Memory Lane
 </h2>
 
 <div style={{
+position:"relative",
 maxWidth:"900px",
 margin:"auto",
-position:"relative"
+padding:"0 20px"
 }}>
 
 {/* linea vertical */}
@@ -409,8 +426,10 @@ transform:"translateX(-50%)"
 <div style={{
 display:"flex",
 justifyContent:"flex-start",
-marginBottom:"80px"
+marginBottom:"80px",
+padding:"0 20px"
 }}>
+
 <div style={{
 width:"45%",
 paddingLeft:"40px",
@@ -425,7 +444,7 @@ transform:"rotate(-2deg)"
 src="/story1.jpg"
 style={{
 width:"100%",
-maxHeight:"260px",
+maxHeight:"clamp(180px, 35vw, 260px)",
 objectFit:"cover",
 borderRadius:"6px",
 marginBottom:"10px"
@@ -443,8 +462,8 @@ marginBottom:"10px"
 position:"absolute",
 left:"50%",
 top:"360px",
-width:"12px",
-height:"12px",
+width:"10px",
+height:"10px",
 background:"#c9a27e",
 borderRadius:"50%",
 transform:"translateX(-50%)"
@@ -454,7 +473,8 @@ transform:"translateX(-50%)"
 <div style={{
 display:"flex",
 justifyContent:"flex-end",
-marginBottom:"80px"
+marginBottom:"80px",
+padding:"0 20px"
 }}>
 <div style={{
 width:"45%",
@@ -465,12 +485,11 @@ boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
 borderRadius:"4px",
 transform:"rotate(2deg)"
 }}>
-
 <img
 src="/story2.jpg"
 style={{
 width:"100%",
-maxHeight:"260px",
+maxHeight:"clamp(180px, 35vw, 260px)",
 objectFit:"cover",
 borderRadius:"6px",
 marginBottom:"10px"
@@ -512,7 +531,7 @@ borderRadius:"8px"
 src="/story3.jpg"
 style={{
 width:"100%",
-maxHeight:"260px",
+maxHeight:"clamp(180px, 35vw, 260px)",
 objectFit:"cover",
 borderRadius:"6px",
 marginBottom:"10px"
@@ -601,7 +620,7 @@ recuerdos que guardaremos para siempre.
 
 <div style={{
 display:"grid",
-gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",
 gap:"22px",
 maxWidth:"1000px",
 margin:"0 auto"
@@ -614,7 +633,7 @@ src={`/photo${n}.jpg`}
 onClick={()=>setSelectedImage(n)}
 style={{
 width:"100%",
-height:"260px",
+height:"clamp(160px, 30vw, 260px)",
 objectFit:"cover",
 borderRadius:"6px",
 cursor:"pointer",
@@ -640,6 +659,7 @@ e.currentTarget.style.boxShadow="0 8px 25px rgba(0,0,0,0.08)"
 {selectedImage && (
 
 <div
+onClick={()=>setSelectedImage(null)}
 style={{
 position:"fixed",
 top:0,
@@ -682,7 +702,7 @@ prev === 1 ? totalPhotos : prev! - 1
 }}
 style={{
 position:"absolute",
-left:"40px",
+left:"20px",
 fontSize:"40px",
 color:"white",
 cursor:"pointer"
@@ -697,8 +717,8 @@ cursor:"pointer"
 <img
   src={`/photo${selectedImage}.jpg`}
   style={{
-    maxWidth:"500px",
-    maxHeight:"70vh",
+    maxWidth:"min(500px,90%)",
+    maxHeight:"80vh",
     width:"100%",
     borderRadius:"8px",
     boxShadow:"0 20px 60px rgba(0,0,0,0.45)"
@@ -717,7 +737,7 @@ prev === totalPhotos ? 1 : prev! + 1
 }}
 style={{
 position:"absolute",
-right:"40px",
+right:"20px",
 fontSize:"40px",
 color:"white",
 cursor:"pointer"
@@ -785,13 +805,13 @@ borderRadius:"4px"
 
 <iframe
 src="https://www.google.com/maps?q=Rancho%20La%20Vereda&output=embed"
-width="420"
+width="100%"
 height="260"
 style={{
 border:0,
-display:"block"
-}}
-/>
+borderRadius:"8px",
+maxWidth:"420px"
+}}/>
 
 <img
 src="/venue1.jpg"
@@ -799,7 +819,7 @@ style={{
 position:"absolute",
 left:"10%",
 top:"160px",
-width:"220px",
+width:"clamp(120px, 28vw, 220px)",
 padding:"12px",
 background:"white",
 transform:"rotate(-8deg)",
@@ -814,7 +834,7 @@ style={{
 position:"absolute",
 right:"10%",
 top:"180px",
-width:"220px",
+width:"clamp(120px, 28vw, 220px)",
 padding:"12px",
 background:"white",
 transform:"rotate(8deg)",

@@ -120,8 +120,9 @@ const distance = weddingDate.getTime() - now
 const days = Math.floor(distance / (1000 * 60 * 60 * 24))
 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+const seconds = Math.floor((distance % (1000 * 60)) / 1000)
 
-setTimeLeft(`${days} : ${hours} : ${minutes}`)
+setTimeLeft(`${days} : ${hours} : ${minutes} : ${seconds}`)
 
 },1000)
 
@@ -285,7 +286,7 @@ padding:"0 20px"
 }}>
 
 <p style={{
-letterSpacing:"6px",
+letterSpacing:"12px",
 fontSize:"12px",
 marginBottom:"20px",
 opacity:0.85
@@ -293,12 +294,16 @@ opacity:0.85
 NUESTRA BODA
 </p>
 
-<h1 className="script" style={{
-fontSize:"clamp(48px, 12vw, 130px)",
-lineHeight:"1.1",
-marginBottom:"10px"
+<h1 style={{
+fontFamily:"var(--font-elegant)",
+fontWeight:300,
+letterSpacing:"12px",
+textTransform:"uppercase",
+fontSize:"clamp(48px, 10vw, 90px)"
 }}>
-Luis & Ailyn
+<span>Luis</span>{" "}
+<span style={{fontWeight:200}}>&</span>{" "}
+<span>Ailyn</span>
 </h1>
 
 </div>
@@ -344,11 +349,24 @@ background:"#f5f1ea"
 
 <div className="divider"></div>
 
-<h2 className="section-title script">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(24px, 4vw, 36px)",
+marginBottom:"20px"
+}}>
 Estás invitado
 </h2>
 
-<p className="section-text">
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
 Nos llena de alegría que estés aquí y que formes parte
 de este momento tan especial en nuestras vidas.
 Hemos creado este espacio para compartir contigo
@@ -377,9 +395,12 @@ pointerEvents:"none"
 
 </div>
 
-<p className="script" style={{
-fontSize:"28px",
-marginTop:"30px"
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+fontSize:"24px",
+marginTop:"40px"
 }}>
 Luis & Ailyn
 </p>
@@ -388,27 +409,34 @@ Luis & Ailyn
 
 <section className="section-dark">
 
-<h2 className="script" style={{
-fontSize:"42px",
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(24px, 4vw, 42px)",
 marginBottom:"30px"
 }}>
 Nuestro para siempre comienza en
 </h2>
 
 <div style={{
-fontSize:"64px",
+fontFamily:"var(--font-elegant)",
+fontSize:"clamp(40px, 8vw, 64px)",
 letterSpacing:"6px",
-fontFamily:"var(--font-title)"
+fontWeight:300
 }}>
 {timeLeft}
 </div>
 
 <p style={{
 marginTop:"20px",
-letterSpacing:"3px",
-fontSize:"12px"
+letterSpacing:"4px",
+fontSize:"12px",
+fontFamily:"var(--font-body)",
+color:"#aaa"
 }}>
-DÍAS &nbsp;&nbsp;&nbsp; HORAS &nbsp;&nbsp;&nbsp; MINUTOS
+DÍAS &nbsp;&nbsp;&nbsp; HORAS &nbsp;&nbsp;&nbsp; MINUTOS &nbsp;&nbsp;&nbsp; SEGUNDOS
 </p>
 
 </section>
@@ -422,31 +450,73 @@ textAlign:"center"
 }}
 >
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20"
+}}>
 Nuestra Historia
-<div className="divider"></div>
 </h2>
 
-<p style={{
-maxWidth:"600px",
-margin:"auto",
-fontSize:"18px",
-lineHeight:"1.8",
-color:"#4a403a"
+<div style={{
+maxWidth:"700px",
+margin:"80px auto",
+textAlign:"center"
 }}>
-
+{/* PÁRRAFO 1 */}
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
 Nos conocimos trabajando en un call center.  
 La primera vez que hablamos fue cuando Luis preguntó  
 a qué hora ella tomaría su almuerzo para saber  
 cuándo le tocaba salir a él.
+</p>
 
+{/* PÁRRAFO 2 */}
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
 Lo que empezó como una conversación casual  
 se convirtió en una amistad, luego en algo mucho más.
+</p>
 
+{/* FRASE DESTACADA */}
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
+Y sin darnos cuenta, comenzó nuestra historia.
+</p>
+
+{/* PÁRRAFO 3 */}
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
 Con el tiempo llegaron los viajes, las aventuras  
 y los momentos que hoy forman parte de nuestra historia.
-
 </p>
+
+</div>
 
 </section>
 
@@ -473,8 +543,12 @@ position:"relative"
   }}
 />
   
-<h2 className="script" style={{
-fontSize:"60px",
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+fontSize:"clamp(32px, 6vw, 52px)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
 marginBottom:"80px",
 color:"#3b2b20"
 }}>
@@ -540,9 +614,22 @@ marginBottom:"10px"
 }}
 />
 
-<h3 style={{color:"#6b705c"}}>2017</h3>
+<h3 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+color:"#6b705c"
+}}>
+2017
+</h3>
 
-<p>Donde todo comenzó</p>
+<p style={{
+fontFamily:"var(--font-body)",
+color:"#6b635b",
+lineHeight:"1.6"
+}}>
+Donde todo comenzó
+</p>
 
 </div>
 </div>
@@ -585,9 +672,22 @@ marginBottom:"10px"
 }}
 />
 
-<h3 style={{color:"#6b705c"}}>2024</h3>
+<h3 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+color:"#6b705c"
+}}>
+2024
+</h3>
 
-<p>Nuestro primer viaje</p>
+<p style={{
+fontFamily:"var(--font-body)",
+color:"#6b635b",
+lineHeight:"1.6"
+}}>
+Nuestro primer viaje juntos
+</p>
 
 </div>
 </div>
@@ -627,9 +727,22 @@ marginBottom:"10px"
 }}
 />
 
-<h3 style={{color:"#6b705c"}}>2024</h3>
+<h3 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+color:"#6b705c"
+}}>
+2024
+</h3>
 
-<p>La propuesta</p>
+<p style={{
+fontFamily:"var(--font-body)",
+color:"#6b635b",
+lineHeight:"1.6"
+}}>
+La propuesta
+</p>
 
 </div>
 </div>
@@ -644,16 +757,24 @@ marginBottom:"10px"
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20"
+}}>
 Nuestra Canción
 </h2>
 
 <p style={{
-maxWidth:"520px",
-margin:"0 auto 30px auto",
-fontSize:"17px",
-lineHeight:"1.8",
-color:"#5a5048"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 La música siempre ha sido parte de nuestra historia.
 Esta canción representa momentos, recuerdos
@@ -662,10 +783,12 @@ y todo lo que sentimos al comenzar esta nueva etapa juntos.
 
 <p style={{
 marginBottom:"30px",
-letterSpacing:"1px",
-color:"#7a6f66"
+letterSpacing:"2px",
+fontSize:"12px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
-🎧 Dale play para escuchar nuestra canción
+🎧 DALE PLAY PARA ESCUCHAR NUESTRA CANCIÓN
 </p>
 
 <audio id="music" loop>
@@ -676,8 +799,9 @@ color:"#7a6f66"
 onClick={toggleMusic}
 className="button button-dark"
 style={{
-fontSize:"15px",
-letterSpacing:"1px"
+fontSize:"14px",
+letterSpacing:"2px",
+fontFamily:"var(--font-elegant)"
 }}
 >
 {playing ? "⏸ Pausar música" : "▶ Reproducir música"}
@@ -691,16 +815,24 @@ letterSpacing:"1px"
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20"
+}}>
 Galería
 </h2>
 
 <p style={{
-maxWidth:"500px",
-margin:"0 auto 40px auto",
-fontSize:"17px",
-lineHeight:"1.8",
-color:"#5a5048"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Momentos de nuestra sesión de pre-boda,
 recuerdos que guardaremos para siempre.
@@ -755,7 +887,7 @@ top:0,
 left:0,
 width:"100%",
 height:"100%",
-background:"rgba(0,0,0,0.9)",
+background:"rgba(30,20,15,0.92)",
 display:"flex",
 alignItems:"center",
 justifyContent:"center",
@@ -770,12 +902,13 @@ onClick={()=>setSelectedImage(null)}
 style={{
 position:"absolute",
 top:"30px",
-right:"40px",
-fontSize:"30px",
-color:"white",
-cursor:"pointer"
-}}
->
+right:"30px",
+fontSize:"28px",
+color:"#f5f1ea",
+cursor:"pointer",
+letterSpacing:"2px",
+fontFamily:"var(--font-elegant)"
+}}>
 ✕
 </div>
 
@@ -857,8 +990,7 @@ fontSize:"16px"
 
 {/* EVENTO */}
 
-<section id="evento"></section>
-<section style={{
+<section id="evento" style={{
 position:"relative",
 padding:"140px 20px",
 textAlign:"center",
@@ -866,31 +998,35 @@ background:"#3A2A23",
 color:"white"
 }}>
 
-<div style={{
-position:"relative",
-zIndex:2
-}}>
+<div style={{maxWidth:"700px", margin:"auto"}}>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(28px, 6vw, 46px)",
+marginBottom:"20px"
+}}>
 Rancho La Vereda
 </h2>
 
 <p style={{
-letterSpacing:"1px",
-marginBottom:"40px",
-opacity:0.9
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+fontSize:"12px",
+opacity:0.8,
+marginBottom:"60px"
 }}>
-San José de Ocoa, República Dominicana
+SAN JOSÉ DE OCOA · REPÚBLICA DOMINICANA
 </p>
 
 {/* MAPA */}
-
 <div style={{
-marginTop:"160px",
-display:"block",
-marginLeft:"auto",
-marginRight:"auto",
-width:"fit-content",
+margin:"0 auto",
+width:"100%",
+maxWidth:"420px",
 padding:"14px",
 background:"#c7a27c",
 borderRadius:"6px",
@@ -903,48 +1039,19 @@ width="100%"
 height="260"
 style={{
 border:0,
-borderRadius:"8px",
-maxWidth:"420px"
-}}/>
-
-<img
-src="/venue1.jpg"
-style={{
-position:"absolute",
-left:"10%",
-top:"220px",
-width:"clamp(120px, 28vw, 220px)",
-padding:"12px",
-background:"white",
-transform:"rotate(-8deg)",
-boxShadow:"0 12px 30px rgba(0,0,0,0.35)",
-zIndex:3
-}}
-/>
-
-<img
-src="/venue2.jpg"
-style={{
-position:"absolute",
-right:"10%",
-top:"240px",
-width:"clamp(120px, 28vw, 220px)",
-padding:"12px",
-background:"white",
-transform:"rotate(8deg)",
-boxShadow:"0 12px 30px rgba(0,0,0,0.35)",
-zIndex:3
+borderRadius:"8px"
 }}
 />
 
 </div>
 
+{/* TEXTO */}
 <p style={{
-marginTop:"30px",
-maxWidth:"500px",
-marginLeft:"auto",
-marginRight:"auto",
-lineHeight:"1.8"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#e6ddd5",
+fontFamily:"var(--font-elegant)"
 }}>
 Habrá estacionamiento disponible en el lugar.
 Nuestro equipo estará listo para guiarte al llegar.
@@ -960,20 +1067,28 @@ Nuestro equipo estará listo para guiarte al llegar.
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px"
+}}>
 Dónde hospedarse
 </h2>
 
 <p style={{
-maxWidth:"600px",
-margin:"20px auto 50px auto",
-fontSize:"16px",
-lineHeight:"1.8",
-opacity:0.9
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#e6ddd5",
+fontFamily:"var(--font-elegant)"
 }}>
-Para mayor comodidad de nuestros invitados,
-hemos seleccionado algunas opciones de hospedaje
-cercanas al lugar de la celebración.
+Si deseas quedarte en el pueblo durante el fin de semana,
+te compartimos algunas opciones de hospedaje cercanas al lugar de la celebración.
+
+La disponibilidad puede variar, por lo que recomendamos reservar con anticipación.
 </p>
 
 <div style={{
@@ -988,36 +1103,56 @@ margin:"0 auto"
 href="https://www.airbnb.com/rooms/1578611592370803713?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350534_P3tlWpq0WhEHqmon&previous_page_section_name=1000&federated_search_id=737daf10-e7c6-4653-aad5-572a1891177a"
 target="_blank"
 className="button button-light"
-style={{textAlign:"center"}}
+style={{
+textAlign:"center",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-HOTEL 1
+Hospedaje· OPCIÓN 1
 </a>
 
 <a
 href="https://www.airbnb.com/rooms/45363133?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P3CRes561-lpuuBH&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
 target="_blank"
 className="button button-light"
-style={{textAlign:"center"}}
+style={{
+textAlign:"center",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-HOTEL 2
+Hospedaje· OPCIÓN 2
 </a>
 
 <a
 href="https://www.airbnb.com/rooms/1574242168305632524?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P37Gxra0V44o2pTh&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
 target="_blank"
 className="button button-light"
-style={{textAlign:"center"}}
+style={{
+textAlign:"center",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-HOTEL 3
+Hospedaje· OPCIÓN 3
 </a>
 
 <a
 href="https://www.airbnb.com/rooms/696995000546828193?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P3aJR9HndKSkFdaP&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
 target="_blank"
 className="button button-light"
-style={{textAlign:"center"}}
+style={{
+textAlign:"center",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-HOTEL 4
+Hospedaje· OPCIÓN 4
 </a>
 
 </div>
@@ -1031,30 +1166,51 @@ HOTEL 4
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20"
+}}>
 Nuestra Playlist
 </h2>
 
 <p style={{
-maxWidth:"560px",
-margin:"0 auto 40px auto",
-fontSize:"17px",
-lineHeight:"1.8",
-color:"#5a5048"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Ayúdanos a crear la playlist perfecta para la fiesta.
 Agrega tus canciones favoritas para celebrar con nosotros
 y hacer de la noche algo aún más especial 🎶
 </p>
 
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"12px",
+color:"#8a8178",
+marginBottom:"30px"
+}}>
+CONTRIBUYE A NUESTRA PLAYLIST EN SPOTIFY
+</p>
+
 <a
 href="https://open.spotify.com/playlist/2da7zmucwCTjehbLgaBcxR?si=5bae9463894248a5&pt=7b2020ccfe79c28e13b1b6f7b822ccd5"
 target="_blank"
 className="button button-dark"
+style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-
-Agregar canción a la playlist
-
+AGREGAR CANCIÓN
 </a>
 
 </section>
@@ -1065,95 +1221,130 @@ Agregar canción a la playlist
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px"
+}}>
 Nota sobre regalos
 </h2>
 
 <p style={{
-maxWidth:"620px",
-margin:"20px auto",
-lineHeight:"1.8",
-opacity:0.9
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#e6ddd5",
+fontFamily:"var(--font-elegant)"
 }}>
-Su presencia en nuestra boda es el mejor regalo que
-podríamos recibir. Para quienes deseen hacernos un
-detalle adicional, hemos preparado esta opción.
+Su presencia en nuestra boda es el mejor regalo que podríamos recibir.
+
+<br/><br/>
+
+Si desean hacernos un detalle adicional,
+hemos preparado la siguiente opción.
 </p>
 
-<button
-onClick={()=>setShowGift(true)}
-className="button button-light"
-style={{marginTop:"20px"}}
->
-Ver información
-</button>
+{/* LABEL */}
+<p style={{
+marginTop:"30px",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"3px",
+fontSize:"18px",
+opacity:0.7
+}}>
+OPCIÓN DE REGALO
+</p>
+
+{/* CUENTAS */}
+<div style={{
+marginTop:"25px",
+display:"flex",
+flexDirection:"column",
+gap:"30px",
+alignItems:"center"
+}}>
+
+{/* CUENTA 1 */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"3px",
+fontSize:"15px",
+opacity:0.7,
+marginBottom:"10px"
+}}>
+BANCO POPULAR
+</p>
+
+<p style={{
+fontFamily:"var(--font-body)",
+lineHeight:"1.6",
+color:"#e6ddd5"
+}}>
+Cuenta corriente: 816921621<br/>
+Titular: Ailyn Santana
+</p>
+</div>
+
+{/* DIVIDER */}
+<div style={{
+width:"40px",
+height:"1px",
+background:"#c7a27c"
+}}/>
+
+{/* CUENTA 2 */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"3px",
+fontSize:"15px",
+opacity:0.7,
+marginBottom:"10px"
+}}>
+BHD
+</p>
+
+<p style={{
+fontFamily:"var(--font-body)",
+lineHeight:"1.6",
+color:"#e6ddd5"
+}}>
+Cuenta de ahorro: 34139820016<br/>
+Titular: Ailyn Santana
+</p>
+
+</div>
+
+{/* CUENTA 3 */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"3px",
+fontSize:"15px",
+opacity:0.7,
+marginBottom:"10px"
+}}>
+Banreservas
+</p>
+
+<p style={{
+fontFamily:"var(--font-body)",
+lineHeight:"1.6",
+color:"#e6ddd5"
+}}>
+Cuenta de ahorro: 9606316788<br/>
+Titular: Luis Perdomo
+</p>
+
+</div>
+
+</div>
 
 </section>
-
-{/* MODAL REGALOS */}
-
-{showGift && (
-
-<div style={{
-position:"fixed",
-top:0,
-left:0,
-width:"100%",
-height:"100%",
-background:"rgba(0,0,0,0.7)",
-display:"flex",
-alignItems:"center",
-justifyContent:"center",
-zIndex:3000
-}}>
-
-<div style={{
-background:"#F5F1EA",
-padding:"40px",
-borderRadius:"8px",
-maxWidth:"400px",
-textAlign:"center",
-position:"relative"
-}}>
-
-<div
-onClick={()=>setShowGift(false)}
-style={{
-position:"absolute",
-right:"15px",
-top:"10px",
-cursor:"pointer",
-fontSize:"20px"
-}}
->
-✕
-</div>
-
-<h3 style={{marginBottom:"20px"}}>
-Transferencia bancaria
-</h3>
-
-<p style={{marginBottom:"15px"}}>
-Banco Popular
-<br/>
-Cuenta: 123456789
-<br/>
-A nombre de Luis Perdomo
-</p>
-
-<p>
-Banco BHD
-<br/>
-Cuenta: 987654321
-<br/>
-A nombre de Ailyn Santana
-</p>
-
-</div>
-
-</div>
-
-)}
 
 {/* FAQ */}
 
@@ -1161,29 +1352,108 @@ A nombre de Ailyn Santana
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20",
+textAlign:"center"
+}}>
 Preguntas frecuentes
 </h2>
 
 <div style={{
 maxWidth:"700px",
 margin:"40px auto",
-textAlign:"left"
+textAlign:"left",
+display:"flex",
+flexDirection:"column",
+gap:"30px"
 }}>
 
-<div style={{marginBottom:"30px"}}>
-<h3>¿A qué hora empieza la ceremonia?</h3>
-<p>La ceremonia comenzará a las 3:00 PM. Les recomendamos llegar unos minutos antes.</p>
+{/* ITEM */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"25px",
+marginBottom:"8px",
+color:"#3b2b20"
+}}>
+¿A qué hora empieza la ceremonia?
+</p>
+
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"15px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
+La ceremonia comenzará a las 3:00 PM. Les recomendamos llegar unos minutos antes.
+</p>
 </div>
 
-<div style={{marginBottom:"30px"}}>
-<h3>¿Se permiten niños?</h3>
-<p>Hemos decidido que nuestra boda sea una celebración solo para adultos.</p>
+{/* DIVIDER */}
+<div style={{
+width:"100%",
+height:"1px",
+background:"#e5ded6"
+}}/>
+
+{/* ITEM */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"25px",
+marginBottom:"8px",
+color:"#3b2b20"
+}}>
+¿Se permiten niños?
+</p>
+
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"15px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
+Hemos decidido que nuestra boda sea una celebración solo para adultos.
+</p>
 </div>
 
-<div style={{marginBottom:"30px"}}>
-<h3>¿Puedo llevar un acompañante?</h3>
-<p>Debido a la capacidad del evento, las invitaciones no incluyen acompañante adicional.</p>
+<div style={{
+width:"100%",
+height:"1px",
+background:"#e5ded6"
+}}/>
+
+{/* ITEM */}
+<div>
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"25px",
+marginBottom:"8px",
+color:"#3b2b20"
+}}>
+¿Puedo llevar un acompañante?
+</p>
+
+<p style={{
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"15px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
+}}>
+Debido a la capacidad del evento, las invitaciones no incluyen acompañante adicional. Al menos que se indique lo contrario en la invitación personalizada que recibiste.
+</p>
 </div>
 
 </div>
@@ -1196,38 +1466,52 @@ textAlign:"left"
 
 <div className="divider"></div>
 
-<h2 className="script section-title">
-Confirmar Asistencia
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+fontWeight:300,
+textTransform:"uppercase",
+fontSize:"clamp(26px, 5vw, 40px)",
+marginBottom:"20px",
+color:"#3b2b20"
+}}>
+Confirmar asistencia
 </h2>
 
+{/* SALUDO */}
 {guestName && (
 <p style={{
-marginBottom:"25px",
-fontSize:"18px",
-color:"#6b635b"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"16px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
-Hola <strong>{guestName}</strong>, confirma tu asistencia
+Hola <strong>{guestName}</strong>, nos encantará contar contigo
 </p>
 )}
 
-
+{/* TEXTO */}
 <p style={{
-fontSize:"15px",
-color:"#6b635b",
-maxWidth:"420px",
-margin:"0 auto 30px auto",
-lineHeight:"1.7"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"16px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Invitación personal e intransferible.  
-Debido a la capacidad del evento, no será posible incluir acompañantes adicionales a menos de ser indicado.
+Debido a la capacidad del evento, no será posible incluir acompañantes adicionales.
 </p>
 
+{/* VALIDACIONES */}
 {!isValidGuest ? (
 
 <p style={{
-marginTop:"30px",
-fontSize:"18px",
-color:"#6b635b"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"16px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Esta invitación es personal.  
 Por favor utiliza el enlace que recibiste para confirmar tu asistencia.
@@ -1236,8 +1520,11 @@ Por favor utiliza el enlace que recibiste para confirmar tu asistencia.
 ) : alreadyAnswered ? (
 
 <p style={{
-fontSize:"22px",
-marginTop:"30px"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Ya hemos recibido tu confirmación.  
 ¡Muchas gracias! 💛
@@ -1246,8 +1533,11 @@ Ya hemos recibido tu confirmación.
 ) : submitted ? (
 
 <p style={{
-fontSize:"22px",
-marginTop:"30px"
+marginBottom:"30px",
+letterSpacing:"0.3px",
+fontSize:"20px",
+color:"#8a8178",
+fontFamily:"var(--font-elegant)"
 }}>
 Gracias por confirmar ❤️
 </p>
@@ -1272,7 +1562,8 @@ style={{
 padding:"12px",
 borderRadius:"6px",
 border:"1px solid #e5e0d8",
-fontSize:"15px"
+fontSize:"14px",
+fontFamily:"var(--font-body)"
 }}
 >
 <option>Sí asistiré</option>
@@ -1282,9 +1573,14 @@ fontSize:"15px"
 <button
 type="submit"
 className="button button-dark"
-style={{marginTop:"10px"}}
+style={{
+marginTop:"10px",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"2px",
+fontSize:"13px"
+}}
 >
-Confirmar asistencia
+CONFIRMAR ASISTENCIA
 </button>
 
 </form>

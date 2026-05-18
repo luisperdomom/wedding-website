@@ -177,6 +177,13 @@ h1,h2,h3{
 
 @media (max-width:768px){
 
+  .navbar{
+  justify-content:flex-start;
+  overflow:visible;
+  white-space:normal;
+  padding:20px;
+}
+
   .menu-toggle{
     display:flex;
   }

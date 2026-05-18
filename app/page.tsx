@@ -122,7 +122,9 @@ const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
 const seconds = Math.floor((distance % (1000 * 60)) / 1000)
 
-setTimeLeft(`${days} : ${hours} : ${minutes} : ${seconds}`)
+setTimeLeft(
+`${formatNumber(days)}:${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`
+)
 
 },1000)
 
@@ -140,6 +142,12 @@ const totalPhotos = 22
 const [selectedImage,setSelectedImage] = useState<number | null>(null)
 
 const [menuOpen,setMenuOpen] = useState(false)
+
+const [openFAQ,setOpenFAQ] = useState<number | null>(null)
+
+const formatNumber = (num:number) => {
+  return num.toString().padStart(2,"0")
+}
 
 useEffect(()=>{
 
@@ -226,12 +234,17 @@ onClick={()=>setMenuOpen(!menuOpen)}
 
 <div className={`nav-links ${menuOpen ? "open" : ""}`}>
 
-<a href="#inicio">Inicio</a>
-<a href="#historia">Historia</a>
-<a href="#galeria">Galería</a>
-<a href="#evento">Evento</a>
-<a href="#faq">FAQ</a>
-<a href="#rsvp">RSVP</a>
+<a href="#inicio" onClick={()=>setMenuOpen(false)}>Inicio</a>
+
+<a href="#historia" onClick={()=>setMenuOpen(false)}>Historia</a>
+
+<a href="#galeria" onClick={()=>setMenuOpen(false)}>Galería</a>
+
+<a href="#evento" onClick={()=>setMenuOpen(false)}>Evento</a>
+
+<a href="#faq" onClick={()=>setMenuOpen(false)}>FAQ</a>
+
+<a href="#rsvp" onClick={()=>setMenuOpen(false)}>RSVP</a>
 
 </div>
 
@@ -255,6 +268,7 @@ autoPlay
 muted
 loop
 playsInline
+preload="auto"
 style={{
 position:"absolute",
 width:"100%",
@@ -305,6 +319,31 @@ fontSize:"clamp(48px, 10vw, 90px)"
 <span style={{fontWeight:200}}>&</span>{" "}
 <span>Ailyn</span>
 </h1>
+<a
+href="#invitacion"
+style={{
+display:"inline-block",
+marginTop:"40px",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"5px",
+fontSize:"12px",
+textTransform:"uppercase",
+color:"white",
+textDecoration:"none",
+opacity:"0.85",
+transition:"0.3s"
+}}
+onMouseOver={(e)=>{
+e.currentTarget.style.opacity="1"
+e.currentTarget.style.transform="translateY(3px)"
+}}
+onMouseOut={(e)=>{
+e.currentTarget.style.opacity="0.85"
+e.currentTarget.style.transform="translateY(0px)"
+}}
+>
+Descubrir más ↓
+</a>
 
 </div>
 
@@ -421,23 +460,53 @@ Nuestro para siempre comienza en
 </h2>
 
 <div style={{
+display:"flex",
+justifyContent:"center",
+flexWrap:"wrap",
+gap:"20px",
+marginTop:"40px"
+}}>
+
+{timeLeft.split(":").map((time,index)=>{
+
+const labels = ["DÍAS","HORAS","MIN","SEG"]
+
+return (
+<div
+key={index}
+style={{
+minWidth:"100px",
+padding:"20px",
+border:"1px solid rgba(255,255,255,0.15)",
+borderRadius:"8px",
+background:"rgba(255,255,255,0.03)"
+}}
+>
+
+<div style={{
 fontFamily:"var(--font-elegant)",
-fontSize:"clamp(40px, 8vw, 64px)",
-letterSpacing:"6px",
+fontSize:"clamp(30px, 6vw, 50px)",
 fontWeight:300
 }}>
-{timeLeft}
+{time.trim()}
 </div>
 
 <p style={{
-marginTop:"20px",
-letterSpacing:"4px",
-fontSize:"12px",
-fontFamily:"var(--font-body)",
-color:"#aaa"
+marginTop:"10px",
+fontFamily:"var(--font-elegant)",
+letterSpacing:"3px",
+fontSize:"11px",
+opacity:"0.7"
 }}>
-DÍAS &nbsp;&nbsp;&nbsp; HORAS &nbsp;&nbsp;&nbsp; MINUTOS &nbsp;&nbsp;&nbsp; SEGUNDOS
+{labels[index]}
 </p>
+
+</div>
+)
+
+})}
+
+</div>
 
 </section>
 
@@ -850,7 +919,8 @@ margin:"0 auto"
 {Array.from({length:22}, (_,i)=>i+1).map((n)=>(
 <img
 key={n}
-src={`/photo${n}.jpg`}
+src={`/photo${n}.webp`}
+loading="lazy"
 onClick={()=>setSelectedImage(n)}
 style={{
 width:"100%",
@@ -937,7 +1007,7 @@ cursor:"pointer"
 {/* IMAGEN */}
 
 <img
-  src={`/photo${selectedImage}.jpg`}
+  src={`/photo${selectedImage}.webp`}
   style={{
     maxWidth:"min(500px,90%)",
     maxHeight:"80vh",
@@ -1319,6 +1389,13 @@ Titular: Ailyn Santana
 
 </div>
 
+{/* DIVIDER */}
+<div style={{
+width:"40px",
+height:"1px",
+background:"#c7a27c"
+}}/>
+
 {/* CUENTA 3 */}
 <div>
 <p style={{
@@ -1328,7 +1405,7 @@ fontSize:"15px",
 opacity:0.7,
 marginBottom:"10px"
 }}>
-Banreservas
+BANRESERVAS
 </p>
 
 <p style={{
@@ -1359,102 +1436,89 @@ fontWeight:300,
 textTransform:"uppercase",
 fontSize:"clamp(26px, 5vw, 40px)",
 marginBottom:"20px",
-color:"#3b2b20",
 textAlign:"center"
 }}>
 Preguntas frecuentes
 </h2>
 
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+textTransform:"uppercase",
+fontSize:"11px",
+color:"#8a8178",
+textAlign:"center",
+marginBottom:"35px"
+}}>
+Toca cada pregunta para ver más información
+</p>
+
 <div style={{
 maxWidth:"700px",
 margin:"40px auto",
-textAlign:"left",
 display:"flex",
 flexDirection:"column",
-gap:"30px"
+gap:"20px"
 }}>
 
-{/* ITEM */}
-<div>
+{[
+{
+q:"¿A qué hora empieza la ceremonia?",
+a:"La ceremonia comenzará a las 3:30 PM. Les recomendamos llegar unos minutos antes."
+},
+{
+q:"¿Se permiten niños?",
+a:"Hemos decidido que nuestra boda sea una celebración solo para adultos."
+},
+{
+q:"¿Puedo llevar un acompañante?",
+a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañante adicional."
+}
+].map((item,index)=>(
+
+<div
+key={index}
+style={{
+borderBottom:"1px solid #ddd5cc",
+paddingBottom:"20px"
+}}
+>
+
+<div
+onClick={()=>setOpenFAQ(openFAQ === index ? null : index)}
+style={{
+display:"flex",
+justifyContent:"space-between",
+cursor:"pointer"
+}}
+>
 <p style={{
 fontFamily:"var(--font-elegant)",
 letterSpacing:"2px",
-fontSize:"25px",
-marginBottom:"8px",
-color:"#3b2b20"
+fontSize:"13px"
 }}>
-¿A qué hora empieza la ceremonia?
+{item.q}
 </p>
 
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"15px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-La ceremonia comenzará a las 3:00 PM. Les recomendamos llegar unos minutos antes.
-</p>
+<span>
+{openFAQ === index ? "−" : "+"}
+</span>
 </div>
 
-{/* DIVIDER */}
-<div style={{
-width:"100%",
-height:"1px",
-background:"#e5ded6"
-}}/>
-
-{/* ITEM */}
-<div>
+{openFAQ === index && (
 <p style={{
+marginTop:"15px",
 fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"25px",
-marginBottom:"8px",
-color:"#3b2b20"
+lineHeight:"1.8",
+color:"#5a5048"
 }}>
-¿Se permiten niños?
+{item.a}
 </p>
+)}
 
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"15px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Hemos decidido que nuestra boda sea una celebración solo para adultos.
-</p>
 </div>
 
-<div style={{
-width:"100%",
-height:"1px",
-background:"#e5ded6"
-}}/>
-
-{/* ITEM */}
-<div>
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"25px",
-marginBottom:"8px",
-color:"#3b2b20"
-}}>
-¿Puedo llevar un acompañante?
-</p>
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"15px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Debido a la capacidad del evento, las invitaciones no incluyen acompañante adicional. Al menos que se indique lo contrario en la invitación personalizada que recibiste.
-</p>
-</div>
+))}
 
 </div>
 
@@ -1586,6 +1650,56 @@ CONFIRMAR ASISTENCIA
 </form>
 
 )}
+
+</section>
+
+{/* FOOTER FINAL */}
+
+<section style={{
+padding:"100px 20px",
+textAlign:"center",
+background:"#3A2A23",
+color:"white"
+}}>
+
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+textTransform:"uppercase",
+fontSize:"12px",
+opacity:"0.8",
+marginBottom:"20px"
+}}>
+Gracias por ser parte de nuestra historia
+</p>
+
+<p style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"6px",
+textTransform:"uppercase",
+fontSize:"12px",
+opacity:"0.8",
+marginBottom:"20px"
+}}>
+Nos vemos el 12 de diciembre de 2026
+</p>
+
+<h2 style={{
+fontFamily:"var(--font-elegant)",
+letterSpacing:"4px",
+fontWeight:300,
+fontSize:"24px",
+marginTop:"40px"
+}}>
+Luis & Ailyn
+</h2>
+
+<div style={{
+width:"60px",
+height:"1px",
+background:"#c7a27c",
+margin:"40px auto 0 auto"
+}}/>
 
 </section>
 

@@ -104,6 +104,117 @@ useEffect(()=>{
   })
 },[])
 
+if (isValidGuest === null) {
+  return (
+    <div style={{
+      fontFamily: "var(--font-elegant)",
+      background: "#faf8f5",
+      color: "#3A2A23",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      padding: "20px"
+    }}>
+      <p className="animate-pulse uppercase text-sm" style={{ letterSpacing: "4px" }}>
+        Iniciando Invitación Privada...
+      </p>
+    </div>
+  )
+}
+
+if (isValidGuest === false) {
+  return (
+    <div style={{
+      fontFamily: "var(--font-elegant)",
+      background: "#faf8f5",
+      color: "#3A2A23",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      padding: "40px 20px",
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      <GoldenPetals />
+      
+      <div style={{
+        maxWidth: "460px",
+        background: "white",
+        padding: "40px 30px",
+        borderRadius: "16px",
+        boxShadow: "0 15px 40px rgba(58, 42, 35, 0.05)",
+        border: "1px solid #e5e0d8",
+        zIndex: 20
+      }}>
+        <div style={{ position: "relative", width: "90px", height: "90px", margin: "0 auto 20px auto" }}>
+          <Image
+            src="/logo.png"
+            alt="Logo Luis & Ailyn"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        
+        <h2 style={{
+          fontFamily: "var(--font-elegant)",
+          letterSpacing: "4px",
+          fontWeight: 300,
+          textTransform: "uppercase",
+          fontSize: "24px",
+          marginBottom: "20px",
+          color: "#3A2A23"
+        }}>
+          Invitación Privada
+        </h2>
+
+        <p style={{
+          fontFamily: "var(--font-body)",
+          lineHeight: "1.8",
+          fontSize: "14px",
+          color: "#8a8178",
+          marginBottom: "30px",
+          padding: "0 10px"
+        }}>
+          Esta invitación es personal e intransferible. Para acceder a los detalles y confirmar tu asistencia, por favor utiliza el enlace de acceso personal que recibiste.
+        </p>
+
+        <div style={{
+          width: "60px",
+          height: "1px",
+          background: "#c7a27c",
+          margin: "20px auto"
+        }} />
+
+        <h3 style={{
+          fontFamily: "var(--font-elegant)",
+          letterSpacing: "3px",
+          fontWeight: 300,
+          fontSize: "16px",
+          color: "#3A2A23"
+        }}>
+          Luis & Ailyn
+        </h3>
+        <p style={{
+          fontSize: "11px",
+          letterSpacing: "2px",
+          opacity: 0.7,
+          marginTop: "5px",
+          fontFamily: "var(--font-elegant)"
+        }}>
+          12 DE DICIEMBRE DE 2026
+        </p>
+      </div>
+    </div>
+  )
+}
+
 return(
 
 <div style={{

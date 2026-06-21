@@ -2,9 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "aos/dist/aos.css"
 
-import { Parisienne, Playfair_Display, Inter, Josefin_Sans } from "next/font/google"
+import { Parisienne, Playfair_Display, Inter, Josefin_Sans, Pinyon_Script, Great_Vibes } from "next/font/google"
 
 import { Cormorant_Garamond } from "next/font/google"
+
+const greatVibesFont = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-vibes"
+})
+
+const pinyonScriptFont = Pinyon_Script({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pinyon"
+})
 
 const serifFont = Cormorant_Garamond({
   subsets:["latin"],
@@ -46,7 +58,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${bodyFont.variable} ${scriptFont.variable} ${titleFont.variable} ${elegantFont.variable} ${serifFont.variable}`}>
+      <body className={`${bodyFont.variable} ${scriptFont.variable} ${titleFont.variable} ${elegantFont.variable} ${serifFont.variable} ${pinyonScriptFont.variable} ${greatVibesFont.variable}`}>
         {children}
       </body>
     </html>

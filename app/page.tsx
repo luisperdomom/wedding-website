@@ -390,68 +390,105 @@ SAN JOSÉ DE OCOA, RD
 id="invitacion"
 data-aos="fade-up"
 style={{
-padding:"100px 20px",
-textAlign:"center",
-background:"#f5f1ea"
+  padding:"100px 20px",
+  textAlign:"center",
+  background:"#f5f1ea",
+  position: "relative"
 }}
 >
 
-<div id="historia" className="section-light" style={{ position:"relative" }}>
+  <div 
+    style={{
+      maxWidth: "650px",
+      margin: "0 auto",
+      background: "white",
+      padding: "60px 40px",
+      borderRadius: "16px",
+      boxShadow: "0 10px 30px rgba(58, 42, 35, 0.03)",
+      border: "1px solid rgba(199, 162, 124, 0.2)",
+      position: "relative",
+      overflow: "hidden"
+    }}
+  >
+    {/* Inset Border Frame */}
+    <div style={{
+      position: "absolute",
+      inset: "8px",
+      border: "1px solid rgba(199, 162, 124, 0.1)",
+      borderRadius: "10px",
+      pointerEvents: "none"
+    }} />
 
-<div className="divider"></div>
+    {/* Dynamic Guest Greeting (Calligraphy de Ultra Lujo - Pinyon Script) */}
+    {guestName && (
+      <p 
+        style={{
+          fontFamily: "var(--font-pinyon)",
+          fontSize: "clamp(30px, 6.5vw, 48px)",
+          color: "#c7a27c",
+          marginBottom: "15px",
+          lineHeight: "1.1",
+          fontWeight: 300,
+          letterSpacing: "1.5px",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+          opacity: 0.95
+        }}
+      >
+        {guestName}
+      </p>
+    )}
 
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(24px, 4vw, 36px)",
-marginBottom:"20px"
-}}>
-Estás invitado
-</h2>
+    <h2 style={{
+      fontFamily: "var(--font-elegant)",
+      letterSpacing: "6px",
+      fontWeight: 300,
+      textTransform: "uppercase",
+      fontSize: "clamp(20px, 3vw, 28px)",
+      color: "#3a2a23",
+      marginBottom: "25px"
+    }}>
+      Estás invitado
+    </h2>
 
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Nos llena de alegría que estés aquí y que formes parte
-de este momento tan especial en nuestras vidas.
-Hemos creado este espacio para compartir contigo
-todos los detalles de nuestra boda.
+    <p style={{
+      marginBottom: "0px",
+      letterSpacing: "0.3px",
+      fontSize: "15px",
+      color: "#6b635b",
+      fontFamily: "var(--font-body)",
+      lineHeight: "1.8",
+      maxWidth: "500px",
+      margin: "0 auto"
+    }}>
+      Nos llena de alegría que estés aquí y que formes parte de este momento tan especial en nuestras vidas. Hemos creado este espacio para compartir contigo todos los detalles de nuestra boda.
+      <br /><br />
+      Gracias por acompañarnos en el inicio de esta nueva etapa juntos.
+    </p>
 
-<br/><br/>
+    {/* Subtle Decorative Flower inside the card */}
+    <div style={{ position: "absolute", right: "-80px", bottom: "-80px", width: "220px", height: "220px", opacity: 0.35, pointerEvents: "none" }}>
+      <Image
+        src="/floral.png"
+        alt=""
+        fill
+        sizes="220px"
+        className="object-contain"
+      />
+    </div>
+  </div>
 
-Gracias por acompañarnos en el inicio
-de esta nueva etapa juntos.
-</p>
-
-{/* FLOR DECORATIVA */}
-
-<div style={{ position: "absolute", right: "-60px", top: "120px", width: "420px", height: "420px", opacity: 0.35, pointerEvents: "none" }}>
-  <Image
-    src="/floral.png"
-    alt=""
-    fill
-    sizes="420px"
-    className="object-contain"
-  />
-</div>
-
-</div>
-
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"4px",
-fontWeight:300,
-fontSize:"24px",
-marginTop:"40px"
-}}>
-Luis & Ailyn
-</p>
+  {/* Signature at the bottom */}
+  <p style={{
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "4px",
+    fontWeight: 300,
+    fontSize: "22px",
+    marginTop: "40px",
+    color: "#3a2a23"
+  }}>
+    Luis & Ailyn
+  </p>
 
 </div>
 
@@ -778,7 +815,7 @@ La propuesta
 
 <section id="evento" style={{
 position:"relative",
-padding:"140px 20px",
+padding:"110px 20px 60px 20px",
 textAlign:"center",
 background:"#3A2A23",
 color:"white"
@@ -831,17 +868,236 @@ borderRadius:"8px"
 
 </div>
 
-{/* TEXTO */}
+{/* BOTONES DE NAVEGACIÓN */}
+<div style={{ display: "flex", justifyContent: "center", gap: "15px", flexWrap: "wrap", marginTop: "25px" }}>
+  <a
+    href="https://www.google.com/maps/search/?api=1&query=Rancho+La+Vereda+San+Jose+de+Ocoa"
+    target="_blank"
+    className="button"
+    style={{
+      background: "transparent",
+      border: "1px solid #c7a27c",
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "12px",
+      fontFamily: "var(--font-elegant)",
+      letterSpacing: "1px",
+      cursor: "pointer",
+      textDecoration: "none"
+    }}
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#c7a27c" }}>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+    Abrir en Google Maps
+  </a>
+
+  <a
+    href="https://waze.com/ul?q=Rancho+La+Vereda+San+Jose+de+Ocoa"
+    target="_blank"
+    className="button"
+    style={{
+      background: "transparent",
+      border: "1px solid #c7a27c",
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "12px",
+      fontFamily: "var(--font-elegant)",
+      letterSpacing: "1px",
+      cursor: "pointer",
+      textDecoration: "none"
+    }}
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#c7a27c" }}>
+      <polygon points="3 11 22 2 13 21 11 13 3 11" />
+    </svg>
+    Abrir en Waze
+  </a>
+</div>
+
 <p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#e6ddd5",
-fontFamily:"var(--font-elegant)"
+  marginTop: "18px",
+  fontSize: "14px",
+  fontFamily: "var(--font-body)",
+  color: "#e6ddd5",
+  opacity: 0.85,
+  fontStyle: "italic"
 }}>
-Habrá estacionamiento disponible en el lugar.
-Nuestro equipo estará listo para guiarte al llegar.
+  Habrá estacionamiento disponible en el lugar. Nuestro equipo estará listo para guiarte al llegar.
 </p>
+
+{/* WIDGET DE CLIMA */}
+<div style={{
+  margin: "40px auto 0 auto",
+  maxWidth: "500px",
+  background: "rgba(255, 255, 255, 0.03)",
+  border: "1px solid rgba(199, 162, 124, 0.2)",
+  borderRadius: "12px",
+  padding: "20px 24px",
+  display: "flex",
+  alignItems: "center",
+  gap: "18px",
+  textAlign: "left"
+}}>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M12 20v2M17.66 17.66l1.41 1.41M22 12h-2M19.07 4.93l-1.41 1.41" />
+    <path d="M17 17.5A5 5 0 0 0 13 9h-1.5a5.5 5 0 0 0-10.5 2.5A4.5 4.5 0 0 0 5.5 16H16.5" style={{ fill: "rgba(199,162,124,0.1)" }} />
+  </svg>
+  <div>
+    <h4 style={{
+      fontSize: "12px",
+      textTransform: "uppercase",
+      letterSpacing: "2px",
+      color: "#c7a27c",
+      fontFamily: "var(--font-elegant)",
+      marginBottom: "4px",
+      fontWeight: "bold"
+    }}>
+      Clima en Ocoa
+    </h4>
+    <p style={{
+      fontSize: "13px",
+      fontFamily: "var(--font-body)",
+      color: "#e6ddd5",
+      lineHeight: "1.5"
+    }}>
+      San José de Ocoa se caracteriza por un agradable clima de montaña (entre 18°C y 24°C al atardecer). Les sugerimos traer un abrigo ligero para la noche.
+    </p>
+  </div>
+</div>
+
+{/* PROGRAMA DE LA BODA */}
+<div style={{ marginTop: "80px" }}>
+  <h3 style={{
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "4px",
+    textTransform: "uppercase",
+    fontSize: "20px",
+    color: "#c7a27c",
+    marginBottom: "40px"
+  }}>
+    Programa de la Boda
+  </h3>
+
+  <div style={{
+    position: "relative",
+    maxWidth: "500px",
+    margin: "0 auto",
+    paddingLeft: "30px",
+    textAlign: "left"
+  }}>
+    {/* Línea vertical */}
+    <div style={{
+      position: "absolute",
+      left: "9px",
+      top: "10px",
+      bottom: "10px",
+      width: "1px",
+      background: "rgba(199, 162, 124, 0.3)"
+    }} />
+
+    {[
+      {
+        time: "03:30 PM",
+        title: "Ceremonia",
+        desc: "La promesa de amor al aire libre.",
+        icon: (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: "translateY(-1px)" }}>
+            <circle cx="8" cy="12" r="5" />
+            <circle cx="16" cy="12" r="5" />
+          </svg>
+        )
+      },
+      {
+        time: "04:30 PM",
+        title: "Coctel",
+        desc: "Brindis, música suave y sesión de fotos con los novios.",
+        icon: (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: "translateY(-1px)" }}>
+            <path d="M12 2v10m0 0a5 5 0 0 1-5-5h10a5 5 0 0 1-5 5zm0 10h-6m6 0h6" />
+          </svg>
+        )
+      },
+      {
+        time: "06:00 PM",
+        title: "Banquete",
+        desc: "Cena formal para celebrar juntos.",
+        icon: (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: "translateY(-1px)" }}>
+            <path d="M18 2v20M15 2v6a3 3 0 0 0 6 0V2M12 2v20" />
+          </svg>
+        )
+      },
+      {
+        time: "07:30 PM",
+        title: "¡Que empiece la fiesta!",
+        desc: "Baile, diversión y momentos mágicos.",
+        icon: (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: "translateY(-1px)" }}>
+            <path d="M9 18V5l12-2v13M9 9l12-2" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+        )
+      }
+    ].map((step, index) => (
+      <div key={index} style={{ position: "relative", marginBottom: "35px" }}>
+        {/* Nodo */}
+        <div style={{
+          position: "absolute",
+          left: "-29px",
+          top: "3px",
+          width: "19px",
+          height: "19px",
+          borderRadius: "50%",
+          background: "#3A2A23",
+          border: "1px solid #c7a27c",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#c7a27c"
+        }}>
+          {step.icon}
+        </div>
+
+        <div>
+          <span style={{
+            fontSize: "11px",
+            fontFamily: "var(--font-elegant)",
+            letterSpacing: "1.5px",
+            color: "#c7a27c",
+            fontWeight: "bold",
+            display: "block"
+          }}>
+            {step.time}
+          </span>
+          <h4 style={{
+            fontSize: "15px",
+            fontFamily: "var(--font-elegant)",
+            letterSpacing: "1px",
+            color: "#fff",
+            marginTop: "2px",
+            marginBottom: "4px"
+          }}>
+            {step.title}
+          </h4>
+          <p style={{
+            fontSize: "13px",
+            fontFamily: "var(--font-body)",
+            color: "#e6ddd5"
+          }}>
+            {step.desc}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
 </div>
 
@@ -850,8 +1106,6 @@ Nuestro equipo estará listo para guiarte al llegar.
 {/* WHERE TO STAY */}
 
 <section className="section-dark">
-
-<div className="divider"></div>
 
 <h2 style={{
 fontFamily:"var(--font-elegant)",

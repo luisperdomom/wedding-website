@@ -474,21 +474,24 @@ transform:"translateX(-50%)"
 
 
 {/* evento 1 */}
-<div style={{
-display:"flex",
-justifyContent:"flex-start",
-marginBottom:"80px",
-padding:"0 20px"
-}}>
+<div 
+  data-aos="fade-right"
+  style={{
+    display:"flex",
+    justifyContent:"flex-start",
+    marginBottom:"80px",
+    padding:"0 20px"
+  }}
+>
 
 <div style={{
-width:"45%",
-paddingLeft:"40px",
-background:"white",
-padding:"18px",
-boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
-borderRadius:"4px",
-transform:"rotate(-2deg)"
+  width:"45%",
+  paddingLeft:"40px",
+  background:"white",
+  padding:"18px",
+  boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
+  borderRadius:"4px",
+  transform:"rotate(-2deg)"
 }}>
 
 <div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
@@ -533,20 +536,23 @@ transform:"translateX(-50%)"
 }}/>
 
 {/* evento 2 */}
+<div 
+  data-aos="fade-left"
+  style={{
+    display:"flex",
+    justifyContent:"flex-end",
+    marginBottom:"80px",
+    padding:"0 20px"
+  }}
+>
 <div style={{
-display:"flex",
-justifyContent:"flex-end",
-marginBottom:"80px",
-padding:"0 20px"
-}}>
-<div style={{
-width:"45%",
-paddingRight:"40px",
-background:"white",
-padding:"18px",
-boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
-borderRadius:"4px",
-transform:"rotate(2deg)"
+  width:"45%",
+  paddingRight:"40px",
+  background:"white",
+  padding:"18px",
+  boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
+  borderRadius:"4px",
+  transform:"rotate(2deg)"
 }}>
 <div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
   <Image
@@ -590,16 +596,19 @@ transform:"translateX(-50%)"
 }}/>
 
 {/* evento 3 */}
+<div 
+  data-aos="fade-right"
+  style={{
+    display:"flex",
+    justifyContent:"flex-start"
+  }}
+>
 <div style={{
-display:"flex",
-justifyContent:"flex-start"
-}}>
-<div style={{
-width:"45%",
-background:"white",
-padding:"20px",
-boxShadow:"0 10px 25px rgba(0,0,0,0.08)",
-borderRadius:"8px"
+  width:"45%",
+  background:"white",
+  padding:"20px",
+  boxShadow:"0 10px 25px rgba(0,0,0,0.08)",
+  borderRadius:"8px"
 }}>
 
 <div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
@@ -1087,16 +1096,23 @@ fontSize:"13px"
 </span>
 </div>
 
-{openFAQ === index && (
-<p style={{
-marginTop:"15px",
-fontFamily:"var(--font-elegant)",
-lineHeight:"1.8",
-color:"#5a5048"
-}}>
-{item.a}
-</p>
-)}
+<div
+  style={{
+    maxHeight: openFAQ === index ? "120px" : "0px",
+    opacity: openFAQ === index ? 1 : 0,
+    overflow: "hidden",
+    transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, margin-top 0.4s ease",
+    marginTop: openFAQ === index ? "15px" : "0px"
+  }}
+>
+  <p style={{
+    fontFamily:"var(--font-elegant)",
+    lineHeight:"1.8",
+    color:"#5a5048"
+  }}>
+    {item.a}
+  </p>
+</div>
 
 </div>
 

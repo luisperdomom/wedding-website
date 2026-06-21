@@ -85,12 +85,52 @@ h1,h2,h3{
 
 /* botones */
 
+@keyframes gold-shine {
+  0% {
+    left: -100%;
+  }
+  35%, 100% {
+    left: 125%;
+  }
+}
+
 .button{
   padding:12px 28px;
   border-radius:30px;
   text-decoration:none;
   font-size:14px;
   letter-spacing:1px;
+  display:inline-block;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(199, 162, 124, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: gold-shine 4.5s infinite ease-in-out;
+}
+
+.button:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(199, 162, 124, 0.2);
+  opacity: 0.95;
+}
+
+.button:active {
+  transform: translateY(0px) scale(0.98);
 }
 
 /* botón claro */

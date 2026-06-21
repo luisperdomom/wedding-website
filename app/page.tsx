@@ -12,6 +12,7 @@ import MusicPlayer from "@/components/MusicPlayer"
 import Gallery from "@/components/Gallery"
 import RSVPForm from "@/components/RSVPForm"
 import Image from "next/image"
+import GoldenPetals from "@/components/GoldenPetals"
 
 function Divider(){
   return(
@@ -87,6 +88,15 @@ const [showGift,setShowGift] = useState(false)
 const [menuOpen,setMenuOpen] = useState(false)
 const [openFAQ,setOpenFAQ] = useState<number | null>(null)
 
+const [copiedText, setCopiedText] = useState<string | null>(null)
+
+const handleCopyAccount = (text: string) => {
+  navigator.clipboard.writeText(text).then(() => {
+    setCopiedText(text)
+    setTimeout(() => setCopiedText(null), 2500)
+  })
+}
+
 useEffect(()=>{
   AOS.init({
     duration: 1000,
@@ -101,6 +111,8 @@ fontFamily:"serif",
 background:"#faf8f5",
 color:"#333"
 }}>
+
+<GoldenPetals />
 
 {/* NAVBAR */}
 
@@ -128,6 +140,8 @@ onClick={()=>setMenuOpen(!menuOpen)}
 <a href="#galeria" onClick={()=>setMenuOpen(false)}>Galería</a>
 
 <a href="#evento" onClick={()=>setMenuOpen(false)}>Evento</a>
+
+<a href="#vestimenta" onClick={()=>setMenuOpen(false)}>Vestimenta</a>
 
 <a href="#faq" onClick={()=>setMenuOpen(false)}>FAQ</a>
 
@@ -821,6 +835,161 @@ Hospedaje· OPCIÓN 4
 </section>
 
 
+{/* CÓDIGO DE VESTIMENTA */}
+<section id="vestimenta" className="section-light" style={{ textAlign: "center", position: "relative" }}>
+  <div className="divider"></div>
+
+  <h2 
+    className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#3b2b20]"
+    style={{ fontFamily: "var(--font-elegant)" }}
+  >
+    Código de Vestimenta
+  </h2>
+
+  <p 
+    className="mb-8 tracking-[0.3px] text-[20px] text-[#8a8178] max-w-[700px] mx-auto leading-relaxed px-4"
+    style={{ fontFamily: "var(--font-elegant)" }}
+  >
+    Para acompañarnos en este gran día, les sugerimos un estilo <strong style={{ color: "#3b2b20", fontWeight: 400 }}>Formal Campestre</strong>.
+  </p>
+
+  <div style={{
+    maxWidth: "900px",
+    margin: "40px auto",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "40px",
+    padding: "0 20px"
+  }}>
+    {/* DAMAS */}
+    <div style={{
+      background: "white",
+      padding: "28px",
+      borderRadius: "12px",
+      boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+      border: "1px solid #e5e0d8"
+    }}>
+      <span className="text-3xl">👗</span>
+      <h3 
+        className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
+        style={{ fontFamily: "var(--font-elegant)" }}
+      >
+        Damas
+      </h3>
+      <p 
+        className="text-sm text-[#8a8178] leading-relaxed"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Vestido largo formal o midi, en telas frescas y fluidas con caída elegante (como satín, seda, lino o crepé). Sugerimos colores inspirados en la naturaleza: tonos tierra, oliva, salvia, terracota, ocre o rosa empolvado. <br />
+        <span className="text-xs italic text-[#C7A27C] block mt-1.5">* Se solicita evitar el uso de blanco, marfil, crema o azul.</span>
+      </p>
+    </div>
+
+    {/* CABALLEROS */}
+    <div style={{
+      background: "white",
+      padding: "28px",
+      borderRadius: "12px",
+      boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+      border: "1px solid #e5e0d8"
+    }}>
+      <span className="text-3xl">👔</span>
+      <h3 
+        className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
+        style={{ fontFamily: "var(--font-elegant)" }}
+      >
+        Caballeros
+      </h3>
+      <p 
+        className="text-sm text-[#8a8178] leading-relaxed"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Traje formal de lino o algodón en tonos claros (como beige, arena o azul claro), o guayabera blanca de manga larga con pantalón de vestir de tono neutro y calzado tipo mocasín.
+      </p>
+    </div>
+  </div>
+
+  {/* PALETA DE COLORES */}
+  <div style={{ margin: "50px auto 30px auto", maxWidth: "750px" }}>
+    <h4 
+      className="text-xs uppercase tracking-[3px] text-[#8a8178] mb-6 font-bold"
+      style={{ fontFamily: "var(--font-elegant)" }}
+    >
+      Paleta de Colores Sugerida
+    </h4>
+    <div className="flex justify-center gap-5 flex-wrap px-4">
+      {[
+        { color: "#F4C2C2", name: "Blush Pink" },
+        { color: "#8F9E8B", name: "Sage Green" },
+        { color: "#79806C", name: "Salvia" },
+        { color: "#F9F6EE", name: "Ivory" },
+        { color: "#E6E6FA", name: "Lavender" },
+        { color: "#E5E4E2", name: "Light Grey" },
+        { color: "#BDFCC9", name: "Mint Green" },
+        { color: "#FDF6E2", name: "Cream" },
+        { color: "#E1D7C6", name: "Beige" },
+        { color: "#FFE5B4", name: "Peach" },
+        { color: "#F7E5A9", name: "Butter Yellow" },
+        { color: "#DCD0FF", name: "Lilac" },
+        { color: "#D09E9E", name: "Dusty Rose" },
+        { color: "#A9D39E", name: "Pistachio Green" }
+      ].map((item, i) => (
+        <div key={i} className="flex flex-col items-center gap-1.5 group cursor-help" style={{ minWidth: "80px" }}>
+          <div 
+            style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              backgroundColor: item.color,
+              border: "2px solid white",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              transition: "transform 0.3s ease"
+            }}
+            className="hover:scale-110"
+          />
+          <span className="text-[9px] tracking-[0.5px] text-[#8a8178] uppercase text-center" style={{ fontFamily: "var(--font-elegant)" }}>
+            {item.name}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* GALERÍA DE INSPIRACIÓN */}
+  <div style={{ marginTop: "60px", padding: "0 20px" }}>
+    <h4 
+      className="text-xs uppercase tracking-[3px] text-[#8a8178] mb-6 font-bold"
+      style={{ fontFamily: "var(--font-elegant)" }}
+    >
+      Inspiraciones de Vestuario
+    </h4>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 max-w-[1150px] mx-auto">
+      {[
+        { src: "/codigo2.jpeg", label: "Inspiración 1" },
+        { src: "/codigo5.jpeg", label: "Inspiración 2" },
+        { src: "/codigo3.jpeg", label: "Inspiración 3" },
+        { src: "/codigo4.jpeg", label: "Inspiración 4" },
+        { src: "/codigo6.jpeg", label: "Inspiración 5" }
+      ].map((img, i) => (
+        <div 
+          key={i}
+          className="relative w-full h-[340px] rounded-lg overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-[#e5e0d8] group"
+        >
+          <Image
+            src={img.src}
+            alt={img.label}
+            fill
+            sizes="(max-width: 640px) 50vw, 250px"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
 {/* PLAYLIST */}
 
 <section className="section-light" style={{textAlign:"center"}}>
@@ -942,10 +1111,29 @@ BANCO POPULAR
 
 <p style={{
 fontFamily:"var(--font-body)",
-lineHeight:"1.6",
+lineHeight:"1.8",
 color:"#e6ddd5"
 }}>
-Cuenta corriente: 816921621<br/>
+Cuenta corriente: <strong style={{color:"#fff"}}>816921621</strong>
+<button
+  onClick={() => handleCopyAccount("816921621")}
+  style={{
+    marginLeft: "10px",
+    background: "none",
+    border: `1px solid ${copiedText === "816921621" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
+    color: copiedText === "816921621" ? "#a8c3a0" : "#c7a27c",
+    cursor: "pointer",
+    fontSize: "11px",
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "1px",
+    padding: "3px 10px",
+    borderRadius: "15px",
+    transition: "all 0.25s ease"
+  }}
+>
+  {copiedText === "816921621" ? "¡Copiado! ✓" : "📋 Copiar"}
+</button>
+<br/>
 Titular: Ailyn Santana
 </p>
 </div>
@@ -971,10 +1159,29 @@ BHD
 
 <p style={{
 fontFamily:"var(--font-body)",
-lineHeight:"1.6",
+lineHeight:"1.8",
 color:"#e6ddd5"
 }}>
-Cuenta de ahorro: 34139820016<br/>
+Cuenta de ahorro: <strong style={{color:"#fff"}}>34139820016</strong>
+<button
+  onClick={() => handleCopyAccount("34139820016")}
+  style={{
+    marginLeft: "10px",
+    background: "none",
+    border: `1px solid ${copiedText === "34139820016" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
+    color: copiedText === "34139820016" ? "#a8c3a0" : "#c7a27c",
+    cursor: "pointer",
+    fontSize: "11px",
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "1px",
+    padding: "3px 10px",
+    borderRadius: "15px",
+    transition: "all 0.25s ease"
+  }}
+>
+  {copiedText === "34139820016" ? "¡Copiado! ✓" : "📋 Copiar"}
+</button>
+<br/>
 Titular: Ailyn Santana
 </p>
 
@@ -1001,10 +1208,29 @@ BANRESERVAS
 
 <p style={{
 fontFamily:"var(--font-body)",
-lineHeight:"1.6",
+lineHeight:"1.8",
 color:"#e6ddd5"
 }}>
-Cuenta de ahorro: 9606316788<br/>
+Cuenta de ahorro: <strong style={{color:"#fff"}}>9606316788</strong>
+<button
+  onClick={() => handleCopyAccount("9606316788")}
+  style={{
+    marginLeft: "10px",
+    background: "none",
+    border: `1px solid ${copiedText === "9606316788" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
+    color: copiedText === "9606316788" ? "#a8c3a0" : "#c7a27c",
+    cursor: "pointer",
+    fontSize: "11px",
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "1px",
+    padding: "3px 10px",
+    borderRadius: "15px",
+    transition: "all 0.25s ease"
+  }}
+>
+  {copiedText === "9606316788" ? "¡Copiado! ✓" : "📋 Copiar"}
+</button>
+<br/>
 Titular: Luis Perdomo
 </p>
 

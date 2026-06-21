@@ -152,9 +152,9 @@ if (isValidGuest === false) {
         border: "1px solid #e5e0d8",
         zIndex: 20
       }}>
-        <div style={{ position: "relative", width: "90px", height: "90px", margin: "0 auto 20px auto" }}>
+        <div style={{ position: "relative", width: "95px", height: "95px", margin: "0 auto 20px auto" }}>
           <Image
-            src="/logo.png"
+            src="/logo2.jpeg"
             alt="Logo Luis & Ailyn"
             fill
             className="object-contain"

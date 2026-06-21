@@ -3,10 +3,15 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { db } from "../firebase"
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore"
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
+import Countdown from "@/components/Countdown"
+import MusicPlayer from "@/components/MusicPlayer"
+import Gallery from "@/components/Gallery"
+import RSVPForm from "@/components/RSVPForm"
+import Image from "next/image"
 
 function Divider(){
   return(
@@ -26,186 +31,68 @@ function PageContent(){
 // wedding date
 const weddingDate = new Date("2026-12-12T16:00:00")
 
-// invitados permitidos
-const guestList: Record<string,{name:string,token:string}> = {
-
-"luis-perdomo": {
-name:"Luis Perdomo",
-token:"A82J9K"
-},
-
-"ailyn-santana": {
-name:"Ailyn Santana",
-token:"X9Q3LM"
-},
-
-"juan-perez": {
-name:"Juan Perez",
-token:"P4T7ZD"
-},
-
-"maria-gomez": {
-name:"Maria Gomez",
-token:"K8W2BV"
-},
-
-"benito-martinez": {
-name:"Benito Martinez",
-token:"M5N1XY"
-},
-
-"sofia-ramirez": {
-name:"Sofia Ramirez",
-token:"Q8W2BV"
-},
-
-"aaron-judge": {
-name:"Aaron Judge",
-token:"R9T3LM"
-}
-
-}
-
 // leer parametro del link
 const params = useSearchParams()
 const guestId = params.get("guest")
 const token = params.get("token") 
 
-// verificar si está invitado
-const guest = guestId ? guestList[guestId] : null
-const guestName = guest?.name
-
-//Validar Token
-const isValidGuest = guest && token === guest.token
-
-//Respuesta registrada
-const [alreadyAnswered,setAlreadyAnswered] = useState(false)
-
-useEffect(()=>{
-
-async function checkRSVP(){
-
-if(!guestName) return
-
-const q = query(
-collection(db,"rsvp"),
-where("guestId","==",guestId)
-)
-
-const snapshot = await getDocs(q)
-
-if(!snapshot.empty){
-setAlreadyAnswered(true)
-}
-
-}
-
-checkRSVP()
-
-},[guestName])
-
-// estados
-const [attending,setAttending] = useState("Sí asistiré")
-const [timeLeft, setTimeLeft] = useState("")
-
-
+// estados dinámicos de validación
+const [guestName, setGuestName] = useState<string | null>(null)
+const [isValidGuest, setIsValidGuest] = useState<boolean | null>(null) // null = cargando, true = válido, false = inválido
+const [alreadyAnswered, setAlreadyAnswered] = useState(false)
 
 useEffect(() => {
+  async function verifyGuest() {
+    if (!guestId || !token) {
+      setIsValidGuest(false)
+      return
+    }
 
-const interval = setInterval(() => {
+    try {
+      const guestRef = doc(db, "guests", guestId)
+      const guestSnap = await getDoc(guestRef)
 
-const now = new Date().getTime()
-const distance = weddingDate.getTime() - now
+      if (guestSnap.exists()) {
+        const guestData = guestSnap.data()
+        if (guestData.token === token) {
+          setGuestName(guestData.name)
+          setIsValidGuest(true)
 
-const days = Math.floor(distance / (1000 * 60 * 60 * 24))
-const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+          // Verificar si ya tiene respuesta registrada
+          const q = query(
+            collection(db, "rsvp"),
+            where("guestId", "==", guestId)
+          )
+          const snapshot = await getDocs(q)
+          if (!snapshot.empty) {
+            setAlreadyAnswered(true)
+          }
+        } else {
+          setIsValidGuest(false)
+        }
+      } else {
+        setIsValidGuest(false)
+      }
+    } catch (error) {
+      console.error("Error al validar invitado:", error)
+      setIsValidGuest(false)
+    }
+  }
 
-setTimeLeft(
-`${formatNumber(days)}:${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`
-)
+  verifyGuest()
+}, [guestId, token])
 
-},1000)
-
-return () => clearInterval(interval)
-
-},[])
-
-const [time,setTime] = useState("")
-const [submitted,setSubmitted] = useState(false)
-const [playing,setPlaying] = useState(false)
-
+// estados
 const [showGift,setShowGift] = useState(false)
-
-const totalPhotos = 22
-const [selectedImage,setSelectedImage] = useState<number | null>(null)
-
 const [menuOpen,setMenuOpen] = useState(false)
-
 const [openFAQ,setOpenFAQ] = useState<number | null>(null)
 
-const formatNumber = (num:number) => {
-  return num.toString().padStart(2,"0")
-}
-
 useEffect(()=>{
-
-AOS.init()
-
-const interval = setInterval(()=>{
-
-const now = new Date()
-
-const diff = weddingDate.getTime() - now.getTime()
-
-const days = Math.floor(diff/(1000*60*60*24))
-const hours = Math.floor((diff/(1000*60*60))%24)
-const minutes = Math.floor((diff/(1000*60))%60)
-
-setTime(`${days} ${hours} ${minutes}`)
-
-},1000)
-
-return ()=>clearInterval(interval)
-
+  AOS.init({
+    duration: 1000,
+    once: true
+  })
 },[])
-
-async function handleSubmit(e:any){
-
-e.preventDefault()
-
-if(alreadyAnswered){
-alert("Ya hemos recibido tu confirmación.")
-return
-}
-
-await addDoc(collection(db,"rsvp"),{
-
-guestId: guestId,
-guestName: guestName,
-attending: attending,
-created: new Date()
-
-})
-
-setSubmitted(true)
-
-}
-
-function toggleMusic(){
-
-const audio = document.getElementById("music") as HTMLAudioElement
-
-if(playing){
-audio.pause()
-}else{
-audio.play()
-}
-
-setPlaying(!playing)
-
-}
 
 return(
 
@@ -419,18 +306,15 @@ de esta nueva etapa juntos.
 
 {/* FLOR DECORATIVA */}
 
-<img
-src="/floral.png"
-alt=""
-style={{
-position:"absolute",
-right:"-60px",
-top:"120px",
-width:"420px",
-opacity:"0.35",
-pointerEvents:"none"
-}}
-/>
+<div style={{ position: "absolute", right: "-60px", top: "120px", width: "420px", height: "420px", opacity: 0.35, pointerEvents: "none" }}>
+  <Image
+    src="/floral.png"
+    alt=""
+    fill
+    sizes="420px"
+    className="object-contain"
+  />
+</div>
 
 </div>
 
@@ -446,69 +330,7 @@ Luis & Ailyn
 
 </div>
 
-<section className="section-dark">
-
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(24px, 4vw, 42px)",
-marginBottom:"30px"
-}}>
-Nuestro para siempre comienza en
-</h2>
-
-<div style={{
-display:"flex",
-justifyContent:"center",
-flexWrap:"wrap",
-gap:"20px",
-marginTop:"40px"
-}}>
-
-{timeLeft.split(":").map((time,index)=>{
-
-const labels = ["DÍAS","HORAS","MIN","SEG"]
-
-return (
-<div
-key={index}
-style={{
-minWidth:"100px",
-padding:"20px",
-border:"1px solid rgba(255,255,255,0.15)",
-borderRadius:"8px",
-background:"rgba(255,255,255,0.03)"
-}}
->
-
-<div style={{
-fontFamily:"var(--font-elegant)",
-fontSize:"clamp(30px, 6vw, 50px)",
-fontWeight:300
-}}>
-{time.trim()}
-</div>
-
-<p style={{
-marginTop:"10px",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"3px",
-fontSize:"11px",
-opacity:"0.7"
-}}>
-{labels[index]}
-</p>
-
-</div>
-)
-
-})}
-
-</div>
-
-</section>
+<Countdown targetDate="2026-12-12T16:00:00" />
 
 <section
 data-aos="fade-up"
@@ -599,18 +421,15 @@ position:"relative"
 }}
 >
 
-<img
-  src="/floral-top.png"
-  style={{
-    position:"absolute",
-    top:"-40px",
-    left:"0",
-    width:"280px",
-    opacity:0.45,
-    pointerEvents:"none",
-    filter:"sepia(1) saturate(3) hue-rotate(90deg) brightness(0.45)"
-  }}
-/>
+<div style={{ position: "absolute", top: "-40px", left: "0", width: "280px", height: "200px", opacity: 0.45, pointerEvents: "none", filter: "sepia(1) saturate(3) hue-rotate(90deg) brightness(0.45)" }}>
+  <Image
+    src="/floral-top.png"
+    alt=""
+    fill
+    sizes="280px"
+    className="object-contain object-left-top"
+  />
+</div>
   
 <h2 style={{
 fontFamily:"var(--font-elegant)",
@@ -672,16 +491,15 @@ borderRadius:"4px",
 transform:"rotate(-2deg)"
 }}>
 
-<img
-src="/story1.jpg"
-style={{
-width:"100%",
-maxHeight:"clamp(180px, 35vw, 260px)",
-objectFit:"cover",
-borderRadius:"6px",
-marginBottom:"10px"
-}}
-/>
+<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
+  <Image
+    src="/story1.jpg"
+    alt="Donde todo comenzó"
+    fill
+    sizes="(max-width: 768px) 100vw, 400px"
+    className="object-cover rounded-[6px]"
+  />
+</div>
 
 <h3 style={{
 fontFamily:"var(--font-elegant)",
@@ -730,16 +548,15 @@ boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
 borderRadius:"4px",
 transform:"rotate(2deg)"
 }}>
-<img
-src="/story2.jpg"
-style={{
-width:"100%",
-maxHeight:"clamp(180px, 35vw, 260px)",
-objectFit:"cover",
-borderRadius:"6px",
-marginBottom:"10px"
-}}
-/>
+<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
+  <Image
+    src="/story2.jpg"
+    alt="Nuestro primer viaje juntos"
+    fill
+    sizes="(max-width: 768px) 100vw, 400px"
+    className="object-cover rounded-[6px]"
+  />
+</div>
 
 <h3 style={{
 fontFamily:"var(--font-elegant)",
@@ -785,16 +602,15 @@ boxShadow:"0 10px 25px rgba(0,0,0,0.08)",
 borderRadius:"8px"
 }}>
 
-<img
-src="/story3.jpg"
-style={{
-width:"100%",
-maxHeight:"clamp(180px, 35vw, 260px)",
-objectFit:"cover",
-borderRadius:"6px",
-marginBottom:"10px"
-}}
-/>
+<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
+  <Image
+    src="/story3.jpg"
+    alt="La propuesta"
+    fill
+    sizes="(max-width: 768px) 100vw, 400px"
+    className="object-cover rounded-[6px]"
+  />
+</div>
 
 <h3 style={{
 fontFamily:"var(--font-elegant)",
@@ -820,243 +636,9 @@ La propuesta
 
 </section>
 
-{/* MUSICA */}
+<MusicPlayer />
 
-<section className="section-light" style={{textAlign:"center"}}>
-
-<div className="divider"></div>
-
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px",
-color:"#3b2b20"
-}}>
-Nuestra Canción
-</h2>
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-La música siempre ha sido parte de nuestra historia.
-Esta canción representa momentos, recuerdos
-y todo lo que sentimos al comenzar esta nueva etapa juntos.
-</p>
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"2px",
-fontSize:"12px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-🎧 DALE PLAY PARA ESCUCHAR NUESTRA CANCIÓN
-</p>
-
-<audio id="music" loop>
-<source src="/song.mp3" type="audio/mpeg"/>
-</audio>
-
-<button
-onClick={toggleMusic}
-className="button button-dark"
-style={{
-fontSize:"14px",
-letterSpacing:"2px",
-fontFamily:"var(--font-elegant)"
-}}
->
-{playing ? "⏸ Pausar música" : "▶ Reproducir música"}
-</button>
-
-</section>
-
-{/* GALERIA */}
-
-<div id="galeria" className="section-light" data-aos="zoom-in">
-
-<div className="divider"></div>
-
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px",
-color:"#3b2b20"
-}}>
-Galería
-</h2>
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Momentos de nuestra sesión de pre-boda,
-recuerdos que guardaremos para siempre.
-</p>
-
-
-<div style={{
-display:"grid",
-gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",
-gap:"22px",
-maxWidth:"1000px",
-margin:"0 auto"
-}}>
-
-{Array.from({length:22}, (_,i)=>i+1).map((n)=>(
-<img
-key={n}
-src={`/photo${n}.webp`}
-loading="lazy"
-onClick={()=>setSelectedImage(n)}
-style={{
-width:"100%",
-height:"clamp(160px, 30vw, 260px)",
-objectFit:"cover",
-borderRadius:"6px",
-cursor:"pointer",
-transition:"all .35s ease",
-boxShadow:"0 8px 25px rgba(0,0,0,0.08)"
-}}
-onMouseOver={(e)=>{
-e.currentTarget.style.transform="scale(1.05)"
-e.currentTarget.style.boxShadow="0 15px 35px rgba(0,0,0,0.15)"
-}}
-onMouseOut={(e)=>{
-e.currentTarget.style.transform="scale(1)"
-e.currentTarget.style.boxShadow="0 8px 25px rgba(0,0,0,0.08)"
-}}
-/>
-))}
-
-</div>
-
-
-{/* VISOR FULLSCREEN */}
-
-{selectedImage && (
-
-<div
-onClick={()=>setSelectedImage(null)}
-style={{
-position:"fixed",
-top:0,
-left:0,
-width:"100%",
-height:"100vh",
-background:"rgba(30,20,15,0.92)",
-display:"flex",
-alignItems:"center",
-justifyContent:"center",
-zIndex:2000
-}}
->
-
-{/* BOTON CERRAR */}
-
-<div
-onClick={()=>setSelectedImage(null)}
-style={{
-position:"absolute",
-top:"30px",
-right:"30px",
-fontSize:"28px",
-color:"#f5f1ea",
-cursor:"pointer",
-letterSpacing:"2px",
-fontFamily:"var(--font-elegant)"
-}}>
-✕
-</div>
-
-
-{/* FLECHA IZQUIERDA */}
-
-<div
-onClick={(e)=>{
-e.stopPropagation()
-setSelectedImage(prev =>
-prev === 1 ? totalPhotos : prev! - 1
-)
-}}
-style={{
-position:"absolute",
-left:"20px",
-fontSize:"40px",
-color:"white",
-cursor:"pointer"
-}}
->
-‹
-</div>
-
-
-{/* IMAGEN */}
-
-<img
-  src={`/photo${selectedImage}.webp`}
-  style={{
-    maxWidth:"min(500px,90%)",
-    maxHeight:"80vh",
-    width:"100%",
-    borderRadius:"8px",
-    boxShadow:"0 20px 60px rgba(0,0,0,0.45)"
-  }}
-/>
-
-
-{/* FLECHA DERECHA */}
-
-<div
-onClick={(e)=>{
-e.stopPropagation()
-setSelectedImage(prev =>
-prev === totalPhotos ? 1 : prev! + 1
-)
-}}
-style={{
-position:"absolute",
-right:"20px",
-fontSize:"40px",
-color:"white",
-cursor:"pointer"
-}}
->
-›
-</div>
-
-
-{/* CONTADOR */}
-
-<div
-style={{
-position:"absolute",
-bottom:"30px",
-color:"white",
-fontSize:"16px"
-}}
->
-{selectedImage} / {totalPhotos}
-</div>
-
-</div>
-
-)}
-
-</div>
+<Gallery />
 
 {/* EVENTO */}
 
@@ -1525,133 +1107,13 @@ color:"#5a5048"
 </section>
 
 {/* RSVP */}
-
-<section id="rsvp" className="section-light" style={{textAlign:"center"}}>
-
-<div className="divider"></div>
-
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px",
-color:"#3b2b20"
-}}>
-Confirmar asistencia
-</h2>
-
-{/* SALUDO */}
-{guestName && (
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"16px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Hola <strong>{guestName}</strong>, nos encantará contar contigo
-</p>
-)}
-
-{/* TEXTO */}
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"16px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Invitación personal e intransferible.  
-Debido a la capacidad del evento, no será posible incluir acompañantes adicionales.
-</p>
-
-{/* VALIDACIONES */}
-{!isValidGuest ? (
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"16px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Esta invitación es personal.  
-Por favor utiliza el enlace que recibiste para confirmar tu asistencia.
-</p>
-
-) : alreadyAnswered ? (
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Ya hemos recibido tu confirmación.  
-¡Muchas gracias! 💛
-</p>
-
-) : submitted ? (
-
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Gracias por confirmar ❤️
-</p>
-
-) : (
-
-<form
-onSubmit={handleSubmit}
-style={{
-maxWidth:"420px",
-margin:"40px auto",
-display:"flex",
-flexDirection:"column",
-gap:"16px"
-}}
->
-
-<select
-value={attending}
-onChange={(e)=>setAttending(e.target.value)}
-style={{
-padding:"12px",
-borderRadius:"6px",
-border:"1px solid #e5e0d8",
-fontSize:"14px",
-fontFamily:"var(--font-body)"
-}}
->
-<option>Sí asistiré</option>
-<option>No podré asistir</option>
-</select>
-
-<button
-type="submit"
-className="button button-dark"
-style={{
-marginTop:"10px",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
->
-CONFIRMAR ASISTENCIA
-</button>
-
-</form>
-
-)}
-
-</section>
+<RSVPForm
+  guestId={guestId}
+  guestName={guestName}
+  isValidGuest={isValidGuest}
+  alreadyAnswered={alreadyAnswered}
+  setAlreadyAnswered={setAlreadyAnswered}
+/>
 
 {/* FOOTER FINAL */}
 

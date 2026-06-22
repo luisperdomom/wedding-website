@@ -41,6 +41,8 @@ const token = params.get("token")
 const [guestName, setGuestName] = useState<string | null>(null)
 const [isValidGuest, setIsValidGuest] = useState<boolean | null>(null) // null = cargando, true = válido, false = inválido
 const [alreadyAnswered, setAlreadyAnswered] = useState(false)
+const [guestAttendingChoice, setGuestAttendingChoice] = useState<string | null>(null)
+const [isExpired, setIsExpired] = useState(false)
 
 useEffect(() => {
   async function verifyGuest() {
@@ -59,6 +61,17 @@ useEffect(() => {
           setGuestName(guestData.name)
           setIsValidGuest(true)
 
+          // Verificar si ha expirado la invitación (validez de 7 días)
+          if (guestData.createdAt) {
+            const createdTime = guestData.createdAt.toDate 
+              ? guestData.createdAt.toDate().getTime() 
+              : new Date(guestData.createdAt).getTime()
+              
+            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
+            const isExpiredTime = Date.now() > (createdTime + sevenDaysInMs)
+            setIsExpired(isExpiredTime)
+          }
+
           // Verificar si ya tiene respuesta registrada
           const q = query(
             collection(db, "rsvp"),
@@ -67,6 +80,8 @@ useEffect(() => {
           const snapshot = await getDocs(q)
           if (!snapshot.empty) {
             setAlreadyAnswered(true)
+            const rsvpData = snapshot.docs[0].data()
+            setGuestAttendingChoice(rsvpData.attending)
           }
         } else {
           setIsValidGuest(false)
@@ -253,6 +268,8 @@ onClick={()=>setMenuOpen(!menuOpen)}
 <a href="#evento" onClick={()=>setMenuOpen(false)}>Evento</a>
 
 <a href="#vestimenta" onClick={()=>setMenuOpen(false)}>Vestimenta</a>
+
+<a href="#regalos" onClick={()=>setMenuOpen(false)}>Regalos</a>
 
 <a href="#faq" onClick={()=>setMenuOpen(false)}>FAQ</a>
 
@@ -516,59 +533,111 @@ Nuestra Historia
 </h2>
 
 <div style={{
-maxWidth:"700px",
-margin:"80px auto",
-textAlign:"center"
+  maxWidth: "1050px",
+  margin: "60px auto",
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+  gap: "50px",
+  alignItems: "center",
+  padding: "0 24px"
 }}>
-{/* PÁRRAFO 1 */}
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Nos conocimos trabajando en un call center.  
-La primera vez que hablamos fue cuando Luis preguntó  
-a qué hora ella tomaría su almuerzo para saber  
-cuándo le tocaba salir a él.
-</p>
 
-{/* PÁRRAFO 2 */}
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Lo que empezó como una conversación casual  
-se convirtió en una amistad, luego en algo mucho más.
-</p>
+  {/* COLUMNA 1: RETRATO DE LA PAREJA (FOTO PRINCIPAL) */}
+  <div 
+    data-aos="fade-right"
+    style={{
+      position: "relative",
+      width: "100%",
+      height: "540px",
+      borderRadius: "16px",
+      overflow: "hidden",
+      boxShadow: "0 15px 40px rgba(58, 42, 35, 0.08)",
+      border: "1px solid rgba(199, 162, 124, 0.15)"
+    }}
+  >
+    <Image
+      src="/Couple.jpg"
+      alt="Luis & Ailyn"
+      fill
+      className="object-cover"
+      priority
+    />
+  </div>
 
-{/* FRASE DESTACADA */}
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Y sin darnos cuenta, comenzó nuestra historia.
-</p>
+  {/* COLUMNA 2: TEXTO DE NUESTRA HISTORIA */}
+  <div style={{ textAlign: "left" }}>
+    
+    {/* ICONO VECTORIAL - DESTINOS CRUZADOS */}
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#c7a27c" strokeWidth="1.2" style={{ marginBottom: "25px", opacity: 0.8, display: "block" }}>
+      <path d="M5 20C15 20 20 15 20 5" />
+      <path d="M5 20C15 20 20 25 20 35" />
+      <path d="M35 20C25 20 20 15 20 5" />
+      <path d="M35 20C25 20 20 25 20 35" />
+      <circle cx="20" cy="20" r="2" fill="#c7a27c" />
+    </svg>
 
-{/* PÁRRAFO 3 */}
-<p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
-}}>
-Con el tiempo llegaron los viajes, las aventuras  
-y los momentos que hoy forman parte de nuestra historia.
-</p>
+    {/* PÁRRAFO 1 - CON LETRA CAPITAL (DROP CAP) */}
+    <p 
+      data-aos="fade-up"
+      data-aos-delay="0"
+      style={{
+        marginBottom:"35px",
+        letterSpacing:"0.3px",
+        fontSize:"16px",
+        color:"#5a5048",
+        fontFamily:"var(--font-serif)",
+        lineHeight:"2.1",
+        textAlign: "justify"
+      }}
+    >
+      <span style={{
+        float: "left",
+        fontFamily: "var(--font-serif)",
+        fontSize: "65px",
+        lineHeight: "45px",
+        paddingTop: "6px",
+        paddingRight: "10px",
+        color: "#c7a27c",
+        fontWeight: 300
+      }}>N</span>
+      uestra historia comenzó en el lugar menos pensado: el pasillo de un call center. Todo empezó con una pregunta de lo más simple para coordinar la hora de un almuerzo, una excusa que Luis encontró para hablar con Ailyn por primera vez.
+    </p>
 
+    {/* PÁRRAFO 2 */}
+    <p 
+      data-aos="fade-up"
+      data-aos-delay="200"
+      style={{
+        marginBottom:"35px",
+        letterSpacing:"0.3px",
+        fontSize:"16px",
+        color:"#5a5048",
+        fontFamily:"var(--font-serif)",
+        lineHeight:"2.1",
+        textAlign: "justify"
+      }}
+    >
+      Esa primera conversación casual se convirtió en risas del día a día, luego en una bonita amistad y, con el tiempo, en el amor más sincero de nuestras vidas.
+    </p>
+
+    {/* PÁRRAFO 3 */}
+    <p 
+      data-aos="fade-up"
+      data-aos-delay="400"
+      style={{
+        marginBottom:"0px",
+        letterSpacing:"0.3px",
+        fontSize:"16px",
+        color:"#5a5048",
+        fontFamily:"var(--font-serif)",
+        lineHeight:"2.1",
+        textAlign: "justify"
+      }}
+    >
+      Desde entonces, hemos compartido viajes, retos y un sinfín de momentos inolvidables. Hoy, estamos listos para dar el paso más importante y comenzar una nueva etapa juntos.
+    </p>
+
+  </div>
 </div>
 
 </section>
@@ -576,10 +645,10 @@ y los momentos que hoy forman parte de nuestra historia.
 <section
 id="timeline"
 style={{
-background:"#f6f3ee",
-padding:"120px 20px",
-textAlign:"center",
-position:"relative"
+  background:"#f6f3ee",
+  padding:"120px 20px",
+  textAlign:"center",
+  position:"relative"
 }}
 >
 
@@ -594,214 +663,141 @@ position:"relative"
 </div>
   
 <h2 style={{
-fontFamily:"var(--font-elegant)",
-fontSize:"clamp(32px, 6vw, 52px)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-marginBottom:"80px",
-color:"#3b2b20"
+  fontFamily:"var(--font-elegant)",
+  fontSize:"clamp(32px, 6vw, 52px)",
+  letterSpacing:"6px",
+  fontWeight:300,
+  textTransform:"uppercase",
+  marginBottom:"80px",
+  color:"#3b2b20"
 }}>
-Memory Lane
+  Memory Lane
 </h2>
 
-<div style={{
-position:"relative",
-maxWidth:"900px",
-margin:"auto",
-padding:"0 20px"
-}}>
+<div className="relative max-w-[900px] mx-auto px-4 md:px-5">
 
-{/* linea vertical */}
-<div style={{
-position:"absolute",
-left:"50%",
-top:"0",
-bottom:"0",
-width:"2px",
-background:"#e4ddd4",
-transform:"translateX(-50%)"
-}}/>
+  {/* Línea vertical central (responsiva) */}
+  <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-[1px] bg-[#e4ddd4] -translate-x-1/2" />
 
-<div style={{
-position:"absolute",
-left:"50%",
-top:"60px",
-width:"10px",
-height:"10px",
-background:"#c9a27e",
-borderRadius:"50%",
-transform:"translateX(-50%)"
-}}/>
+  {/* EVENTO 1 (2017) */}
+  <div 
+    data-aos="fade-right"
+    className="relative flex justify-start mb-16 pl-8 sm:pl-0 sm:justify-start"
+  >
+    {/* Bullet Node */}
+    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
 
+    <div className="w-full sm:w-[45%] sm:rotate-[-1.5deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
+      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
+        <img
+          src="/story1.jpg"
+          alt="2017 · El primer Hola"
+          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
+          loading="lazy"
+        />
+      </div>
 
-{/* evento 1 */}
-<div 
-  data-aos="fade-right"
-  style={{
-    display:"flex",
-    justifyContent:"flex-start",
-    marginBottom:"80px",
-    padding:"0 20px"
-  }}
->
+      <h3 style={{
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"3px",
+        fontSize:"18px",
+        fontWeight:300,
+        color:"#3b2b20",
+        marginBottom: "8px"
+      }}>
+        2017 · El primer "Hola"
+      </h3>
 
-<div style={{
-  width:"45%",
-  paddingLeft:"40px",
-  background:"white",
-  padding:"18px",
-  boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
-  borderRadius:"4px",
-  transform:"rotate(-2deg)"
-}}>
+      <p style={{
+        fontFamily:"var(--font-body)",
+        color:"#6b635b",
+        fontSize: "14px",
+        lineHeight:"1.6"
+      }}>
+        Entre llamadas y un almuerzo sincronizado por casualidad, así cruzamos nuestros caminos por primera vez.
+      </p>
+    </div>
+  </div>
 
-<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
-  <Image
-    src="/story1.jpg"
-    alt="Donde todo comenzó"
-    fill
-    sizes="(max-width: 768px) 100vw, 400px"
-    className="object-cover rounded-[6px]"
-  />
-</div>
+  {/* EVENTO 2 (2024 - VIAJE) */}
+  <div 
+    data-aos="fade-left"
+    className="relative flex justify-start pl-8 sm:pl-0 sm:justify-end mb-16"
+  >
+    {/* Bullet Node */}
+    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
 
-<h3 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"4px",
-fontWeight:300,
-color:"#6b705c"
-}}>
-2017
-</h3>
+    <div className="w-full sm:w-[45%] sm:rotate-[1.5deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
+      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
+        <img
+          src="/story2.jpg"
+          alt="2024 · Coleccionando Destinos"
+          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
+          loading="lazy"
+        />
+      </div>
 
-<p style={{
-fontFamily:"var(--font-body)",
-color:"#6b635b",
-lineHeight:"1.6"
-}}>
-Donde todo comenzó
-</p>
+      <h3 style={{
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"3px",
+        fontSize:"18px",
+        fontWeight:300,
+        color:"#3b2b20",
+        marginBottom: "8px"
+      }}>
+        2024 · Coleccionando Destinos
+      </h3>
 
-</div>
-</div>
+      <p style={{
+        fontFamily:"var(--font-body)",
+        color:"#6b635b",
+        fontSize: "14px",
+        lineHeight:"1.6"
+      }}>
+        Nuestro primer viaje juntos fuera del país, el inicio de nuestra tradición favorita de recorrer el mundo de la mano.
+      </p>
+    </div>
+  </div>
 
-<div style={{
-position:"absolute",
-left:"50%",
-top:"360px",
-width:"10px",
-height:"10px",
-background:"#c9a27e",
-borderRadius:"50%",
-transform:"translateX(-50%)"
-}}/>
+  {/* EVENTO 3 (2024 - PROPUESTA) */}
+  <div 
+    data-aos="fade-right"
+    className="relative flex justify-start pl-8 sm:pl-0 sm:justify-start"
+  >
+    {/* Bullet Node */}
+    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
 
-{/* evento 2 */}
-<div 
-  data-aos="fade-left"
-  style={{
-    display:"flex",
-    justifyContent:"flex-end",
-    marginBottom:"80px",
-    padding:"0 20px"
-  }}
->
-<div style={{
-  width:"45%",
-  paddingRight:"40px",
-  background:"white",
-  padding:"18px",
-  boxShadow:"0 20px 40px rgba(0,0,0,0.12)",
-  borderRadius:"4px",
-  transform:"rotate(2deg)"
-}}>
-<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
-  <Image
-    src="/story2.jpg"
-    alt="Nuestro primer viaje juntos"
-    fill
-    sizes="(max-width: 768px) 100vw, 400px"
-    className="object-cover rounded-[6px]"
-  />
-</div>
+    <div className="w-full sm:w-[45%] sm:rotate-[-1deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
+      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
+        <img
+          src="/story3.jpg"
+          alt="2024 · El Sí más esperado"
+          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
+          loading="lazy"
+        />
+      </div>
 
-<h3 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"4px",
-fontWeight:300,
-color:"#6b705c"
-}}>
-2024
-</h3>
+      <h3 style={{
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"3px",
+        fontSize:"18px",
+        fontWeight:300,
+        color:"#3b2b20",
+        marginBottom: "8px"
+      }}>
+        2024 · El "Sí" más esperado
+      </h3>
 
-<p style={{
-fontFamily:"var(--font-body)",
-color:"#6b635b",
-lineHeight:"1.6"
-}}>
-Nuestro primer viaje juntos
-</p>
-
-</div>
-</div>
-
-<div style={{
-position:"absolute",
-left:"50%",
-top:"600px",
-width:"12px",
-height:"12px",
-background:"#c9a27e",
-borderRadius:"50%",
-transform:"translateX(-50%)"
-}}/>
-
-{/* evento 3 */}
-<div 
-  data-aos="fade-right"
-  style={{
-    display:"flex",
-    justifyContent:"flex-start"
-  }}
->
-<div style={{
-  width:"45%",
-  background:"white",
-  padding:"20px",
-  boxShadow:"0 10px 25px rgba(0,0,0,0.08)",
-  borderRadius:"8px"
-}}>
-
-<div style={{ position: "relative", width: "100%", height: "240px", marginBottom: "10px" }}>
-  <Image
-    src="/story3.jpg"
-    alt="La propuesta"
-    fill
-    sizes="(max-width: 768px) 100vw, 400px"
-    className="object-cover rounded-[6px]"
-  />
-</div>
-
-<h3 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"4px",
-fontWeight:300,
-color:"#6b705c"
-}}>
-2024
-</h3>
-
-<p style={{
-fontFamily:"var(--font-body)",
-color:"#6b635b",
-lineHeight:"1.6"
-}}>
-La propuesta
-</p>
-
-</div>
-</div>
+      <p style={{
+        fontFamily:"var(--font-body)",
+        color:"#6b635b",
+        fontSize: "14px",
+        lineHeight:"1.6"
+      }}>
+        La propuesta. Un atardecer inolvidable que marcó el inicio del viaje definitivo de nuestras vidas.
+      </p>
+    </div>
+  </div>
 
 </div>
 
@@ -1105,95 +1101,290 @@ borderRadius:"8px"
 
 {/* WHERE TO STAY */}
 
-<section className="section-dark">
+<section className="section-dark !py-24">
 
 <h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px"
+  fontFamily:"var(--font-elegant)",
+  letterSpacing:"6px",
+  fontWeight:300,
+  textTransform:"uppercase",
+  fontSize:"clamp(26px, 5vw, 40px)",
+  marginBottom:"20px"
 }}>
-Dónde hospedarse
+  Dónde hospedarse
 </h2>
 
 <p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#e6ddd5",
-fontFamily:"var(--font-elegant)"
+  marginBottom:"40px",
+  letterSpacing:"0.3px",
+  fontSize:"18px",
+  color:"#e6ddd5",
+  fontFamily:"var(--font-serif)",
+  fontStyle: "italic",
+  maxWidth: "700px",
+  margin: "0 auto 50px auto",
+  lineHeight: "1.6",
+  padding: "0 20px"
 }}>
-Si deseas quedarte en el pueblo durante el fin de semana,
-te compartimos algunas opciones de hospedaje cercanas al lugar de la celebración.
-
-La disponibilidad puede variar, por lo que recomendamos reservar con anticipación.
+  "San José de Ocoa tiene rincones hermosos para descansar. Si desean quedarse en el pueblo durante el fin de semana para celebrar con calma, les compartimos algunas de nuestras opciones de hospedaje favoritas y cercanas al lugar del evento.<br /><br />
+  La disponibilidad en la montaña suele ser limitada, por lo que les sugerimos reservar con la mayor anticipación posible."
 </p>
 
+{/* GRID DE TARJETAS DE HOSPEDAJE */}
 <div style={{
-display:"grid",
-gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",
-gap:"20px",
-maxWidth:"600px",
-margin:"0 auto"
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "30px",
+  maxWidth: "1000px",
+  margin: "0 auto",
+  padding: "0 20px"
 }}>
 
-<a
-href="https://www.airbnb.com/rooms/1578611592370803713?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350534_P3tlWpq0WhEHqmon&previous_page_section_name=1000&federated_search_id=737daf10-e7c6-4653-aad5-572a1891177a"
-target="_blank"
-className="button button-light"
-style={{
-textAlign:"center",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
->
-Hospedaje· OPCIÓN 1
-</a>
+  {/* OPCIÓN 1: Entire Home */}
+  <div style={{
+    background: "rgba(255, 255, 255, 0.02)",
+    border: "1px solid rgba(199, 162, 124, 0.15)",
+    borderRadius: "16px",
+    padding: "30px 24px",
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: "260px"
+  }} className="hover:scale-[1.02] transition-all duration-300">
+    <div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+      <h3 style={{ fontFamily: "var(--font-elegant)", fontSize: "18px", letterSpacing: "2px", color: "#fff", marginBottom: "6px", fontWeight: 300 }}>
+        Residencia Completa
+      </h3>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#e6ddd5", lineHeight: "1.5", marginBottom: "8px" }}>
+        Casa de montaña espaciosa y acogedora en San José de Ocoa. Ideal para disfrutar en familia o en grupos de amigos con total privacidad.
+      </p>
 
-<a
-href="https://www.airbnb.com/rooms/45363133?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P3CRes561-lpuuBH&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
-target="_blank"
-className="button button-light"
-style={{
-textAlign:"center",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
->
-Hospedaje· OPCIÓN 2
-</a>
+      {/* Specs bar for Option 1 */}
+      <div style={{ 
+        display: "flex", 
+        flexWrap: "wrap", 
+        gap: "8px", 
+        marginBottom: "18px",
+        fontSize: "11px",
+        color: "#c7a27c",
+        fontFamily: "var(--font-elegant)",
+        letterSpacing: "0.5px"
+      }}>
+        <span>👥 5 huéspedes</span>
+        <span>·</span>
+        <span>🚪 2 habs</span>
+        <span>·</span>
+        <span>🛏️ 2 camas</span>
+        <span>·</span>
+        <span>🚿 1 baño</span>
+      </div>
+    </div>
+    <a
+      href="https://www.airbnb.com/rooms/1578611592370803713?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350534_P3tlWpq0WhEHqmon&previous_page_section_name=1000&federated_search_id=737daf10-e7c6-4653-aad5-572a1891177a"
+      target="_blank"
+      className="button button-light"
+      style={{
+        textAlign:"center",
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"2px",
+        fontSize:"12px",
+        width: "100%",
+        padding: "10px 0"
+      }}
+    >
+      Ver en Airbnb
+    </a>
+  </div>
 
-<a
-href="https://www.airbnb.com/rooms/1574242168305632524?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P37Gxra0V44o2pTh&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
-target="_blank"
-className="button button-light"
-style={{
-textAlign:"center",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
->
-Hospedaje· OPCIÓN 3
-</a>
+  {/* OPCIÓN 2: Entire Cottage */}
+  <div style={{
+    background: "rgba(255, 255, 255, 0.02)",
+    border: "1px solid rgba(199, 162, 124, 0.15)",
+    borderRadius: "16px",
+    padding: "30px 24px",
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: "260px"
+  }} className="hover:scale-[1.02] transition-all duration-300">
+    <div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+        <path d="M12 2L2 12h3v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8h3L12 2z" />
+      </svg>
+      <h3 style={{ fontFamily: "var(--font-elegant)", fontSize: "18px", letterSpacing: "2px", color: "#fff", marginBottom: "6px", fontWeight: 300 }}>
+        Cabaña de Ocoa
+      </h3>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#e6ddd5", lineHeight: "1.5", marginBottom: "8px" }}>
+        Cabaña rústica privada rodeada de la hermosa naturaleza de Ocoa. Una experiencia campestre auténtica y muy tranquila.
+      </p>
 
-<a
-href="https://www.airbnb.com/rooms/696995000546828193?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P3aJR9HndKSkFdaP&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
-target="_blank"
-className="button button-light"
-style={{
-textAlign:"center",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
->
-Hospedaje· OPCIÓN 4
-</a>
+      {/* Specs bar for Option 2 */}
+      <div style={{ 
+        display: "flex", 
+        flexWrap: "wrap", 
+        gap: "8px", 
+        marginBottom: "18px",
+        fontSize: "11px",
+        color: "#c7a27c",
+        fontFamily: "var(--font-elegant)",
+        letterSpacing: "0.5px"
+      }}>
+        <span>👥 5 huéspedes</span>
+        <span>·</span>
+        <span>🚪 2 habs</span>
+        <span>·</span>
+        <span>🛏️ 2 camas</span>
+        <span>·</span>
+        <span>🚿 2 baños</span>
+      </div>
+    </div>
+    <a
+      href="https://www.airbnb.com/rooms/45363133?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P3CRes561-lpuuBH&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
+      target="_blank"
+      className="button button-light"
+      style={{
+        textAlign:"center",
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"2px",
+        fontSize:"12px",
+        width: "100%",
+        padding: "10px 0"
+      }}
+    >
+      Ver en Airbnb
+    </a>
+  </div>
+
+  {/* OPCIÓN 3: Entire Rental Unit */}
+  <div style={{
+    background: "rgba(255, 255, 255, 0.02)",
+    border: "1px solid rgba(199, 162, 124, 0.15)",
+    borderRadius: "16px",
+    padding: "30px 24px",
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: "260px"
+  }} className="hover:scale-[1.02] transition-all duration-300">
+    <div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+        <line x1="9" y1="22" x2="9" y2="16" />
+        <line x1="15" y1="22" x2="15" y2="16" />
+        <line x1="9" y1="16" x2="15" y2="16" />
+        <path d="M8 6h2v2H8V6zm6 0h2v2h-2V6zm-6 5h2v2H8v-2zm6 0h2v2h-2v-2z" />
+      </svg>
+      <h3 style={{ fontFamily: "var(--font-elegant)", fontSize: "18px", letterSpacing: "2px", color: "#fff", marginBottom: "6px", fontWeight: 300 }}>
+        Apartamento Privado
+      </h3>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#e6ddd5", lineHeight: "1.5", marginBottom: "8px" }}>
+        Unidad de apartamento moderna, confortable y completamente amueblada en el pueblo de San José de Ocoa. Práctico y seguro.
+      </p>
+
+      {/* Specs bar for Option 3 */}
+      <div style={{ 
+        display: "flex", 
+        flexWrap: "wrap", 
+        gap: "8px", 
+        marginBottom: "18px",
+        fontSize: "11px",
+        color: "#c7a27c",
+        fontFamily: "var(--font-elegant)",
+        letterSpacing: "0.5px"
+      }}>
+        <span>👥 6 huéspedes</span>
+        <span>·</span>
+        <span>🚪 3 habs</span>
+        <span>·</span>
+        <span>🛏️ 3 camas</span>
+        <span>·</span>
+        <span>🚿 2 baños</span>
+      </div>
+    </div>
+    <a
+      href="https://www.airbnb.com/rooms/1574242168305632524?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1773350244_P37Gxra0V44o2pTh&previous_page_section_name=1000&federated_search_id=19bfe742-2ed3-44e2-88d5-4bf9ba9e8b3a"
+      target="_blank"
+      className="button button-light"
+      style={{
+        textAlign:"center",
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"2px",
+        fontSize:"12px",
+        width: "100%",
+        padding: "10px 0"
+      }}
+    >
+      Ver en Airbnb
+    </a>
+  </div>
+
+  {/* OPCIÓN 4: Entire Villa */}
+  <div style={{
+    background: "rgba(255, 255, 255, 0.02)",
+    border: "1px solid rgba(199, 162, 124, 0.15)",
+    borderRadius: "16px",
+    padding: "30px 24px",
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: "260px"
+  }} className="hover:scale-[1.02] transition-all duration-300">
+    <div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+        <path d="M2 22h20M4 6h16M3 10h18M4 6v4M20 6v4M6 10v12M18 10v12M12 10v12" />
+        <path d="M12 2L2 6h20L12 2z" />
+      </svg>
+      <h3 style={{ fontFamily: "var(--font-elegant)", fontSize: "18px", letterSpacing: "2px", color: "#fff", marginBottom: "6px", fontWeight: 300 }}>
+        Villa de Gran Capacidad
+      </h3>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#e6ddd5", lineHeight: "1.5", marginBottom: "8px" }}>
+        Villa de lujo ideal para estancias de grupos familiares numerosos. Espaciosa, cómoda y totalmente equipada.
+      </p>
+      
+      {/* Specs bar for Option 4 */}
+      <div style={{ 
+        display: "flex", 
+        flexWrap: "wrap", 
+        gap: "8px", 
+        marginBottom: "18px",
+        fontSize: "11px",
+        color: "#c7a27c",
+        fontFamily: "var(--font-elegant)",
+        letterSpacing: "0.5px"
+      }}>
+        <span>👥 14 huéspedes</span>
+        <span>·</span>
+        <span>🚪 5 habs</span>
+        <span>·</span>
+        <span>🛏️ 8 camas</span>
+        <span>·</span>
+        <span>🚿 4 baños</span>
+      </div>
+    </div>
+    <a
+      href="https://www.airbnb.com/rooms/589182501706365585?check_in=2026-12-12&check_out=2026-12-13&search_mode=regular_search&source_impression_id=p3_1782087645_P3Ep1uU2FCWVOIGA&previous_page_section_name=1000&federated_search_id=b7208d7b-e128-490a-b98f-d4c44b334468"
+      target="_blank"
+      className="button button-light"
+      style={{
+        textAlign:"center",
+        fontFamily:"var(--font-elegant)",
+        letterSpacing:"2px",
+        fontSize:"12px",
+        width: "100%",
+        padding: "10px 0"
+      }}
+    >
+      Ver en Airbnb
+    </a>
+  </div>
 
 </div>
 
@@ -1328,13 +1519,14 @@ Hospedaje· OPCIÓN 4
     >
       Inspiraciones de Vestuario
     </h4>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 max-w-[1150px] mx-auto">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 max-w-[1250px] mx-auto">
       {[
         { src: "/codigo2.jpeg", label: "Inspiración 1" },
         { src: "/codigo5.jpeg", label: "Inspiración 2" },
         { src: "/codigo3.jpeg", label: "Inspiración 3" },
-        { src: "/codigo4.jpeg", label: "Inspiración 4" },
-        { src: "/codigo6.jpeg", label: "Inspiración 5" }
+        { src: "/codigo6.jpeg", label: "Inspiración 4" },
+        { src: "/codigo7.jpeg", label: "Inspiración 5" },
+        { src: "/codigo4.jpeg", label: "Inspiración 6" }
       ].map((img, i) => (
         <div 
           key={i}
@@ -1344,7 +1536,7 @@ Hospedaje· OPCIÓN 4
             src={img.src}
             alt={img.label}
             fill
-            sizes="(max-width: 640px) 50vw, 250px"
+            sizes="(max-width: 640px) 50vw, 200px"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
@@ -1357,249 +1549,340 @@ Hospedaje· OPCIÓN 4
 
 {/* PLAYLIST */}
 
-<section className="section-light" style={{textAlign:"center"}}>
+<section className="section-light !py-24" style={{textAlign:"center"}}>
 
 <div className="divider"></div>
 
 <h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px",
-color:"#3b2b20"
+  fontFamily:"var(--font-elegant)",
+  letterSpacing:"6px",
+  fontWeight:300,
+  textTransform:"uppercase",
+  fontSize:"clamp(26px, 5vw, 40px)",
+  marginBottom:"20px",
+  color:"#3b2b20"
 }}>
-Nuestra Playlist
+  Nuestra Playlist
 </h2>
 
 <p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#8a8178",
-fontFamily:"var(--font-elegant)"
+  marginBottom:"30px",
+  letterSpacing:"0.3px",
+  fontSize:"18px",
+  color:"#8a8178",
+  fontFamily:"var(--font-serif)",
+  fontStyle: "italic",
+  maxWidth: "650px",
+  margin: "0 auto 30px auto",
+  lineHeight: "1.6",
+  padding: "0 20px"
 }}>
-Ayúdanos a crear la playlist perfecta para la fiesta.
-Agrega tus canciones favoritas para celebrar con nosotros
-y hacer de la noche algo aún más especial 🎶
+  "La música tiene el poder de guardar recuerdos. Queremos crear una playlist que nos acompañe en nuestra nueva vida juntos; un espacio donde puedan dedicarnos una canción, compartir un tema que les recuerde a nosotros, o simplemente regalarnos una melodía para escuchar en el camino.<br /><br />
+  Añadan sus canciones favoritas para que formen parte de nuestra banda sonora de amor."
 </p>
 
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"12px",
-color:"#8a8178",
-marginBottom:"30px"
-}}>
-CONTRIBUYE A NUESTRA PLAYLIST EN SPOTIFY
-</p>
+{/* SPOTIFY EMBEDDED PLAYER */}
+<div style={{
+  margin: "0 auto 40px auto",
+  width: "100%",
+  maxWidth: "500px",
+  padding: "8px",
+  background: "#1c110c",
+  borderRadius: "16px",
+  border: "1px solid rgba(199, 162, 124, 0.2)",
+  boxShadow: "0 15px 40px rgba(58, 42, 35, 0.05)"
+}} data-aos="fade-up">
+  <iframe
+    src="https://open.spotify.com/embed/playlist/2da7zmucwCTjehbLgaBcxR?utm_source=generator&theme=0"
+    width="100%"
+    height="152"
+    style={{ border: 0, borderRadius: "12px" }}
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    loading="lazy"
+  />
+</div>
 
 <a
-href="https://open.spotify.com/playlist/2da7zmucwCTjehbLgaBcxR?si=5bae9463894248a5&pt=7b2020ccfe79c28e13b1b6f7b822ccd5"
-target="_blank"
-className="button button-dark"
-style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}
+  href="https://open.spotify.com/playlist/2da7zmucwCTjehbLgaBcxR?si=5bae9463894248a5&pt=7b2020ccfe79c28e13b1b6f7b822ccd5"
+  target="_blank"
+  className="button button-dark"
+  style={{
+    fontFamily:"var(--font-elegant)",
+    letterSpacing:"2px",
+    fontSize:"13px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px"
+  }}
 >
-AGREGAR CANCIÓN
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "translateY(-0.5px)" }}>
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+  REGALAR UNA CANCIÓN
 </a>
 
 </section>
 
 {/* REGALOS */}
 
-<section className="section-dark" style={{textAlign:"center"}}>
+<section id="regalos" className="section-dark !py-24" style={{textAlign:"center", position: "relative"}}>
 
 <div className="divider"></div>
 
 <h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px"
+  fontFamily:"var(--font-elegant)",
+  letterSpacing:"6px",
+  fontWeight:300,
+  textTransform:"uppercase",
+  fontSize:"clamp(26px, 5vw, 40px)",
+  marginBottom:"20px"
 }}>
-Nota sobre regalos
+  Nota sobre regalos
 </h2>
 
 <p style={{
-marginBottom:"30px",
-letterSpacing:"0.3px",
-fontSize:"20px",
-color:"#e6ddd5",
-fontFamily:"var(--font-elegant)"
+  marginBottom:"35px",
+  letterSpacing:"0.3px",
+  fontSize:"18px",
+  color:"#e6ddd5",
+  fontFamily:"var(--font-serif)",
+  fontStyle: "italic",
+  maxWidth: "650px",
+  margin: "0 auto 30px auto",
+  lineHeight: "1.6",
+  padding: "0 20px"
 }}>
-Su presencia en nuestra boda es el mejor regalo que podríamos recibir.
-
-<br/><br/>
-
-Si desean hacernos un detalle adicional,
-hemos preparado la siguiente opción.
+  "Su presencia en nuestra boda es, sin duda, el mayor regalo que podríamos recibir.<br /><br />
+  Sin embargo, si desean tener un detalle adicional con nosotros para ayudarnos a comenzar nuestro nuevo hogar, les compartimos con mucha gratitud nuestras opciones de cuenta para regalos en efectivo."
 </p>
 
-{/* LABEL */}
+{/* ICONO VECTORIAL - DETALLE DE REGALO */}
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "40px auto 10px auto", display: "block", opacity: 0.85 }}>
+  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" style={{ fill: "rgba(199,162,124,0.05)" }} />
+  <path d="M12 22V7M2 12h20" />
+  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+</svg>
+
 <p style={{
-marginTop:"30px",
-fontFamily:"var(--font-elegant)",
-letterSpacing:"3px",
-fontSize:"18px",
-opacity:0.7
+  fontFamily:"var(--font-elegant)",
+  letterSpacing:"3px",
+  fontSize:"15px",
+  color: "#c7a27c",
+  marginBottom: "35px"
 }}>
-OPCIÓN DE REGALO
+  CUENTAS DE REGALOS
 </p>
 
-{/* CUENTAS */}
-<div style={{
-marginTop:"25px",
-display:"flex",
-flexDirection:"column",
-gap:"30px",
-alignItems:"center"
-}}>
-
-{/* CUENTA 1 */}
-<div>
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"3px",
-fontSize:"15px",
-opacity:0.7,
-marginBottom:"10px"
-}}>
-BANCO POPULAR
-</p>
-
-<p style={{
-fontFamily:"var(--font-body)",
-lineHeight:"1.8",
-color:"#e6ddd5"
-}}>
-Cuenta corriente: <strong style={{color:"#fff"}}>816921621</strong>
-<button
-  onClick={() => handleCopyAccount("816921621")}
+{/* TARJETA DE CUENTAS DE LUJO (STATIONERY CARD) */}
+<div 
   style={{
-    marginLeft: "10px",
-    background: "none",
-    border: `1px solid ${copiedText === "816921621" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
-    color: copiedText === "816921621" ? "#a8c3a0" : "#c7a27c",
-    cursor: "pointer",
-    fontSize: "11px",
-    fontFamily: "var(--font-elegant)",
-    letterSpacing: "1px",
-    padding: "3px 10px",
-    borderRadius: "15px",
-    transition: "all 0.25s ease"
+    maxWidth: "550px",
+    margin: "0 auto",
+    background: "rgba(255, 255, 255, 0.02)",
+    padding: "45px 25px",
+    borderRadius: "16px",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
+    border: "1px solid rgba(199, 162, 124, 0.18)",
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    gap: "35px",
+    alignItems: "center"
   }}
+  data-aos="fade-up"
 >
-  {copiedText === "816921621" ? "¡Copiado! ✓" : "📋 Copiar"}
-</button>
-<br/>
-Titular: Ailyn Santana
-</p>
-</div>
+  {/* Inset Border Frame */}
+  <div style={{
+    position: "absolute",
+    inset: "8px",
+    border: "1px solid rgba(199, 162, 124, 0.08)",
+    borderRadius: "10px",
+    pointerEvents: "none"
+  }} />
 
-{/* DIVIDER */}
-<div style={{
-width:"40px",
-height:"1px",
-background:"#c7a27c"
-}}/>
+  {/* CUENTA 1 */}
+  <div style={{ width: "100%", zIndex: 10 }}>
+    <p style={{
+      fontFamily:"var(--font-elegant)",
+      letterSpacing:"3px",
+      fontSize:"13px",
+      color: "#c7a27c",
+      marginBottom:"12px"
+    }}>
+      BANCO POPULAR
+    </p>
 
-{/* CUENTA 2 */}
-<div>
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"3px",
-fontSize:"15px",
-opacity:0.7,
-marginBottom:"10px"
-}}>
-BHD
-</p>
+    <p style={{
+      fontFamily:"var(--font-body)",
+      fontSize: "14px",
+      lineHeight:"1.8",
+      color:"#e6ddd5"
+    }}>
+      Cuenta corriente: <strong style={{color:"#fff", fontFamily: "monospace", fontSize: "15px"}}>816921621</strong>
+      <button
+        onClick={() => handleCopyAccount("816921621")}
+        style={{
+          marginLeft: "12px",
+          background: "none",
+          border: `1px solid ${copiedText === "816921621" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
+          color: copiedText === "816921621" ? "#a8c3a0" : "#c7a27c",
+          cursor: "pointer",
+          fontSize: "11px",
+          fontFamily: "var(--font-elegant)",
+          letterSpacing: "1px",
+          padding: "3px 12px",
+          borderRadius: "15px",
+          transition: "all 0.25s ease",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "5px"
+        }}
+      >
+        {copiedText === "816921621" ? (
+          "¡Copiado! ✓"
+        ) : (
+          <>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "translateY(-0.5px)" }}>
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Copiar
+          </>
+        )}
+      </button>
+      <br/>
+      Titular: Ailyn Santana
+    </p>
+  </div>
 
-<p style={{
-fontFamily:"var(--font-body)",
-lineHeight:"1.8",
-color:"#e6ddd5"
-}}>
-Cuenta de ahorro: <strong style={{color:"#fff"}}>34139820016</strong>
-<button
-  onClick={() => handleCopyAccount("34139820016")}
-  style={{
-    marginLeft: "10px",
-    background: "none",
-    border: `1px solid ${copiedText === "34139820016" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
-    color: copiedText === "34139820016" ? "#a8c3a0" : "#c7a27c",
-    cursor: "pointer",
-    fontSize: "11px",
-    fontFamily: "var(--font-elegant)",
-    letterSpacing: "1px",
-    padding: "3px 10px",
-    borderRadius: "15px",
-    transition: "all 0.25s ease"
-  }}
->
-  {copiedText === "34139820016" ? "¡Copiado! ✓" : "📋 Copiar"}
-</button>
-<br/>
-Titular: Ailyn Santana
-</p>
+  {/* DIVIDER */}
+  <div style={{
+    width:"40px",
+    height:"1px",
+    background:"rgba(199, 162, 124, 0.25)",
+    zIndex: 10
+  }}/>
 
-</div>
+  {/* CUENTA 2 */}
+  <div style={{ width: "100%", zIndex: 10 }}>
+    <p style={{
+      fontFamily:"var(--font-elegant)",
+      letterSpacing:"3px",
+      fontSize:"13px",
+      color: "#c7a27c",
+      marginBottom:"12px"
+    }}>
+      BHD
+    </p>
 
-{/* DIVIDER */}
-<div style={{
-width:"40px",
-height:"1px",
-background:"#c7a27c"
-}}/>
+    <p style={{
+      fontFamily:"var(--font-body)",
+      fontSize: "14px",
+      lineHeight:"1.8",
+      color:"#e6ddd5"
+    }}>
+      Cuenta de ahorro: <strong style={{color:"#fff", fontFamily: "monospace", fontSize: "15px"}}>34139820016</strong>
+      <button
+        onClick={() => handleCopyAccount("34139820016")}
+        style={{
+          marginLeft: "12px",
+          background: "none",
+          border: `1px solid ${copiedText === "34139820016" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
+          color: copiedText === "34139820016" ? "#a8c3a0" : "#c7a27c",
+          cursor: "pointer",
+          fontSize: "11px",
+          fontFamily: "var(--font-elegant)",
+          letterSpacing: "1px",
+          padding: "3px 12px",
+          borderRadius: "15px",
+          transition: "all 0.25s ease",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "5px"
+        }}
+      >
+        {copiedText === "34139820016" ? (
+          "¡Copiado! ✓"
+        ) : (
+          <>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "translateY(-0.5px)" }}>
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Copiar
+          </>
+        )}
+      </button>
+      <br/>
+      Titular: Ailyn Santana
+    </p>
+  </div>
 
-{/* CUENTA 3 */}
-<div>
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"3px",
-fontSize:"15px",
-opacity:0.7,
-marginBottom:"10px"
-}}>
-BANRESERVAS
-</p>
+  {/* DIVIDER */}
+  <div style={{
+    width:"40px",
+    height:"1px",
+    background:"rgba(199, 162, 124, 0.25)",
+    zIndex: 10
+  }}/>
 
-<p style={{
-fontFamily:"var(--font-body)",
-lineHeight:"1.8",
-color:"#e6ddd5"
-}}>
-Cuenta de ahorro: <strong style={{color:"#fff"}}>9606316788</strong>
-<button
-  onClick={() => handleCopyAccount("9606316788")}
-  style={{
-    marginLeft: "10px",
-    background: "none",
-    border: `1px solid ${copiedText === "9606316788" ? "#a8c3a0" : "rgba(199, 162, 124, 0.4)"}`,
-    color: copiedText === "9606316788" ? "#a8c3a0" : "#c7a27c",
-    cursor: "pointer",
-    fontSize: "11px",
-    fontFamily: "var(--font-elegant)",
-    letterSpacing: "1px",
-    padding: "3px 10px",
-    borderRadius: "15px",
-    transition: "all 0.25s ease"
-  }}
->
-  {copiedText === "9606316788" ? "¡Copiado! ✓" : "📋 Copiar"}
-</button>
-<br/>
-Titular: Luis Perdomo
-</p>
+  {/* CUENTA 3 */}
+  <div style={{ width: "100%", zIndex: 10 }}>
+    <p style={{
+      fontFamily:"var(--font-elegant)",
+      letterSpacing:"3px",
+      fontSize:"13px",
+      color: "#c7a27c",
+      marginBottom:"12px"
+    }}>
+      BANRESERVAS
+    </p>
 
-</div>
+    <p style={{
+      fontFamily:"var(--font-body)",
+      fontSize: "14px",
+      lineHeight:"1.8",
+      color:"#e6ddd5"
+    }}>
+      Cuenta de ahorro: <strong style={{color:"#fff", fontFamily: "monospace", fontSize: "15px"}}>9606316788</strong>
+      <button
+        onClick={() => handleCopyAccount("9606316788")}
+        style={{
+          marginLeft: "12px",
+          background: "none",
+          border: `1px solid ${copiedText === "9606316788" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
+          color: copiedText === "9606316788" ? "#a8c3a0" : "#c7a27c",
+          cursor: "pointer",
+          fontSize: "11px",
+          fontFamily: "var(--font-elegant)",
+          letterSpacing: "1px",
+          padding: "3px 12px",
+          borderRadius: "15px",
+          transition: "all 0.25s ease",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "5px"
+        }}
+      >
+        {copiedText === "9606316788" ? (
+          "¡Copiado! ✓"
+        ) : (
+          <>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "translateY(-0.5px)" }}>
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Copiar
+          </>
+        )}
+      </button>
+      <br/>
+      Titular: Luis Perdomo
+    </p>
+  </div>
 
 </div>
 
@@ -1636,11 +1919,11 @@ Toca cada pregunta para ver más información
 </p>
 
 <div style={{
-maxWidth:"700px",
-margin:"40px auto",
-display:"flex",
-flexDirection:"column",
-gap:"20px"
+  maxWidth:"650px",
+  margin:"40px auto 0 auto",
+  display:"flex",
+  flexDirection:"column",
+  padding: "0 20px"
 }}>
 
 {[
@@ -1654,56 +1937,85 @@ a:"Hemos decidido que nuestra boda sea una celebración solo para adultos."
 },
 {
 q:"¿Puedo llevar un acompañante?",
-a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañante adicional."
+a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes adicionales, a menos de ser indicado en la invitación."
 }
 ].map((item,index)=>(
 
 <div
-key={index}
-style={{
-borderBottom:"1px solid #ddd5cc",
-paddingBottom:"20px"
-}}
->
-
-<div
-onClick={()=>setOpenFAQ(openFAQ === index ? null : index)}
-style={{
-display:"flex",
-justifyContent:"space-between",
-cursor:"pointer"
-}}
->
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"2px",
-fontSize:"13px"
-}}>
-{item.q}
-</p>
-
-<span>
-{openFAQ === index ? "−" : "+"}
-</span>
-</div>
-
-<div
+  key={index}
+  onClick={()=>setOpenFAQ(openFAQ === index ? null : index)}
   style={{
-    maxHeight: openFAQ === index ? "120px" : "0px",
-    opacity: openFAQ === index ? 1 : 0,
-    overflow: "hidden",
-    transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, margin-top 0.4s ease",
-    marginTop: openFAQ === index ? "15px" : "0px"
+    background: "white",
+    border: "1px solid #e5e0d8",
+    borderRadius: "12px",
+    padding: "20px 24px",
+    boxShadow: "0 4px 15px rgba(58, 42, 35, 0.02)",
+    transition: "all 0.3s ease",
+    marginBottom: "15px",
+    cursor: "pointer",
+    textAlign: "left"
   }}
+  className="hover:border-[#C7A27C] hover:shadow-[0_8px_25px_rgba(58,42,35,0.05)]"
 >
-  <p style={{
-    fontFamily:"var(--font-elegant)",
-    lineHeight:"1.8",
-    color:"#5a5048"
-  }}>
-    {item.a}
-  </p>
-</div>
+
+  <div
+    style={{
+      display:"flex",
+      justifyContent:"space-between",
+      alignItems: "center"
+    }}
+  >
+    <p style={{
+      fontFamily:"var(--font-elegant)",
+      letterSpacing:"1.5px",
+      fontSize:"14px",
+      color: "#3a2a23",
+      margin: 0,
+      fontWeight: 400
+    }}>
+      {item.q}
+    </p>
+
+    {/* Chevron SVG con Rotación de 180 grados suave */}
+    <svg 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="#c7a27c" 
+      strokeWidth="1.8" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      style={{
+        transform: openFAQ === index ? "rotate(180deg)" : "rotate(0deg)",
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        flexShrink: 0,
+        marginLeft: "15px"
+      }}
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+
+  <div
+    style={{
+      maxHeight: openFAQ === index ? "120px" : "0px",
+      opacity: openFAQ === index ? 1 : 0,
+      overflow: "hidden",
+      transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, margin-top 0.4s ease",
+      marginTop: openFAQ === index ? "12px" : "0px"
+    }}
+  >
+    <p style={{
+      fontFamily:"var(--font-body)",
+      lineHeight:"1.7",
+      color:"#6b635b",
+      fontSize: "13.5px",
+      margin: 0
+    }}>
+      {item.a}
+    </p>
+  </div>
 
 </div>
 
@@ -1720,55 +2032,90 @@ fontSize:"13px"
   isValidGuest={isValidGuest}
   alreadyAnswered={alreadyAnswered}
   setAlreadyAnswered={setAlreadyAnswered}
+  isExpired={isExpired}
+  attendingChoice={guestAttendingChoice}
 />
 
 {/* FOOTER FINAL */}
 
 <section style={{
-padding:"100px 20px",
-textAlign:"center",
-background:"#3A2A23",
-color:"white"
+  padding: "110px 20px",
+  textAlign: "center",
+  background: "#1e140f",
+  color: "white",
+  position: "relative"
 }}>
+  {/* Monograma dorado de lujo con logotipo transparente (tamaño equilibrado de 105px) */}
+  <div style={{
+    position: "relative",
+    width: "105px",
+    height: "105px",
+    borderRadius: "50%",
+    border: "1px dashed rgba(199, 162, 124, 0.4)",
+    margin: "0 auto 35px auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255,255,255,0.01)"
+  }}>
+    <div style={{ position: "relative", width: "82px", height: "79px" }}>
+      <Image
+        src="/footer2.png"
+        alt="Monograma Luis & Ailyn"
+        fill
+        className="object-contain"
+        style={{ filter: "brightness(0) invert(1)", opacity: 0.95 }}
+        priority
+      />
+    </div>
+  </div>
 
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-textTransform:"uppercase",
-fontSize:"12px",
-opacity:"0.8",
-marginBottom:"20px"
-}}>
-Gracias por ser parte de nuestra historia
-</p>
+  <p style={{
+    fontFamily: "var(--font-serif)",
+    fontStyle: "italic",
+    fontSize: "18px",
+    color: "#e6ddd5",
+    maxWidth: "500px",
+    margin: "0 auto 40px auto",
+    opacity: 0.9,
+    lineHeight: "1.6"
+  }}>
+    "Con amor, y la mayor ilusión de compartir este día junto a ti."
+  </p>
 
-<p style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-textTransform:"uppercase",
-fontSize:"12px",
-opacity:"0.8",
-marginBottom:"20px"
-}}>
-Nos vemos el 12 de diciembre de 2026
-</p>
+  {/* Nombres en tipografía elegante original */}
+  <h2 style={{
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "4px",
+    textTransform: "uppercase",
+    fontSize: "24px",
+    fontWeight: 300,
+    color: "#fff",
+    margin: "0",
+    marginTop: "40px"
+  }}>
+    Luis & Ailyn
+  </h2>
 
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"4px",
-fontWeight:300,
-fontSize:"24px",
-marginTop:"40px"
-}}>
-Luis & Ailyn
-</h2>
+  {/* Línea dorada de fecha */}
+  <p style={{
+    fontFamily: "var(--font-elegant)",
+    letterSpacing: "4px",
+    textTransform: "uppercase",
+    fontSize: "11px",
+    color: "#c7a27c",
+    marginTop: "12px",
+    fontWeight: "bold"
+  }}>
+    12 · 12 · 2026
+  </p>
 
-<div style={{
-width:"60px",
-height:"1px",
-background:"#c7a27c",
-margin:"40px auto 0 auto"
-}}/>
+  <div style={{
+    width: "40px",
+    height: "1px",
+    background: "rgba(199, 162, 124, 0.3)",
+    margin: "40px auto 0 auto"
+  }}/>
 
 </section>
 

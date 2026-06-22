@@ -18,6 +18,7 @@ interface Guest {
   id: string;
   name: string;
   token: string;
+  createdAt?: any;
 }
 
 export default function Admin() {
@@ -139,6 +140,7 @@ export default function Admin() {
       await setDoc(guestRef, {
         name: newGuestName,
         token: newGuestToken,
+        createdAt: new Date() // For rolling 7-day expiration!
       });
 
       // Update local state
@@ -146,6 +148,7 @@ export default function Admin() {
         id: newGuestId,
         name: newGuestName,
         token: newGuestToken,
+        createdAt: new Date()
       };
       setGuests((prev) => [newlyAdded, ...prev]);
 

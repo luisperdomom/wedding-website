@@ -58,7 +58,11 @@ useEffect(() => {
       if (guestSnap.exists()) {
         const guestData = guestSnap.data()
         if (guestData.token === token) {
-          setGuestName(guestData.name)
+          if (guestData.companion && guestData.companion.trim()) {
+            setGuestName(`${guestData.name} & ${guestData.companion.trim()}`)
+          } else {
+            setGuestName(guestData.name)
+          }
           setIsValidGuest(true)
 
           // Verificar si ha expirado la invitación (validez de 7 días)

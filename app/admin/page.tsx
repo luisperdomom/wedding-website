@@ -19,6 +19,8 @@ interface Guest {
   name: string;
   token: string;
   createdAt?: any;
+  phone?: string;
+  companion?: string;
 }
 
 export default function Admin() {
@@ -36,10 +38,13 @@ export default function Admin() {
   const [newGuestName, setNewGuestName] = useState("");
   const [newGuestId, setNewGuestId] = useState("");
   const [newGuestToken, setNewGuestToken] = useState("");
+  const [newGuestPhone, setNewGuestPhone] = useState("");
+  const [newGuestCompanion, setNewGuestCompanion] = useState("");
   const [addingGuest, setAddingGuest] = useState(false);
   
   // Feedback states
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedMsgIndex, setCopiedMsgIndex] = useState<number | null>(null);
 
   // Secret admin password configuration (supports env variable, defaults to "boda2026")
   const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "boda2026";
@@ -137,11 +142,19 @@ export default function Admin() {
     setAddingGuest(true);
     try {
       const guestRef = doc(db, "guests", newGuestId);
-      await setDoc(guestRef, {
+      const guestPayload: any = {
         name: newGuestName,
         token: newGuestToken,
         createdAt: new Date() // For rolling 7-day expiration!
-      });
+      };
+      if (newGuestPhone.trim()) {
+        guestPayload.phone = newGuestPhone.trim();
+      }
+      if (newGuestCompanion.trim()) {
+        guestPayload.companion = newGuestCompanion.trim();
+      }
+      
+      await setDoc(guestRef, guestPayload);
 
       // Update local state
       const newlyAdded: Guest = {
@@ -150,12 +163,21 @@ export default function Admin() {
         token: newGuestToken,
         createdAt: new Date()
       };
+      if (newGuestPhone.trim()) {
+        newlyAdded.phone = newGuestPhone.trim();
+      }
+      if (newGuestCompanion.trim()) {
+        newlyAdded.companion = newGuestCompanion.trim();
+      }
+      
       setGuests((prev) => [newlyAdded, ...prev]);
 
       // Reset form
       setNewGuestName("");
       setNewGuestId("");
       setNewGuestToken("");
+      setNewGuestPhone("");
+      setNewGuestCompanion("");
     } catch (err) {
       console.error("Error al guardar invitado:", err);
       alert("Error al añadir invitado a la base de datos.");
@@ -188,6 +210,51 @@ export default function Admin() {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     });
+  };
+
+  // Helper to generate the warm invitation message based on whether they have a companion or not
+  const getFullInvitationMessage = (guest: Guest) => {
+    const baseUrl = window.location.origin;
+    const personalUrl = `${baseUrl}/?guest=${guest.id}&token=${guest.token}`;
+
+    if (guest.companion && guest.companion.trim()) {
+      return `¡Hola ${guest.name}! 🤍 Nos hace una ilusión inmensa contarles que... ¡nos casamos! 🥂💍\n\nQueremos que sean parte de este día tan especial para nosotros, y nos emociona muchísimo la idea de contar contigo y con ${guest.companion.trim()}. Les compartimos vuestra invitación digital personalizada con todos los detalles aquí:\n\n${personalUrl}\n\nNota: Recuerden que tienen un plazo de 7 días a partir de hoy para confirmar su asistencia a través de la web, ya que los cupos son limitados. ¡Esperamos de corazón contar con ustedes! ✨`;
+    } else {
+      return `¡Hola ${guest.name}! 🤍 Nos hace una ilusión inmensa contarte que... ¡nos casamos! 🥂💍\n\nQueremos que seas parte de este día tan especial para nosotros. Te compartimos tu invitación digital personalizada con todos los detalles aquí:\n\n${personalUrl}\n\nNota: Recuerda que tienes un plazo de 7 días a partir de hoy para confirmar tu asistencia a través de la web, ya que los cupos son limitados. ¡Esperamos de corazón contar contigo! ✨`;
+    }
+  };
+
+  // Copy full elegant invitation message to Clipboard
+  const handleCopyMessage = (guest: Guest, index: number) => {
+    const fullMessage = getFullInvitationMessage(guest);
+
+    navigator.clipboard.writeText(fullMessage).then(() => {
+      setCopiedMsgIndex(index);
+      setTimeout(() => setCopiedMsgIndex(null), 2000);
+    });
+  };
+
+  // Format phone numbers to meet WhatsApp standard (removing spaces, symbols, and prepending DR '1' if 10-digits)
+  const formatPhoneForWhatsApp = (phoneStr: string) => {
+    const digits = phoneStr.replace(/\D/g, ""); // Remove all non-digits
+    if (!digits) return "";
+    
+    // Prepend '1' if it's a 10-digit Dominican number (809, 829, 849)
+    if (digits.length === 10 && (digits.startsWith("809") || digits.startsWith("829") || digits.startsWith("849"))) {
+      return "1" + digits;
+    }
+    return digits;
+  };
+
+  // Helper to generate WhatsApp sharing URL with pre-filled invitation
+  const getWhatsAppUrl = (guest: Guest) => {
+    const fullMessage = getFullInvitationMessage(guest);
+
+    const formattedPhone = guest.phone ? formatPhoneForWhatsApp(guest.phone) : "";
+    if (formattedPhone) {
+      return `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(fullMessage)}`;
+    }
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`;
   };
 
   // Export RSVP entries to CSV
@@ -469,6 +536,32 @@ export default function Admin() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs text-[#8a8178] uppercase tracking-[0.5px] font-medium">
+                    Teléfono / Celular (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. 8091234567"
+                    value={newGuestPhone}
+                    onChange={(e) => setNewGuestPhone(e.target.value)}
+                    className="p-3 rounded-lg border border-[#e5e0d8] text-sm outline-none focus:border-[#C7A27C] transition-all bg-[#FAF8F5] text-[#3A2A23]"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#8a8178] uppercase tracking-[0.5px] font-medium">
+                    Acompañante(s) (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Ailyn Santana"
+                    value={newGuestCompanion}
+                    onChange={(e) => setNewGuestCompanion(e.target.value)}
+                    className="p-3 rounded-lg border border-[#e5e0d8] text-sm outline-none focus:border-[#C7A27C] transition-all bg-[#FAF8F5] text-[#3A2A23]"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#8a8178] uppercase tracking-[0.5px] font-medium">
                     ID Invitado (Para el enlace)
                   </label>
                   <input
@@ -530,7 +623,8 @@ export default function Admin() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end sm:self-center">
+                      <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                        {/* COPIAR SOLO EL LINK */}
                         <button
                           onClick={() => handleCopyLink(g, index)}
                           className={`text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg transition-all cursor-pointer border ${
@@ -538,10 +632,37 @@ export default function Admin() {
                               ? "bg-[#e2f0d9] border-[#c0e0cc] text-[#4d713c]"
                               : "bg-white border-[#e5e0d8] hover:border-[#C7A27C] text-[#3A2A23]"
                           }`}
+                          title="Copiar solo el link de acceso"
                         >
-                          {copiedIndex === index ? "¡Copiado! ✓" : "📋 Copiar Enlace"}
+                          {copiedIndex === index ? "¡Link Copiado! ✓" : "📋 Link"}
                         </button>
 
+                        {/* COPIAR MENSAJE COMPLETO */}
+                        <button
+                          onClick={() => handleCopyMessage(g, index)}
+                          className={`text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg transition-all cursor-pointer border ${
+                            copiedMsgIndex === index
+                              ? "bg-[#e2f0d9] border-[#c0e0cc] text-[#4d713c]"
+                              : "bg-white border-[#e5e0d8] hover:border-[#C7A27C] text-[#3A2A23]"
+                          }`}
+                          title="Copiar mensaje de invitación completo"
+                        >
+                          {copiedMsgIndex === index ? "¡Mensaje Copiado! ✓" : "✉️ Copiar Mensaje"}
+                        </button>
+
+                        {/* ENVIAR POR WHATSAPP DIRECTO */}
+                        <a
+                          href={getWhatsAppUrl(g)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg transition-all cursor-pointer border bg-[#e2f0d9] border-[#c0e0cc] text-[#4d713c] hover:bg-[#d0eac3] text-center"
+                          style={{ textDecoration: "none" }}
+                          title="Enviar invitación directamente por WhatsApp"
+                        >
+                          💬 WhatsApp
+                        </a>
+
+                        {/* ELIMINAR INVITADO */}
                         <button
                           onClick={() => handleDeleteGuest(g.id, g.name)}
                           className="text-xs border border-transparent hover:border-red-100 bg-white text-red-500 hover:bg-red-50/50 p-2 rounded-lg transition-all cursor-pointer"

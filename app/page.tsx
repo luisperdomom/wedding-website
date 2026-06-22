@@ -719,7 +719,7 @@ style={{
       <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
         <img
           src="/story1.jpg"
-          alt="2017 · El primer Hola"
+          alt="2017 · El inicio de todo"
           style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
           loading="lazy"
         />
@@ -733,7 +733,7 @@ style={{
         color:"#3b2b20",
         marginBottom: "8px"
       }}>
-        2017 · El primer "Hola"
+        2017 · El inicio de todo
       </h3>
 
       <p style={{
@@ -742,7 +742,7 @@ style={{
         fontSize: "14px",
         lineHeight:"1.6"
       }}>
-        Entre llamadas y un almuerzo sincronizado por casualidad, así cruzamos nuestros caminos por primera vez.
+        El año en que empezamos a escribir nuestro camino y a vivir nuestros primeros momentos llenos de risas y complicidad.
       </p>
     </div>
   </div>
@@ -1506,12 +1506,9 @@ borderRadius:"8px"
         { color: "#F4C2C2", name: "Blush Pink" },
         { color: "#8F9E8B", name: "Sage Green" },
         { color: "#79806C", name: "Salvia" },
-        { color: "#F9F6EE", name: "Ivory" },
         { color: "#E6E6FA", name: "Lavender" },
         { color: "#E5E4E2", name: "Light Grey" },
         { color: "#BDFCC9", name: "Mint Green" },
-        { color: "#FDF6E2", name: "Cream" },
-        { color: "#E1D7C6", name: "Beige" },
         { color: "#FFE5B4", name: "Peach" },
         { color: "#F7E5A9", name: "Butter Yellow" },
         { color: "#DCD0FF", name: "Lilac" },

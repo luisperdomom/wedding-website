@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/firebase";
 import { collection, addDoc } from "firebase/firestore";
 
@@ -12,6 +12,9 @@ interface RSVPFormProps {
   setAlreadyAnswered: (val: boolean) => void;
   isExpired: boolean; // 7-day rolling expiration state
   attendingChoice: string | null; // Load existing selection dynamically
+  isPlural: boolean;
+  primaryName: string;
+  companionName: string;
 }
 
 export default function RSVPForm({
@@ -22,11 +25,23 @@ export default function RSVPForm({
   setAlreadyAnswered,
   isExpired,
   attendingChoice,
+  isPlural,
+  primaryName,
+  companionName,
 }: RSVPFormProps) {
-  const [attending, setAttending] = useState("Sí asistiré");
+  const [attending, setAttending] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Initialize form default values based on whether they have a companion or not
+  useEffect(() => {
+    if (isPlural) {
+      setAttending("Ambos asistiremos");
+    } else {
+      setAttending("Sí asistiré");
+    }
+  }, [isPlural]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,6 +85,12 @@ export default function RSVPForm({
   // Determine what the user answered (either the newly submitted value or the loaded DB value)
   const finalChoice = submitted ? attending : attendingChoice;
 
+  // Helper to determine if they are attending or not based on their choice string
+  const isAttendingSelection = (choice: string | null) => {
+    if (!choice) return false;
+    return choice === "Sí asistiré" || choice === "Ambos asistiremos" || choice.startsWith("Solo asistirá");
+  };
+
   if (isValidGuest === null) {
     return (
       <section id="rsvp" className="section-light !py-24" style={{ textAlign: "center" }}>
@@ -96,7 +117,11 @@ export default function RSVPForm({
         className="mb-10 tracking-[0.3px] text-[18px] text-[#8a8178] max-w-[650px] mx-auto leading-relaxed px-4"
         style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
       >
-        "Nos encantaría contar con tu presencia en este día tan especial para nosotros. Por favor, confírmanos tu asistencia dentro de la validez de tu invitación."
+        {isPlural ? (
+          `"Nos encantaría contar con su presencia en este día tan especial para nosotros. Por favor, confírmennos su asistencia dentro de la validez de su invitación."`
+        ) : (
+          `"Nos encantaría contar con tu presencia en este día tan especial para nosotros. Por favor, confírmanos tu asistencia dentro de la validez de tu invitación."`
+        )}
       </p>
 
       {/* TARJETA DE FORMULARIO DE LUJO (STATIONERY CARD) */}
@@ -136,8 +161,8 @@ export default function RSVPForm({
           </div>
         ) : alreadyAnswered || submitted ? (
           <div style={{ zIndex: 10, position: "relative" }} className="flex flex-col items-center">
-            {finalChoice === "Sí asistiré" ? (
-              /* MENSAJE SÍ ASISTIRÉ */
+            {isAttendingSelection(finalChoice) ? (
+              /* MENSAJE SÍ ASISTIRÁ(N) */
               <>
                 {/* Elegant Gold Heart SVG */}
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
@@ -147,14 +172,23 @@ export default function RSVPForm({
                   className="tracking-[0.3px] text-base text-[#3b2b20] leading-relaxed font-light"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
-                  ¡Muchas gracias por tu confirmación!<br /><br />
-                  Hemos recibido tu respuesta con mucha alegría. Nos hace inmensamente felices saber que compartirás este día tan especial con nosotros.
+                  {isPlural ? (
+                    <>
+                      ¡Muchas gracias por su confirmación!<br /><br />
+                      Hemos recibido su respuesta con mucha alegría. Nos hace inmensamente felices saber que compartirán este día tan especial con nosotros.
+                    </>
+                  ) : (
+                    <>
+                      ¡Muchas gracias por tu confirmación!<br /><br />
+                      Hemos recibido tu respuesta con mucha alegría. Nos hace inmensamente felices saber que compartirás este día tan especial con nosotros.
+                    </>
+                  )}
                 </p>
               </>
             ) : (
-              /* MENSAJE NO ASISTIRÉ */
+              /* MENSAJE NO ASISTIRÁ(N) */
               <>
-                {/* Soft Gold Sad Face (Frown) SVG */}
+                {/* Soft Gold Sad Face SVG */}
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
                   <circle cx="12" cy="12" r="10" style={{ fill: "rgba(199,162,124,0.03)" }} />
                   <line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="2.5" />
@@ -165,8 +199,17 @@ export default function RSVPForm({
                   className="tracking-[0.3px] text-base text-[#3b2b20] leading-relaxed font-light"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
-                  Muchas gracias por tu sinceridad.<br /><br />
-                  Lamentamos mucho que no puedas acompañarnos física o presencialmente, pero valoramos inmensamente tus buenos deseos y sabemos que nos acompañarás con el corazón.
+                  {isPlural ? (
+                    <>
+                      Muchas gracias por su sinceridad.<br /><br />
+                      Lamentamos mucho que no puedan acompañarnos física o presencialmente, pero valoramos inmensamente sus buenos deseos y sabemos que nos acompañarán con el corazón.
+                    </>
+                  ) : (
+                    <>
+                      Muchas gracias por tu sinceridad.<br /><br />
+                      Lamentamos mucho que no puedas acompañarnos física o presencialmente, pero valoramos inmensamente tus buenos deseos y sabemos que nos acompañarás con el corazón.
+                    </>
+                  )}
                 </p>
               </>
             )}
@@ -198,17 +241,34 @@ export default function RSVPForm({
                 className="text-xs text-[#8a8178] tracking-[1px] uppercase font-medium"
                 style={{ fontFamily: "var(--font-elegant)" }}
               >
-                ¿Asistirás al evento?
+                {isPlural ? "¿Asistirán al evento?" : "¿Asistirás al evento?"}
               </label>
-              <select
-                value={attending}
-                onChange={(e) => setAttending(e.target.value)}
-                className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20]"
-                style={{ fontFamily: "var(--font-body)" }}
-              >
-                <option value="Sí asistiré">Sí asistiré</option>
-                <option value="No podré asistir">No podré asistir</option>
-              </select>
+              
+              {isPlural ? (
+                /* DROPDOWN PLURAL (CON OPCIONES INDIVIDUALES DE ASISTENCIA) */
+                <select
+                  value={attending}
+                  onChange={(e) => setAttending(e.target.value)}
+                  className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  <option value="Ambos asistiremos">Ambos asistiremos</option>
+                  <option value={`Solo asistirá ${primaryName}`}>Solo asistirá {primaryName}</option>
+                  <option value={`Solo asistirá ${companionName}`}>Solo asistirá {companionName}</option>
+                  <option value="Ninguno asistirá">Ninguno asistirá</option>
+                </select>
+              ) : (
+                /* DROPDOWN SINGULAR ESTÁNDAR */
+                <select
+                  value={attending}
+                  onChange={(e) => setAttending(e.target.value)}
+                  className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  <option value="Sí asistiré">Sí asistiré</option>
+                  <option value="No podré asistir">No podré asistir</option>
+                </select>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -230,7 +290,7 @@ export default function RSVPForm({
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !attending}
               className="button button-dark cursor-pointer text-xs uppercase tracking-[2px] py-4 rounded-full mt-2 w-full hover:opacity-90 transition-all disabled:opacity-50"
               style={{ fontFamily: "var(--font-elegant)" }}
             >

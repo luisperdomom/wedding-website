@@ -43,6 +43,9 @@ const [isValidGuest, setIsValidGuest] = useState<boolean | null>(null) // null =
 const [alreadyAnswered, setAlreadyAnswered] = useState(false)
 const [guestAttendingChoice, setGuestAttendingChoice] = useState<string | null>(null)
 const [isExpired, setIsExpired] = useState(false)
+const [isPlural, setIsPlural] = useState(false)
+const [primaryName, setPrimaryName] = useState("")
+const [companionName, setCompanionName] = useState("")
 
 useEffect(() => {
   async function verifyGuest() {
@@ -58,10 +61,21 @@ useEffect(() => {
       if (guestSnap.exists()) {
         const guestData = guestSnap.data()
         if (guestData.token === token) {
+          setPrimaryName(guestData.name)
           if (guestData.companion && guestData.companion.trim()) {
-            setGuestName(`${guestData.name} & ${guestData.companion.trim()}`)
+            const compName = guestData.companion.trim()
+            setCompanionName(compName)
+            const firstChar = compName.toLowerCase()
+            const startsWithI = firstChar.startsWith("i")
+            const startsWithHi = firstChar.startsWith("hi") && !firstChar.startsWith("hie")
+            
+            const conjunction = (startsWithI || startsWithHi) ? " e " : " y "
+            setGuestName(`${guestData.name}${conjunction}${compName}`)
+            setIsPlural(true)
           } else {
             setGuestName(guestData.name)
+            setIsPlural(false)
+            setCompanionName("")
           }
           setIsValidGuest(true)
 
@@ -482,9 +496,19 @@ style={{
       maxWidth: "500px",
       margin: "0 auto"
     }}>
-      Nos llena de alegría que estés aquí y que formes parte de este momento tan especial en nuestras vidas. Hemos creado este espacio para compartir contigo todos los detalles de nuestra boda.
-      <br /><br />
-      Gracias por acompañarnos en el inicio de esta nueva etapa juntos.
+      {isPlural ? (
+        <>
+          Nos llena de alegría que estén aquí y que formen parte de este momento tan especial en nuestras vidas. Hemos creado este espacio para compartir con ustedes todos los detalles de nuestra boda.
+          <br /><br />
+          Gracias por acompañarnos en el inicio de esta nueva etapa juntos.
+        </>
+      ) : (
+        <>
+          Nos llena de alegría que estés aquí y que formes parte de este momento tan especial en nuestras vidas. Hemos creado este espacio para compartir contigo todos los detalles de nuestra boda.
+          <br /><br />
+          Gracias por acompañarnos en el inicio de esta nueva etapa juntos.
+        </>
+      )}
     </p>
 
     {/* Subtle Decorative Flower inside the card */}
@@ -2038,6 +2062,9 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
   setAlreadyAnswered={setAlreadyAnswered}
   isExpired={isExpired}
   attendingChoice={guestAttendingChoice}
+  primaryName={primaryName}
+  companionName={companionName}
+  isPlural={isPlural}
 />
 
 {/* FOOTER FINAL */}

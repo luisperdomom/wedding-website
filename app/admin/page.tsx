@@ -367,11 +367,32 @@ export default function Admin() {
     );
   }
 
-  // Statistics calculations
+  // Statistics calculations (Exact headcounts based on singular and plural choices)
   const totalRSVPs = rsvps.length;
-  const attendingCount = rsvps.filter((r) => r.attending === "Sí asistiré").length;
-  const notAttendingCount = rsvps.filter((r) => r.attending === "No podré asistir").length;
   const totalGuestsInDB = guests.length;
+
+  // Calculate exact headcount of confirmed individuals
+  let attendingCount = 0;
+  rsvps.forEach((r) => {
+    if (r.attending === "Sí asistiré" || r.attending.startsWith("Solo asistirá")) {
+      attendingCount += 1;
+    } else if (r.attending === "Ambos asistiremos") {
+      attendingCount += 2;
+    }
+  });
+
+  // Calculate exact headcount of declining individuals
+  let notAttendingCount = 0;
+  rsvps.forEach((r) => {
+    if (r.attending === "No podré asistir") {
+      notAttendingCount += 1;
+    } else if (r.attending === "Ninguno asistirá") {
+      notAttendingCount += 2;
+    } else if (r.attending.startsWith("Solo asistirá")) {
+      // In a couple, if only 1 is attending, 1 is declining!
+      notAttendingCount += 1;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#3A2A23] pb-20">

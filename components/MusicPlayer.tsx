@@ -56,7 +56,7 @@ export default function MusicPlayer() {
           className="mb-10 tracking-[0.3px] text-[18px] text-[#8a8178] max-w-[650px] mx-auto leading-relaxed px-4"
           style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
         >
-          "Hay melodías que se quedan grabadas en el alma y nos acompañan en cada paso. Esta canción ha sido la banda sonora silenciosa de nuestros mejores momentos; una melodía que cuenta quiénes somos y todo lo que sentimos al dar este gran paso juntos."
+          Hay melodías que se quedan grabadas en el alma y nos acompañan en cada paso. Esta canción ha sido la banda sonora silenciosa de nuestros mejores momentos; una melodía que cuenta quiénes somos y todo lo que sentimos al dar este gran paso juntos.
         </p>
 
         {/* REPRODUCTOR DE VINILO (TOCADISCOS) */}

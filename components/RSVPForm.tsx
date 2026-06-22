@@ -118,9 +118,9 @@ export default function RSVPForm({
         style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
       >
         {isPlural ? (
-          `"Nos encantaría contar con su presencia en este día tan especial para nosotros. Por favor, confírmennos su asistencia dentro de la validez de su invitación."`
+          `Nos encantaría contar con su presencia en este día tan especial para nosotros. Por favor, confírmennos su asistencia dentro de la validez de su invitación.`
         ) : (
-          `"Nos encantaría contar con tu presencia en este día tan especial para nosotros. Por favor, confírmanos tu asistencia dentro de la validez de tu invitación."`
+          `Nos encantaría contar con tu presencia en este día tan especial para nosotros. Por favor, confírmanos tu asistencia dentro de la validez de tu invitación.`
         )}
       </p>
 

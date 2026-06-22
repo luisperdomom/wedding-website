@@ -1155,8 +1155,8 @@ borderRadius:"8px"
   lineHeight: "1.6",
   padding: "0 20px"
 }}>
-  "San José de Ocoa tiene rincones hermosos para descansar. Si desean quedarse en el pueblo durante el fin de semana para celebrar con calma, les compartimos algunas de nuestras opciones de hospedaje favoritas y cercanas al lugar del evento.<br /><br />
-  La disponibilidad en la montaña suele ser limitada, por lo que les sugerimos reservar con la mayor anticipación posible."
+  San José de Ocoa tiene rincones hermosos para descansar. Si desean quedarse en el pueblo durante el fin de semana para celebrar con calma, les compartimos algunas de nuestras opciones de hospedaje favoritas y cercanas al lugar del evento.<br /><br />
+  La disponibilidad en la montaña suele ser limitada, por lo que les sugerimos reservar con la mayor anticipación posible.
 </p>
 
 {/* GRID DE TARJETAS DE HOSPEDAJE */}
@@ -1603,8 +1603,8 @@ borderRadius:"8px"
   lineHeight: "1.6",
   padding: "0 20px"
 }}>
-  "La música tiene el poder de guardar recuerdos. Queremos crear una playlist que nos acompañe en nuestra nueva vida juntos; un espacio donde puedan dedicarnos una canción, compartir un tema que les recuerde a nosotros, o simplemente regalarnos una melodía para escuchar en el camino.<br /><br />
-  Añadan sus canciones favoritas para que formen parte de nuestra banda sonora de amor."
+  La música tiene el poder de guardar recuerdos. Queremos crear una playlist que nos acompañe en nuestra nueva vida juntos; un espacio donde puedan dedicarnos una canción, compartir un tema que les recuerde a nosotros, o simplemente regalarnos una melodía para escuchar en el camino.<br /><br />
+  Añadan sus canciones favoritas para que formen parte de nuestra banda sonora de amor.
 </p>
 
 {/* SPOTIFY EMBEDDED PLAYER */}
@@ -1680,8 +1680,8 @@ borderRadius:"8px"
   lineHeight: "1.6",
   padding: "0 20px"
 }}>
-  "Su presencia en nuestra boda es, sin duda, el mayor regalo que podríamos recibir.<br /><br />
-  Sin embargo, si desean tener un detalle adicional con nosotros para ayudarnos a comenzar nuestro nuevo hogar, les compartimos con mucha gratitud nuestras opciones de cuenta para regalos en efectivo."
+  Su presencia en nuestra boda es, sin duda, el mayor regalo que podríamos recibir.<br /><br />
+  Sin embargo, si desean tener un detalle adicional con nosotros para ayudarnos a comenzar nuestro nuevo hogar, les compartimos con mucha gratitud nuestras opciones de cuenta para regalos en efectivo.
 </p>
 
 {/* ICONO VECTORIAL - DETALLE DE REGALO */}
@@ -2109,7 +2109,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     opacity: 0.9,
     lineHeight: "1.6"
   }}>
-    "Con amor, y la mayor ilusión de compartir este día junto a ti."
+    Con amor, y la mayor ilusión de compartir este día junto a ti.
   </p>
 
   {/* Nombres en tipografía elegante original */}

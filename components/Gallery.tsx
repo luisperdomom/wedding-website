@@ -82,7 +82,7 @@ export default function Gallery() {
         className="mb-12 tracking-[0.3px] text-[18px] text-[#8a8178] max-w-[650px] mx-auto leading-relaxed px-4"
         style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
       >
-        "Capturar instantes es nuestra forma de detener el tiempo. Les compartimos un pedacito de nuestra sesión de fotos; pequeños fragmentos de complicidad, risas y miradas que guardaremos en el corazón para siempre."
+        Capturar instantes es nuestra forma de detener el tiempo. Les compartimos un pedacito de nuestra sesión de fotos; pequeños fragmentos de complicidad, risas y miradas que guardaremos en el corazón para siempre.
       </p>
 
       {/* Grid de imágenes Asimétrico / Estilo Galería de Arte */}

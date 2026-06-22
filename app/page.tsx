@@ -306,7 +306,8 @@ display:"flex",
 alignItems:"center",
 justifyContent:"center",
 textAlign:"center",
-color:"white"
+color:"white",
+backgroundColor:"#1c2219" // Elegant dark nature background color while video loads on mobile
 }}>
 
 {/* VIDEO */}

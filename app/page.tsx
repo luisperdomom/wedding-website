@@ -13,6 +13,7 @@ import Gallery from "@/components/Gallery"
 import RSVPForm from "@/components/RSVPForm"
 import Image from "next/image"
 import GoldenPetals from "@/components/GoldenPetals"
+import VirtualEnvelope from "@/components/VirtualEnvelope"
 
 function Divider(){
   return(
@@ -122,6 +123,24 @@ const [menuOpen,setMenuOpen] = useState(false)
 const [openFAQ,setOpenFAQ] = useState<number | null>(null)
 
 const [copiedText, setCopiedText] = useState<string | null>(null)
+
+const [envelopeOpened, setEnvelopeOpened] = useState(true)
+
+useEffect(() => {
+  const opened = sessionStorage.getItem("wedding_envelope_opened") === "true"
+  setEnvelopeOpened(opened)
+}, [])
+
+useEffect(() => {
+  if (isValidGuest === true && !envelopeOpened) {
+    document.body.style.overflow = "hidden"
+  } else {
+    document.body.style.overflow = "unset"
+  }
+  return () => {
+    document.body.style.overflow = "unset"
+  }
+}, [isValidGuest, envelopeOpened])
 
 const handleCopyAccount = (text: string) => {
   navigator.clipboard.writeText(text).then(() => {
@@ -255,6 +274,17 @@ fontFamily:"serif",
 background:"#faf8f5",
 color:"#333"
 }}>
+
+{!envelopeOpened && (
+  <VirtualEnvelope
+    guestName={guestName}
+    isPlural={isPlural}
+    onOpen={() => {
+      sessionStorage.setItem("wedding_envelope_opened", "true")
+      setEnvelopeOpened(true)
+    }}
+  />
+)}
 
 <GoldenPetals />
 
@@ -956,42 +986,102 @@ borderRadius:"8px"
   Habrá estacionamiento disponible en el lugar. Nuestro equipo estará listo para guiarte al llegar.
 </p>
 
-{/* WIDGET DE CLIMA */}
+{/* WIDGET DE CLIMA PREMIUM */}
 <div style={{
-  margin: "40px auto 0 auto",
-  maxWidth: "500px",
-  background: "rgba(255, 255, 255, 0.03)",
-  border: "1px solid rgba(199, 162, 124, 0.2)",
-  borderRadius: "12px",
-  padding: "20px 24px",
-  display: "flex",
-  alignItems: "center",
-  gap: "18px",
-  textAlign: "left"
+  margin: "50px auto 0 auto",
+  maxWidth: "600px",
+  background: "rgba(255, 255, 255, 0.02)",
+  border: "1px solid rgba(199, 162, 124, 0.25)",
+  borderRadius: "16px",
+  padding: "24px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+  textAlign: "center"
 }}>
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-    <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M12 20v2M17.66 17.66l1.41 1.41M22 12h-2M19.07 4.93l-1.41 1.41" />
-    <path d="M17 17.5A5 5 0 0 0 13 9h-1.5a5.5 5 0 0 0-10.5 2.5A4.5 4.5 0 0 0 5.5 16H16.5" style={{ fill: "rgba(199,162,124,0.1)" }} />
-  </svg>
-  <div>
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M12 20v2M17.66 17.66l1.41 1.41M22 12h-2M19.07 4.93l-1.41 1.41" />
+      <circle cx="12" cy="12" r="4" fill="rgba(199,162,124,0.1)" />
+    </svg>
     <h4 style={{
       fontSize: "12px",
       textTransform: "uppercase",
-      letterSpacing: "2px",
+      letterSpacing: "3px",
       color: "#c7a27c",
       fontFamily: "var(--font-elegant)",
-      marginBottom: "4px",
+      margin: 0,
       fontWeight: "bold"
     }}>
-      Clima en Ocoa
+      Pronóstico del Clima · Ocoa
     </h4>
+  </div>
+
+  {/* Tarjetas de Clima por Horas/Fases */}
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+    marginBottom: "20px"
+  }}>
+    {/* TARDE/ATARDECER */}
+    <div style={{
+      background: "rgba(255, 255, 255, 0.02)",
+      border: "1px solid rgba(255, 255, 255, 0.05)",
+      borderRadius: "12px",
+      padding: "16px",
+      textAlign: "left"
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+        <span style={{ fontSize: "24px" }}>🌤</span>
+        <div>
+          <span style={{ fontSize: "10px", color: "#c7a27c", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Tarde (Ceremonia)</span>
+          <span style={{ fontSize: "18px", fontFamily: "var(--font-elegant)", fontWeight: "bold", color: "#fff" }}>22°C - 24°C</span>
+        </div>
+      </div>
+      <p style={{ fontSize: "12px", color: "#e6ddd5", margin: 0, opacity: 0.8, lineHeight: "1.4" }}>
+        Un clima templado y muy agradable, acompañado de una suave brisa de montaña durante la ceremonia al aire libre.
+      </p>
+    </div>
+
+    {/* NOCHE/RECEPCIÓN */}
+    <div style={{
+      background: "rgba(255, 255, 255, 0.02)",
+      border: "1px solid rgba(255, 255, 255, 0.05)",
+      borderRadius: "12px",
+      padding: "16px",
+      textAlign: "left"
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+        <span style={{ fontSize: "24px" }}>🌙</span>
+        <div>
+          <span style={{ fontSize: "10px", color: "#c7a27c", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Noche (Fiesta)</span>
+          <span style={{ fontSize: "18px", fontFamily: "var(--font-elegant)", fontWeight: "bold", color: "#fff" }}>14°C - 16°C</span>
+        </div>
+      </div>
+      <p style={{ fontSize: "12px", color: "#e6ddd5", margin: 0, opacity: 0.8, lineHeight: "1.4" }}>
+        La temperatura descenderá durante la noche. Les sugerimos estar listos para bailar y disfrutar de la celebración.
+      </p>
+    </div>
+  </div>
+
+  {/* NOTA DE VESTIMENTA / RECOMENDACIÓN */}
+  <div style={{
+    borderTop: "1px dashed rgba(199, 162, 124, 0.25)",
+    paddingTop: "16px",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "12px",
+    textAlign: "left"
+  }}>
+    <span style={{ fontSize: "18px", marginTop: "2px" }}>🧥</span>
     <p style={{
-      fontSize: "13px",
+      fontSize: "12px",
       fontFamily: "var(--font-body)",
       color: "#e6ddd5",
-      lineHeight: "1.5"
+      lineHeight: "1.6",
+      margin: 0,
+      opacity: 0.9
     }}>
-      San José de Ocoa se caracteriza por un agradable clima de montaña (entre 18°C y 24°C al atardecer). Les sugerimos traer un abrigo ligero para la noche.
+      <strong style={{ color: "#c7a27c" }}>Nota sobre el clima:</strong> Como Rancho La Vereda se encuentra en una zona montañosa, al caer la noche la temperatura suele bajar bastante. Les sugerimos contemplar un abrigo, saco, chaqueta o chal elegante dentro de su vestuario para disfrutar cómodamente de toda la celebración.
     </p>
   </div>
 </div>

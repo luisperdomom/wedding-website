@@ -159,6 +159,44 @@ export default function MusicPlayer() {
                 )}
               </div>
             </div>
+
+            {/* Brazo de Aguja del Tocadiscos (Skeuomorphic Needle Drop) */}
+            <svg
+              style={{
+                position: "absolute",
+                top: "-10px",
+                right: "-5px",
+                width: "80px",
+                height: "160px",
+                zIndex: 10,
+                transformOrigin: "70% 12.5%", // Rota desde la base superior derecha (70px de 100px y 25px de 200px)
+                transform: playing ? "rotate(-18deg)" : "rotate(15deg)",
+                transition: "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                pointerEvents: "none"
+              }}
+              viewBox="0 0 100 200"
+              fill="none"
+            >
+              {/* Soporte de la base del brazo */}
+              <circle cx="70" cy="25" r="14" fill="#120b08" stroke="#c7a27c" strokeWidth="1" />
+              <circle cx="70" cy="25" r="6" fill="#c7a27c" />
+              
+              {/* Soporte de descanso (Resta en este clip cuando no suena) */}
+              <path d="M 75 75 L 85 75 L 85 85" stroke="#8a8178" strokeWidth="1.5" strokeLinecap="round" />
+              
+              {/* El Brazo Metálico articulado dorado */}
+              <path d="M 70 25 L 35 130 L 25 155" stroke="#c7a27c" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+              
+              {/* Contrapeso (Base superior trasera) */}
+              <rect x="62" y="5" width="16" height="10" rx="1" fill="#2c1a13" stroke="#c7a27c" strokeWidth="1" />
+              
+              {/* Cabezal de Aguja (Cartucho / Cápsula) */}
+              <g transform="translate(14, 150) rotate(-22)">
+                <rect x="0" y="0" width="22" height="12" rx="2" fill="#120b08" stroke="#c7a27c" strokeWidth="1" />
+                {/* Aguja pequeña indicadora de contacto */}
+                <path d="M 18 12 L 21 17 M 21 17 L 16 17" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" />
+              </g>
+            </svg>
           </div>
 
           <span 

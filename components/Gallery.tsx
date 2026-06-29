@@ -3,6 +3,31 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div style={{
+      position: "relative",
+      width: "100%",
+      height: "100%",
+      background: "radial-gradient(circle, #fcfaf7 0%, #f3ede2 100%)",
+      overflow: "hidden"
+    }}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+        className={`object-cover transition-all duration-700 ease-out ${
+          isLoaded ? "scale-100 blur-0 opacity-100" : "scale-105 blur-md opacity-0"
+        }`}
+        onLoad={() => setIsLoaded(true)}
+      />
+    </div>
+  );
+}
+
 export default function Gallery() {
   const totalPhotos = 22;
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
@@ -28,6 +53,18 @@ export default function Gallery() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage]);
+
+  // Lock body scroll on active modal (Safari iOS scroll lock)
+  useEffect(() => {
+    if (selectedImage !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [selectedImage]);
 
   // Touch Swipe handlers
@@ -98,13 +135,9 @@ export default function Gallery() {
             className={`break-inside-avoid relative w-full ${getCardHeight(n)} cursor-pointer transition-all duration-350 hover:scale-[1.03] hover:shadow-[0_15px_30px_rgba(58,42,35,0.08)] border border-[#e5e0d8] hover:border-[#C7A27C] rounded-2xl overflow-hidden bg-white p-2`}
           >
             <div className="relative w-full h-full rounded-xl overflow-hidden">
-              <Image
+              <GalleryCardImage
                 src={`/photo${n}.webp`}
                 alt={`Foto de pre-boda ${n}`}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                className="object-cover"
-                loading="lazy"
               />
             </div>
           </div>
@@ -118,6 +151,7 @@ export default function Gallery() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{ height: "100dvh", touchAction: "none" }}
           className="fixed inset-0 bg-[#1e140f]/95 flex items-center justify-center z-[2000] select-none backdrop-blur-sm"
         >
           {/* Botón cerrar (SVG) */}

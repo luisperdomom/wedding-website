@@ -126,6 +126,20 @@ const [copiedText, setCopiedText] = useState<string | null>(null)
 
 const [envelopeOpened, setEnvelopeOpened] = useState(true)
 
+const [isMobile, setIsMobile] = useState(false)
+const [mounted, setMounted] = useState(false)
+
+useEffect(() => {
+  setMounted(true)
+  setIsMobile(window.innerWidth < 768)
+  
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768)
+  }
+  window.addEventListener("resize", handleResize)
+  return () => window.removeEventListener("resize", handleResize)
+}, [])
+
 useEffect(() => {
   const opened = sessionStorage.getItem("wedding_envelope_opened") === "true"
   setEnvelopeOpened(opened)
@@ -337,10 +351,14 @@ alignItems:"center",
 justifyContent:"center",
 textAlign:"center",
 color:"white",
-backgroundColor:"#1c2219" // Elegant dark nature background color while video loads on mobile
+backgroundColor:"#1c2219", // Elegant dark nature background color while video loads on mobile
+backgroundImage: mounted && isMobile ? "url('/venue1.jpg')" : "none",
+backgroundSize: "cover",
+backgroundPosition: "center"
 }}>
 
 {/* VIDEO */}
+{mounted && !isMobile && (
 <video
 autoPlay
 muted
@@ -358,6 +376,7 @@ left:0
 >
 <source src="/nature.mp4" type="video/mp4" />
 </video>
+)}
 
 {/* OVERLAY */}
 

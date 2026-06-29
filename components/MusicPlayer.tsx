@@ -37,7 +37,7 @@ export default function MusicPlayer() {
   return (
     <>
       {/* Elemento de Audio Oculto */}
-      <audio ref={audioRef} id="music" loop>
+      <audio ref={audioRef} id="music" loop preload="metadata">
         <source src="/song1.mp3" type="audio/mpeg" />
       </audio>
 

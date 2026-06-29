@@ -32,26 +32,35 @@ export default function GoldenPetals() {
       {petals.map((p) => (
         <span
           key={p.id}
-          className="absolute bg-gradient-to-br from-[#C7A27C]/35 to-[#F5F1EA]/15 rounded-full"
+          className="absolute"
           style={{
             left: `${p.left}%`,
-            width: `${p.size}px`,
-            height: `${p.size * 0.7}px`, // Oval leaf/petal shape
-            top: "-10px",
-            animation: `fall ${p.duration}s linear infinite, sway ${p.swayDuration}s ease-in-out infinite alternate`,
-            animationDelay: `${p.delay}s, 0s`,
-            filter: "blur(0.5px)",
+            top: "-20px",
+            animation: `fall ${p.duration}s linear infinite`,
+            animationDelay: `${p.delay}s`,
+            willChange: "transform",
           }}
-        />
+        >
+          <span
+            className="block bg-gradient-to-br from-[#C7A27C]/35 to-[#F5F1EA]/15 rounded-full"
+            style={{
+              width: `${p.size}px`,
+              height: `${p.size * 0.7}px`, // Oval leaf/petal shape
+              animation: `sway ${p.swayDuration}s ease-in-out infinite alternate`,
+              filter: "blur(0.5px)",
+              willChange: "transform",
+            }}
+          />
+        </span>
       ))}
 
       <style jsx global>{`
         @keyframes fall {
           0% {
-            top: -5%;
+            transform: translateY(0);
           }
           100% {
-            top: 105%;
+            transform: translateY(105vh);
           }
         }
         @keyframes sway {

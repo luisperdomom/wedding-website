@@ -19,8 +19,8 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-        className={`object-cover transition-all duration-700 ease-out ${
-          isLoaded ? "scale-100 blur-0 opacity-100" : "scale-105 blur-md opacity-0"
+        className={`object-cover transition-opacity duration-500 ease-out ${
+          isLoaded ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setIsLoaded(true)}
       />

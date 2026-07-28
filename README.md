@@ -1,4 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Luis & Ailyn — Invitación de boda
+
+Aplicación Next.js con invitaciones privadas, confirmación RSVP y panel
+administrativo protegido mediante una sesión firmada en el servidor.
+
+## Configuración privada
+
+Copia `.env.example` a `.env.local` y reemplaza todos los valores. Ninguna de
+estas variables debe usar el prefijo `NEXT_PUBLIC_`.
+
+- `ADMIN_PASSWORD`: contraseña única del panel.
+- `ADMIN_SESSION_SECRET`: secreto aleatorio de 32 caracteres o más. Puedes
+  generarlo con `openssl rand -base64 48`.
+- Las tres variables `FIREBASE_ADMIN_*`: credenciales de una cuenta de servicio
+  obtenidas en Firebase Console, en **Configuración del proyecto → Cuentas de
+  servicio → Generar nueva clave privada**.
+
+Configura los mismos valores en Vercel, dentro de **Project Settings →
+Environment Variables**, para Production, Preview y Development según
+corresponda. No guardes el archivo JSON de la cuenta de servicio en el repo.
+
+## Reglas de Firestore
+
+Después de configurar Firebase CLI, publica las reglas cerradas:
+
+```bash
+npx firebase-tools login
+npx firebase-tools use wedding-rsvp-88df0
+npx firebase-tools deploy --only firestore:rules
+```
+
+Haz el despliegue de las reglas solamente cuando la versión con las nuevas rutas
+del servidor también esté lista para producción; las reglas bloquean el acceso
+directo desde el navegador.
 
 ## Getting Started
 

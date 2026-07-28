@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // La web y el panel acceden a Firestore únicamente mediante rutas seguras
+    // del servidor. Firebase Admin omite estas reglas después de autenticar
+    // cada operación en Next.js.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

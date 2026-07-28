@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/firebase";
-import { collection, addDoc } from "firebase/firestore";
 
 interface RSVPFormProps {
   guestId: string | null;
+  token: string | null;
   guestName: string | null;
   isValidGuest: boolean | null; // null means loading verification
   alreadyAnswered: boolean;
@@ -19,6 +18,7 @@ interface RSVPFormProps {
 
 export default function RSVPForm({
   guestId,
+  token,
   guestName,
   isValidGuest,
   alreadyAnswered,
@@ -56,7 +56,7 @@ export default function RSVPForm({
       return;
     }
 
-    if (!guestId || !guestName) {
+    if (!guestId || !guestName || !token) {
       alert("Error: No se pudo identificar al invitado.");
       return;
     }
@@ -64,19 +64,24 @@ export default function RSVPForm({
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "rsvp"), {
-        guestId,
-        guestName,
-        attending,
-        message: message.trim(),
-        created: new Date(),
+      const response = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          guestId,
+          token,
+          attending,
+          message,
+        }),
       });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(data.error || "No se pudo guardar la confirmación.");
 
       setSubmitted(true);
       setAlreadyAnswered(true);
     } catch (error) {
       console.error("Error al registrar RSVP:", error);
-      alert("Ocurrió un error al guardar tu confirmación. Por favor inténtalo de nuevo.");
+      alert(error instanceof Error ? error.message : "Ocurrió un error al guardar tu confirmación.");
     } finally {
       setLoading(false);
     }

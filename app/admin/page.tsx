@@ -1,24 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/firebase";
-import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 
 // Interface Definitions
 interface RSVPResponse {
+  id: string;
   guestId: string;
   guestName: string;
   name?: string; // Soporte para registros antiguos de prueba
   attending: string;
   message?: string;
-  created: any;
+  created: string | null;
 }
 
 interface Guest {
   id: string;
   name: string;
   token: string;
-  createdAt?: any;
+  createdAt?: string | null;
   phone?: string;
   companion?: string;
 }
@@ -46,13 +45,18 @@ export default function Admin() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedMsgIndex, setCopiedMsgIndex] = useState<number | null>(null);
 
-  // Secret admin password configuration (supports env variable, defaults to "boda2026")
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "boda2026";
-
-  // Check auth session on mount
+  // Check the signed, httpOnly server session on mount.
   useEffect(() => {
-    const isAuth = sessionStorage.getItem("wedding_admin_auth") === "true";
-    setIsAuthenticated(isAuth);
+    async function checkSession() {
+      try {
+        const response = await fetch("/api/admin/session", { cache: "no-store" });
+        const data = (await response.json()) as { authenticated?: boolean };
+        setIsAuthenticated(data.authenticated === true);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    }
+    checkSession();
   }, []);
 
   // Fetch all dashboard data
@@ -62,21 +66,18 @@ export default function Admin() {
     async function loadData() {
       setLoading(true);
       try {
-        // Load RSVPs
-        const rsvpSnap = await getDocs(collection(db, "rsvp"));
-        const rsvpData: RSVPResponse[] = [];
-        rsvpSnap.forEach((d) => {
-          rsvpData.push({ id: d.id, ...d.data() } as any);
-        });
-        setRsvps(rsvpData);
-
-        // Load Guests
-        const guestSnap = await getDocs(collection(db, "guests"));
-        const guestData: Guest[] = [];
-        guestSnap.forEach((d) => {
-          guestData.push({ id: d.id, ...d.data() } as Guest);
-        });
-        setGuests(guestData);
+        const response = await fetch("/api/admin/dashboard", { cache: "no-store" });
+        if (response.status === 401) {
+          setIsAuthenticated(false);
+          return;
+        }
+        if (!response.ok) throw new Error("No se pudieron cargar los datos.");
+        const data = (await response.json()) as {
+          rsvps: RSVPResponse[];
+          guests: Guest[];
+        };
+        setRsvps(data.rsvps);
+        setGuests(data.guests);
       } catch (err) {
         console.error("Error cargando datos de Firebase:", err);
       } finally {
@@ -87,7 +88,7 @@ export default function Admin() {
     loadData();
   }, [isAuthenticated]);
 
-  // Handle auto-generation of ID and Token in form
+  // Show a slug preview. The final unique ID and secure token are generated server-side.
   useEffect(() => {
     if (!newGuestName) {
       setNewGuestId("");
@@ -104,73 +105,66 @@ export default function Admin() {
       .trim()
       .replace(/\s+/g, "-");
 
-    // Generate random 6 character uppercase token
-    const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // clear alphanumerics
-    let tokenGen = "";
-    for (let i = 0; i < 6; i++) {
-      tokenGen += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-
     setNewGuestId(slug);
-    setNewGuestToken(tokenGen);
+    setNewGuestToken("Se generará de forma segura");
   }, [newGuestName]);
 
   // Authenticate Admin
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem("wedding_admin_auth", "true");
-      setIsAuthenticated(true);
-      setErrorErrorMsg("");
-    } else {
-      setErrorErrorMsg("Contraseña incorrecta. Por favor inténtalo de nuevo.");
+    setErrorErrorMsg("");
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (response.ok) {
+        setPassword("");
+        setIsAuthenticated(true);
+      } else {
+        setErrorErrorMsg(data.error || "No se pudo iniciar sesión.");
+      }
+    } catch {
+      setErrorErrorMsg("No se pudo conectar con el servidor.");
     }
   };
 
   // Logout Admin
-  const handleLogout = () => {
-    sessionStorage.removeItem("wedding_admin_auth");
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
     setIsAuthenticated(false);
     setPassword("");
+    setGuests([]);
+    setRsvps([]);
   };
 
   // Add new guest to Firestore
   const handleAddGuest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGuestName || !newGuestId || !newGuestToken) return;
+    if (!newGuestName) return;
 
     setAddingGuest(true);
     try {
-      const guestRef = doc(db, "guests", newGuestId);
-      const guestPayload: any = {
-        name: newGuestName,
-        token: newGuestToken,
-        createdAt: new Date() // For rolling 7-day expiration!
-      };
-      if (newGuestPhone.trim()) {
-        guestPayload.phone = newGuestPhone.trim();
+      const response = await fetch("/api/admin/guests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newGuestName,
+          phone: newGuestPhone,
+          companion: newGuestCompanion,
+        }),
+      });
+      const data = (await response.json()) as { guest?: Guest; error?: string };
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
       }
-      if (newGuestCompanion.trim()) {
-        guestPayload.companion = newGuestCompanion.trim();
+      if (!response.ok || !data.guest) {
+        throw new Error(data.error || "No se pudo añadir el invitado.");
       }
-      
-      await setDoc(guestRef, guestPayload);
-
-      // Update local state
-      const newlyAdded: Guest = {
-        id: newGuestId,
-        name: newGuestName,
-        token: newGuestToken,
-        createdAt: new Date()
-      };
-      if (newGuestPhone.trim()) {
-        newlyAdded.phone = newGuestPhone.trim();
-      }
-      if (newGuestCompanion.trim()) {
-        newlyAdded.companion = newGuestCompanion.trim();
-      }
-      
-      setGuests((prev) => [newlyAdded, ...prev]);
+      setGuests((prev) => [data.guest!, ...prev]);
 
       // Reset form
       setNewGuestName("");
@@ -180,7 +174,7 @@ export default function Admin() {
       setNewGuestCompanion("");
     } catch (err) {
       console.error("Error al guardar invitado:", err);
-      alert("Error al añadir invitado a la base de datos.");
+      alert(err instanceof Error ? err.message : "Error al añadir invitado.");
     } finally {
       setAddingGuest(false);
     }
@@ -193,7 +187,14 @@ export default function Admin() {
     }
 
     try {
-      await deleteDoc(doc(db, "guests", id));
+      const response = await fetch(`/api/admin/guests/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
+      if (!response.ok) throw new Error("No se pudo eliminar el invitado.");
       setGuests((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
       console.error("Error al eliminar invitado:", err);
@@ -271,11 +272,7 @@ export default function Admin() {
       let dateStr = "";
       try {
         if (r.created) {
-          if (r.created.toDate) {
-            dateStr = r.created.toDate().toLocaleString();
-          } else {
-            dateStr = new Date(r.created).toLocaleString();
-          }
+          dateStr = new Date(r.created).toLocaleString();
         }
       } catch (e) {
         console.error("Error formatting date:", e);
@@ -520,7 +517,7 @@ export default function Admin() {
                           {r.message ? `"${r.message}"` : <span className="text-gray-300">Ninguno</span>}
                         </td>
                         <td className="px-6 py-4 text-xs text-[#8a8178]">
-                          {r.created?.toDate ? r.created.toDate().toLocaleDateString() : new Date(r.created).toLocaleDateString()}
+                          {r.created ? new Date(r.created).toLocaleDateString() : "—"}
                         </td>
                       </tr>
                     ))}

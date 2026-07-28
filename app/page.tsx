@@ -2,8 +2,6 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { db } from "../firebase"
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
@@ -56,12 +54,15 @@ useEffect(() => {
     }
 
     try {
-      const guestRef = doc(db, "guests", guestId)
-      const guestSnap = await getDoc(guestRef)
+      const response = await fetch(
+        `/api/invitation?guest=${encodeURIComponent(guestId)}&token=${encodeURIComponent(token)}`,
+        { cache: "no-store" }
+      )
+      if (!response.ok) throw new Error("No se pudo validar la invitación")
+      const result = await response.json()
 
-      if (guestSnap.exists()) {
-        const guestData = guestSnap.data()
-        if (guestData.token === token) {
+      if (result.valid) {
+          const guestData = result.guest
           setPrimaryName(guestData.name)
           if (guestData.companion && guestData.companion.trim()) {
             const compName = guestData.companion.trim()
@@ -79,32 +80,11 @@ useEffect(() => {
             setCompanionName("")
           }
           setIsValidGuest(true)
-
-          // Verificar si ha expirado la invitación (validez de 7 días)
-          if (guestData.createdAt) {
-            const createdTime = guestData.createdAt.toDate 
-              ? guestData.createdAt.toDate().getTime() 
-              : new Date(guestData.createdAt).getTime()
-              
-            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
-            const isExpiredTime = Date.now() > (createdTime + sevenDaysInMs)
-            setIsExpired(isExpiredTime)
-          }
-
-          // Verificar si ya tiene respuesta registrada
-          const q = query(
-            collection(db, "rsvp"),
-            where("guestId", "==", guestId)
-          )
-          const snapshot = await getDocs(q)
-          if (!snapshot.empty) {
+          setIsExpired(result.expired === true)
+          if (result.answered) {
             setAlreadyAnswered(true)
-            const rsvpData = snapshot.docs[0].data()
-            setGuestAttendingChoice(rsvpData.attending)
+            setGuestAttendingChoice(result.attending)
           }
-        } else {
-          setIsValidGuest(false)
-        }
       } else {
         setIsValidGuest(false)
       }
@@ -863,7 +843,7 @@ style={{
         color:"#3b2b20",
         marginBottom: "8px"
       }}>
-        2024 · El "Sí" más esperado
+        2024 · El &ldquo;Sí&rdquo; más esperado
       </h3>
 
       <p style={{
@@ -2163,6 +2143,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
 {/* RSVP */}
 <RSVPForm
   guestId={guestId}
+  token={token}
   guestName={guestName}
   isValidGuest={isValidGuest}
   alreadyAnswered={alreadyAnswered}

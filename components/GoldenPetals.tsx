@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 interface Petal {
   id: number;
   left: number; // Percentage (0-100)
@@ -12,20 +10,19 @@ interface Petal {
 }
 
 export default function GoldenPetals() {
-  const [petals, setPetals] = useState<Petal[]>([]);
-
-  useEffect(() => {
-    // Generate 22 randomized golden petals (a nod to their 22 pre-wedding photos!)
-    const items = Array.from({ length: 22 }, (_, i) => ({
+  // Deterministic values prevent a server/client hydration mismatch while
+  // preserving the organic distribution.
+  const petals: Petal[] = Array.from({ length: 22 }, (_, i) => {
+    const variation = (seed: number) => ((i + 1) * seed * 37) % 101 / 100;
+    return {
       id: i,
-      left: Math.random() * 100,
-      size: Math.random() * 8 + 6, // 6px to 14px size
-      delay: Math.random() * -25, // Start immediately in various states of fall
-      duration: Math.random() * 15 + 15, // Very slow, floaty fall (15s to 30s)
-      swayDuration: Math.random() * 3 + 3, // 3s to 6s sway duration
-    }));
-    setPetals(items);
-  }, []);
+      left: variation(3) * 100,
+      size: variation(5) * 8 + 6,
+      delay: variation(7) * -25,
+      duration: variation(11) * 15 + 15,
+      swayDuration: variation(13) * 3 + 3,
+    };
+  });
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[15] overflow-hidden">

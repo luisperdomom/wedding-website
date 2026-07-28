@@ -11,9 +11,13 @@ estas variables debe usar el prefijo `NEXT_PUBLIC_`.
 - `ADMIN_PASSWORD`: contraseña única del panel.
 - `ADMIN_SESSION_SECRET`: secreto aleatorio de 32 caracteres o más. Puedes
   generarlo con `openssl rand -base64 48`.
-- Las tres variables `FIREBASE_ADMIN_*`: credenciales de una cuenta de servicio
+- Las variables `FIREBASE_ADMIN_*`: credenciales de una cuenta de servicio
   obtenidas en Firebase Console, en **Configuración del proyecto → Cuentas de
   servicio → Generar nueva clave privada**.
+
+En Vercel se recomienda `FIREBASE_ADMIN_PRIVATE_KEY_BASE64`, que evita problemas
+con saltos de línea. Si está configurada, tiene prioridad sobre
+`FIREBASE_ADMIN_PRIVATE_KEY`.
 
 Configura los mismos valores en Vercel, dentro de **Project Settings →
 Environment Variables**, para Production, Preview y Development según

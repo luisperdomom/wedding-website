@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, type MouseEvent } from "react"
 import { useSearchParams } from "next/navigation"
 import AOS from "aos"
 import "aos/dist/aos.css"
@@ -106,19 +106,14 @@ const [copiedText, setCopiedText] = useState<string | null>(null)
 
 const [envelopeOpened, setEnvelopeOpened] = useState(true)
 
-const [isMobile, setIsMobile] = useState(false)
-const [mounted, setMounted] = useState(false)
-
-useEffect(() => {
-  setMounted(true)
-  setIsMobile(window.innerWidth < 768)
-  
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768)
-  }
-  window.addEventListener("resize", handleResize)
-  return () => window.removeEventListener("resize", handleResize)
-}, [])
+const handleMenuNavigation = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+  event.preventDefault()
+  setMenuOpen(false)
+  window.setTimeout(() => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+    window.history.replaceState(null, "", `#${sectionId}`)
+  }, 50)
+}
 
 useEffect(() => {
   const opened = sessionStorage.getItem("wedding_envelope_opened") === "true"
@@ -135,6 +130,13 @@ useEffect(() => {
     document.body.style.overflow = "unset"
   }
 }, [isValidGuest, envelopeOpened])
+
+useEffect(() => {
+  if (!menuOpen) return
+  const previousOverflow = document.body.style.overflow
+  document.body.style.overflow = "hidden"
+  return () => { document.body.style.overflow = previousOverflow }
+}, [menuOpen])
 
 const handleCopyAccount = (text: string) => {
   navigator.clipboard.writeText(text).then(() => {
@@ -288,42 +290,47 @@ color:"#333"
 
 {/* BOTON HAMBURGUESA */}
 
-<div
-className="menu-toggle"
+<button
+type="button"
+className={`menu-toggle ${menuOpen ? "open" : ""}`}
 onClick={()=>setMenuOpen(!menuOpen)}
+aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+aria-expanded={menuOpen}
 >
 <span></span>
 <span></span>
 <span></span>
-</div>
+</button>
 
 {/* LINKS */}
 
 <div className={`nav-links ${menuOpen ? "open" : ""}`}>
 
-<a href="#inicio" onClick={()=>setMenuOpen(false)}>Inicio</a>
+<a href="#inicio" onClick={(event)=>handleMenuNavigation(event, "inicio")}>Inicio</a>
 
-<a href="#historia" onClick={()=>setMenuOpen(false)}>Historia</a>
+<a href="#historia" onClick={(event)=>handleMenuNavigation(event, "historia")}>Historia</a>
 
-<a href="#galeria" onClick={()=>setMenuOpen(false)}>Galería</a>
+<a href="#galeria" onClick={(event)=>handleMenuNavigation(event, "galeria")}>Galería</a>
 
-<a href="#evento" onClick={()=>setMenuOpen(false)}>Evento</a>
+<a href="#evento" onClick={(event)=>handleMenuNavigation(event, "evento")}>Evento</a>
 
-<a href="#vestimenta" onClick={()=>setMenuOpen(false)}>Vestimenta</a>
+<a href="#vestimenta" onClick={(event)=>handleMenuNavigation(event, "vestimenta")}>Vestimenta</a>
 
-<a href="#regalos" onClick={()=>setMenuOpen(false)}>Regalos</a>
+<a href="#regalos" onClick={(event)=>handleMenuNavigation(event, "regalos")}>Regalos</a>
 
-<a href="#faq" onClick={()=>setMenuOpen(false)}>FAQ</a>
+<a href="#faq" onClick={(event)=>handleMenuNavigation(event, "faq")}>FAQ</a>
 
-<a href="#rsvp" onClick={()=>setMenuOpen(false)}>RSVP</a>
+<a href="#rsvp" onClick={(event)=>handleMenuNavigation(event, "rsvp")}>RSVP</a>
+
+</div>
 
 </div>
 
-</div>
+{menuOpen && <button type="button" className="menu-backdrop" aria-label="Cerrar menú" onClick={() => setMenuOpen(false)} />}
 
 {/* HERO */}
 
-<section id="inicio" style={{
+<section id="inicio" className="hero-section" style={{
 position:"relative",
 height:"100vh",
 display:"flex",
@@ -332,19 +339,20 @@ justifyContent:"center",
 textAlign:"center",
 color:"white",
 backgroundColor:"#1c2219", // Elegant dark nature background color while video loads on mobile
-backgroundImage: mounted && isMobile ? "url('/venue1.jpg')" : "none",
+backgroundImage: "url('/mobile-hero.jpg')",
 backgroundSize: "cover",
 backgroundPosition: "center"
 }}>
 
 {/* VIDEO */}
-{mounted && !isMobile && (
 <video
+className="hero-video"
 autoPlay
 muted
 loop
 playsInline
-preload="auto"
+preload="metadata"
+poster="/mobile-hero.jpg"
 style={{
 position:"absolute",
 width:"100%",
@@ -354,9 +362,8 @@ top:0,
 left:0
 }}
 >
-<source src="/nature.mp4" type="video/mp4" />
+<source src="/nature-optimized.mp4" type="video/mp4" />
 </video>
-)}
 
 {/* OVERLAY */}
 
@@ -385,7 +392,7 @@ opacity:0.85
 NUESTRA BODA
 </p>
 
-<h1 style={{
+<h1 className="hero-title" style={{
 fontFamily:"var(--font-elegant)",
 fontWeight:300,
 letterSpacing:"12px",
@@ -425,7 +432,7 @@ Descubrir más ↓
 </div>
 
 {/* INFO BOTTOM */}
-<div style={{
+<div className="hero-bottom" style={{
 position:"absolute",
 bottom:"30px",
 width:"100%",
@@ -570,6 +577,7 @@ style={{
 <Countdown targetDate="2026-12-12T16:00:00" />
 
 <section
+id="historia"
 data-aos="fade-up"
 style={{
 background:"#f6f3ee",
@@ -618,7 +626,7 @@ Nuestra Historia
       alt="Luis & Ailyn"
       fill
       className="object-cover"
-      priority
+      loading="lazy"
     />
   </div>
 
@@ -635,7 +643,7 @@ Nuestra Historia
     </svg>
 
     {/* PÁRRAFO 1 - CON LETRA CAPITAL (DROP CAP) */}
-    <p 
+    <p className="mobile-readable"
       data-aos="fade-up"
       data-aos-delay="0"
       style={{
@@ -662,7 +670,7 @@ Nuestra Historia
     </p>
 
     {/* PÁRRAFO 2 */}
-    <p 
+    <p className="mobile-readable"
       data-aos="fade-up"
       data-aos-delay="200"
       style={{
@@ -679,7 +687,7 @@ Nuestra Historia
     </p>
 
     {/* PÁRRAFO 3 */}
-    <p 
+    <p className="mobile-readable"
       data-aos="fade-up"
       data-aos-delay="400"
       style={{
@@ -1543,7 +1551,9 @@ borderRadius:"8px"
       boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
       border: "1px solid #e5e0d8"
     }}>
-      <span className="text-3xl">👗</span>
+      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#C7A27C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+        <path d="M19 7c0 5-2 8-6 11l5 7-7 16h26l-7-16 5-7c-4-3-6-6-6-11-3 2-7 2-10 0Z"/><path d="M18 25h12M24 10v15"/>
+      </svg>
       <h3 
         className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
         style={{ fontFamily: "var(--font-elegant)" }}
@@ -1554,7 +1564,7 @@ borderRadius:"8px"
         className="text-sm text-[#8a8178] leading-relaxed"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        Vestido largo formal o midi, en telas frescas y fluidas con caída elegante (como satín, seda, lino o crepé). Sugerimos colores inspirados en la naturaleza: tonos tierra, oliva, salvia, terracota, ocre o rosa empolvado. <br />
+        Vestido formal largo o midi, en telas frescas y fluidas. Sugerimos tonos inspirados en la naturaleza, como tierra, oliva, salvia, terracota o rosa empolvado. <br />
         <span className="text-xs italic text-[#C7A27C] block mt-1.5">* Se solicita evitar el uso de blanco, marfil, crema o azul.</span>
       </p>
     </div>
@@ -1567,7 +1577,9 @@ borderRadius:"8px"
       boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
       border: "1px solid #e5e0d8"
     }}>
-      <span className="text-3xl">👔</span>
+      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#C7A27C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+        <path d="M15 9 7 14l3 9 5-3v21h18V20l5 3 3-9-8-5-4 6H19l-4-6Z"/><path d="m20 9 4 6 4-6M24 15v26"/>
+      </svg>
       <h3 
         className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
         style={{ fontFamily: "var(--font-elegant)" }}
@@ -1578,7 +1590,7 @@ borderRadius:"8px"
         className="text-sm text-[#8a8178] leading-relaxed"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        Traje formal de lino o algodón en tonos claros (como beige, arena o azul claro), o guayabera blanca de manga larga con pantalón de vestir de tono neutro y calzado tipo mocasín.
+        Traje formal de lino o algodón en tonos claros, o guayabera blanca de manga larga con pantalón de vestir neutro y calzado formal.
       </p>
     </div>
   </div>
@@ -1999,6 +2011,29 @@ borderRadius:"8px"
     </p>
   </div>
 
+  {/* DIVIDER */}
+  <div style={{ width:"40px", height:"1px", background:"rgba(199, 162, 124, 0.25)", zIndex: 10 }}/>
+
+  {/* PAYPAL */}
+  <div style={{ width: "100%", zIndex: 10 }}>
+    <p style={{ fontFamily:"var(--font-elegant)", letterSpacing:"3px", fontSize:"13px", color:"#c7a27c", marginBottom:"10px" }}>
+      PAYPAL
+    </p>
+    <p style={{ fontFamily:"var(--font-body)", fontSize:"13px", color:"#e6ddd5", marginBottom:"18px" }}>
+      Para regalos internacionales o pagos digitales.
+    </p>
+    <a
+      href="https://www.paypal.me/luisperdomom"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="button"
+      style={{ background:"#ffffff", color:"#27346a", fontFamily:"var(--font-elegant)", letterSpacing:"1.5px", fontSize:"12px", fontWeight:600, display:"inline-flex", alignItems:"center", gap:"9px" }}
+    >
+      <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20H5l3-16h7c4 0 6 2 5 6-.7 3-3 5-7 5H9l-1 5Z"/><path d="M10 15 9 21H6"/></svg>
+      ENVIAR POR PAYPAL
+    </a>
+  </div>
+
 </div>
 
 </section>
@@ -2184,7 +2219,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
         fill
         className="object-contain"
         style={{ filter: "brightness(0) invert(1)", opacity: 0.95 }}
-        priority
+        loading="lazy"
       />
     </div>
   </div>

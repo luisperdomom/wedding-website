@@ -31,6 +31,7 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
 export default function Gallery() {
   const totalPhotos = 22;
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
   
   // Touch gestures state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -128,7 +129,7 @@ export default function Gallery() {
         data-aos-delay="200"
         className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-5 max-w-[1100px] mx-auto px-4 space-y-5"
       >
-        {Array.from({ length: totalPhotos }, (_, i) => i + 1).map((n) => (
+        {Array.from({ length: showAll ? totalPhotos : 10 }, (_, i) => i + 1).map((n) => (
           <div 
             key={n} 
             onClick={() => setSelectedImage(n)}
@@ -143,6 +144,16 @@ export default function Gallery() {
           </div>
         ))}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowAll((current) => !current)}
+        className="button button-dark mt-12 cursor-pointer"
+        style={{ fontFamily: "var(--font-elegant)", letterSpacing: "2px", fontSize: "12px" }}
+        aria-expanded={showAll}
+      >
+        {showAll ? "VER MENOS FOTOS" : "VER GALERÍA COMPLETA"}
+      </button>
 
       {/* Visor Fullscreen (Ahora se abrirá perfecto en el Viewport central) */}
       {selectedImage && (

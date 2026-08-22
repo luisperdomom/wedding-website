@@ -18,8 +18,8 @@ function getPrivateKey() {
   return value.trim().replace(/\\n/g, "\n");
 }
 
-export function getAdminDb() {
-  const adminApp =
+function getAdminApp() {
+  return (
     getApps()[0] ??
     initializeApp({
       credential: cert({
@@ -27,6 +27,10 @@ export function getAdminDb() {
         clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
         privateKey: getPrivateKey(),
       }),
-    });
-  return getFirestore(adminApp);
+    })
+  );
+}
+
+export function getAdminDb() {
+  return getFirestore(getAdminApp());
 }

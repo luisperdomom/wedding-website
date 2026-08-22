@@ -14,6 +14,8 @@ estas variables debe usar el prefijo `NEXT_PUBLIC_`.
 - Las variables `FIREBASE_ADMIN_*`: credenciales de una cuenta de servicio
   obtenidas en Firebase Console, en **Configuración del proyecto → Cuentas de
   servicio → Generar nueva clave privada**.
+- Las variables `CLOUDINARY_*`: credenciales del Product Environment de
+  Cloudinary. El API Secret nunca debe exponerse en el navegador.
 
 En Vercel se recomienda `FIREBASE_ADMIN_PRIVATE_KEY_BASE64`, que evita problemas
 con saltos de línea. Si está configurada, tiene prioridad sobre
@@ -22,6 +24,14 @@ con saltos de línea. Si está configurada, tiene prioridad sobre
 Configura los mismos valores en Vercel, dentro de **Project Settings →
 Environment Variables**, para Production, Preview y Development según
 corresponda. No guardes el archivo JSON de la cuenta de servicio en el repo.
+
+## Álbum compartido de la boda
+
+La ruta `/momentos` permite subir fotos de hasta 25 MB y videos de hasta 50 MB
+mediante cargas firmadas directamente a Cloudinary. Configura las tres variables
+`CLOUDINARY_*` también en Vercel. El QR descargable desde el admin apunta
+directamente a `https://tu-dominio.com/momentos`; no requiere código, token ni
+cuenta. La ruta no está enlazada desde la invitación principal.
 
 ## Reglas de Firestore
 

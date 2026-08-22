@@ -32,6 +32,20 @@ interface ImportGuestRow {
   error?: string;
 }
 
+interface AdminMoment {
+  id: string;
+  authorName: string;
+  caption: string;
+  mediaType: "image" | "video" | "message";
+  mediaUrl: string;
+  likes: number;
+  created: string | null;
+  category: string;
+  visibility: "public" | "private";
+  featured: boolean;
+  status: "published" | "hidden";
+}
+
 const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 const REMINDER_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -43,7 +57,7 @@ export default function Admin() {
   // Dashboard Data State
   const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [activeTab, setActiveTab] = useState<"rsvps" | "guests" | "reminders">("rsvps");
+  const [activeTab, setActiveTab] = useState<"rsvps" | "guests" | "reminders" | "moments">("rsvps");
   const [loading, setLoading] = useState(true);
 
   // New Guest Form State
@@ -58,6 +72,12 @@ export default function Admin() {
   const [importFileName, setImportFileName] = useState("");
   const [importError, setImportError] = useState("");
   const [importingGuests, setImportingGuests] = useState(false);
+  const [moments, setMoments] = useState<AdminMoment[]>([]);
+  const [momentsLoading, setMomentsLoading] = useState(false);
+  const [momentsError, setMomentsError] = useState("");
+  const [momentsOpen, setMomentsOpen] = useState(true);
+  const [momentFilter, setMomentFilter] = useState<"all" | "public" | "private" | "featured" | "hidden" | "image" | "video" | "message">("all");
+  const [selectedMoments, setSelectedMoments] = useState<Set<string>>(new Set());
   
   // Feedback states
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -105,6 +125,26 @@ export default function Admin() {
 
     loadData();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== "moments") return;
+    async function loadMoments() {
+      setMomentsLoading(true);
+      setMomentsError("");
+      try {
+        const response = await fetch("/api/moments/posts", { cache: "no-store" });
+        const data = (await response.json()) as { posts?: AdminMoment[]; albumOpen?: boolean; error?: string };
+        if (!response.ok) throw new Error(data.error || "No se pudieron cargar los momentos.");
+        setMoments(data.posts || []);
+        setMomentsOpen(data.albumOpen !== false);
+      } catch (error) {
+        setMomentsError(error instanceof Error ? error.message : "No se pudieron cargar los momentos.");
+      } finally {
+        setMomentsLoading(false);
+      }
+    }
+    void loadMoments();
+  }, [activeTab, isAuthenticated]);
 
   // Show a slug preview. The final unique ID and secure token are generated server-side.
   useEffect(() => {
@@ -367,6 +407,84 @@ export default function Admin() {
       setImportingGuests(false);
     }
   };
+
+  const handleDeleteMoment = async (moment: AdminMoment) => {
+    if (!confirm(`¿Eliminar la publicación de ${moment.authorName}? El archivo también será eliminado.`)) return;
+    const response = await fetch(`/api/moments/posts/${moment.id}`, { method: "DELETE" });
+    if (response.status === 401) {
+      setIsAuthenticated(false);
+      return;
+    }
+    if (!response.ok) {
+      alert("No se pudo eliminar el momento.");
+      return;
+    }
+    setMoments((current) => current.filter((item) => item.id !== moment.id));
+  };
+
+  const handleMomentAction = async (
+    moment: AdminMoment,
+    action: "hide" | "restore" | "toggle-featured",
+  ) => {
+    const response = await fetch(`/api/moments/posts/${moment.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (!response.ok) {
+      alert("No se pudo actualizar la publicación.");
+      return;
+    }
+    setMoments((current) =>
+      current.map((item) =>
+        item.id === moment.id
+          ? {
+              ...item,
+              status: action === "hide" ? "hidden" : action === "restore" ? "published" : item.status,
+              featured: action === "toggle-featured" ? !item.featured : item.featured,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleToggleMomentsOpen = async () => {
+    const nextOpen = !momentsOpen;
+    const response = await fetch("/api/admin/moments/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ open: nextOpen }),
+    });
+    if (!response.ok) {
+      alert("No se pudo cambiar el estado del álbum.");
+      return;
+    }
+    setMomentsOpen(nextOpen);
+  };
+
+  const handleDownloadMoments = async () => {
+    const response = await fetch("/api/admin/moments/download");
+    const data = (await response.json()) as { downloadUrl?: string; error?: string };
+    if (!response.ok || !data.downloadUrl) {
+      alert(data.error || "No se pudo preparar la descarga.");
+      return;
+    }
+    window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleBulkMomentAction = async (action: "hide" | "restore" | "toggle-featured" | "delete") => {
+    const chosen = moments.filter((item) => selectedMoments.has(item.id));
+    if (!chosen.length) return;
+    if (action === "delete" && !confirm(`¿Eliminar permanentemente ${chosen.length} publicaciones y sus archivos?`)) return;
+    for (const moment of chosen) {
+      const response = await fetch(`/api/moments/posts/${moment.id}`, action === "delete" ? { method: "DELETE" } : { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      if (!response.ok) { alert(`No se pudo procesar la publicación de ${moment.authorName}.`); break; }
+      setMoments((current) => action === "delete" ? current.filter(item => item.id !== moment.id) : current.map(item => item.id === moment.id ? { ...item, status: action === "hide" ? "hidden" : action === "restore" ? "published" : item.status, featured: action === "toggle-featured" ? !item.featured : item.featured } : item));
+    }
+    setSelectedMoments(new Set());
+  };
+
+  const momentDownloadUrl = (url: string) => url.includes("/upload/") ? url.replace("/upload/", "/upload/fl_attachment/") : url;
 
   // Delete guest from Firestore
   const handleDeleteGuest = async (id: string, name: string) => {
@@ -659,6 +777,7 @@ export default function Admin() {
       (b.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER),
     );
   const dueReminderCount = unansweredGuests.filter((item) => item.isDue).length;
+  const filteredMoments = moments.filter((moment) => momentFilter === "all" || (momentFilter === "public" && moment.visibility === "public") || (momentFilter === "private" && moment.visibility === "private") || (momentFilter === "featured" && moment.featured) || (momentFilter === "hidden" && moment.status === "hidden") || moment.mediaType === momentFilter);
 
   const formatRemainingTime = (remainingMs: number | null) => {
     if (remainingMs === null) return "Fecha no disponible";
@@ -756,6 +875,16 @@ export default function Admin() {
               }`}
             >
               Recordatorios ({dueReminderCount})
+            </button>
+            <button
+              onClick={() => setActiveTab("moments")}
+              className={`px-5 py-2.5 rounded-lg text-sm tracking-[1px] font-medium transition-all cursor-pointer ${
+                activeTab === "moments"
+                  ? "bg-[#3A2A23] text-white"
+                  : "text-[#8a8178] hover:text-[#3A2A23] hover:bg-white border border-transparent"
+              }`}
+            >
+              Momentos
             </button>
           </div>
 
@@ -1207,6 +1336,75 @@ export default function Admin() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Wedding moments moderation */}
+        {activeTab === "moments" && (
+          <div className="mt-6">
+            <div className="bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm mb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                <div>
+                  <h3 className="text-base uppercase tracking-[1.5px] font-bold text-[#3A2A23]">
+                    Álbum compartido
+                  </h3>
+                  <p className="text-sm text-[#8a8178] mt-2 max-w-2xl">
+                    Revisa las fotos y videos compartidos en <code>/momentos</code>. Al eliminar una publicación también se elimina su archivo.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-3 shrink-0">
+                  <img src="/api/admin/moments/qr" alt="Código QR de acceso al álbum" className="w-20 h-20 rounded-lg border border-[#e5e0d8] bg-white p-1" />
+                  <a href="/api/admin/moments/qr" download="qr-momentos-luis-aylin.svg" className="text-xs uppercase tracking-[0.7px] font-semibold px-3 py-2.5 rounded-lg border border-[#C7A27C] text-[#8b6747] hover:bg-[#FAF8F5]" style={{ textDecoration: "none" }}>
+                    📥 Descargar QR
+                  </a>
+                  <button onClick={() => void handleDownloadMoments()} className="text-xs uppercase tracking-[0.7px] font-semibold px-3 py-2.5 rounded-lg border border-[#7A8468] text-[#657052] hover:bg-[#f3f6ef] cursor-pointer">
+                    📦 Descargar álbum
+                  </button>
+                  <button onClick={() => void handleToggleMomentsOpen()} className={`text-xs uppercase tracking-[0.7px] font-semibold px-3 py-2.5 rounded-lg border cursor-pointer ${momentsOpen ? "border-red-200 text-red-600 hover:bg-red-50" : "border-[#c0e0cc] text-[#4d713c] bg-[#e2f0d9]"}`}>
+                    {momentsOpen ? "Cerrar publicaciones" : "Reabrir publicaciones"}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white border border-[#e5e0d8] rounded-2xl p-4 shadow-sm mb-5 flex flex-col lg:flex-row gap-4 justify-between">
+              <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
+                {([['all','Todas'],['public','Públicas'],['private','Solo novios'],['featured','Favoritas'],['hidden','Ocultas'],['image','Fotos'],['video','Videos'],['message','Mensajes']] as const).map(([value,label]) => <button key={value} onClick={() => { setMomentFilter(value); setSelectedMoments(new Set()); }} className={`shrink-0 px-3 py-2 rounded-full text-xs border cursor-pointer ${momentFilter === value ? "bg-[#3A2A23] text-white border-[#3A2A23]" : "border-[#e5e0d8] text-[#7a6d64]"}`}>{label}</button>)}
+              </div>
+              {selectedMoments.size > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-xs font-semibold">{selectedMoments.size} seleccionadas</span><button onClick={() => void handleBulkMomentAction('toggle-featured')} className="text-xs border rounded-lg px-2 py-2 cursor-pointer">★ Favoritas</button><button onClick={() => void handleBulkMomentAction('hide')} className="text-xs border rounded-lg px-2 py-2 cursor-pointer">🙈 Ocultar</button><button onClick={() => void handleBulkMomentAction('restore')} className="text-xs border rounded-lg px-2 py-2 cursor-pointer">👁 Restaurar</button><button onClick={() => void handleBulkMomentAction('delete')} className="text-xs border border-red-100 text-red-500 rounded-lg px-2 py-2 cursor-pointer">🗑 Eliminar</button></div>}
+            </div>
+            {momentsLoading ? (
+              <div className="bg-white rounded-2xl border border-[#e5e0d8] p-12 text-center text-sm text-[#8a8178] animate-pulse">Cargando momentos...</div>
+            ) : momentsError ? (
+              <div className="bg-red-50 rounded-2xl border border-red-100 p-6 text-sm text-red-600">{momentsError}</div>
+            ) : moments.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-[#e5e0d8] p-12 text-center text-sm text-[#8a8178]">Todavía no hay publicaciones en el álbum.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredMoments.map((moment) => (
+                  <article key={moment.id} className={`bg-white rounded-2xl border overflow-hidden shadow-sm ${selectedMoments.has(moment.id) ? "border-[#7A8468] ring-2 ring-[#7A8468]/20" : "border-[#e5e0d8]"}`}>
+                    <label className="absolute z-[1] m-3 bg-white/90 rounded-full w-8 h-8 grid place-items-center shadow cursor-pointer"><input type="checkbox" checked={selectedMoments.has(moment.id)} onChange={() => setSelectedMoments(current => { const next = new Set(current); if (next.has(moment.id)) next.delete(moment.id); else next.add(moment.id); return next; })} className="accent-[#7A8468]" /></label>
+                    {moment.mediaType === "image" ? (
+                      <img src={moment.mediaUrl} alt={moment.caption || `Publicación de ${moment.authorName}`} className="w-full aspect-square object-cover bg-[#eee8df]" />
+                    ) : moment.mediaType === "video" ? (
+                      <video src={moment.mediaUrl} controls playsInline preload="metadata" className="w-full aspect-square object-cover bg-black" />
+                    ) : <div className="aspect-square bg-[#F5F1EA] p-8 grid place-items-center text-center"><div><p className="text-4xl">💌</p><p className="mt-4 text-sm leading-relaxed" style={{ fontFamily: "var(--font-serif)" }}>{moment.caption}</p></div></div>}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div><p className="text-sm font-semibold">{moment.authorName}</p><p className="text-[10px] text-[#aaa198] mt-0.5">{moment.created ? new Date(moment.created).toLocaleString("es-DO") : "—"} · ♥ {moment.likes}</p></div>
+                        <span className={`text-[10px] uppercase tracking-[0.6px] px-2 py-1 rounded-full ${moment.visibility === "private" ? "bg-[#eee8f5] text-[#715d85]" : "bg-[#eef3e9] text-[#5f6d4e]"}`}>{moment.visibility === "private" ? "Solo novios" : moment.category}</span>
+                      </div>
+                      {moment.caption && <p className="text-xs text-[#8a8178] mt-3 leading-relaxed">{moment.caption}</p>}
+                      <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-[#f0ebe4]">
+                        {moment.mediaUrl && <a href={momentDownloadUrl(moment.mediaUrl)} className="text-[10px] uppercase tracking-[0.5px] px-2.5 py-2 rounded-lg border border-[#e5e0d8] text-[#657052]">⇩ Descargar</a>}
+                        <button onClick={() => void handleMomentAction(moment, "toggle-featured")} className={`text-[10px] uppercase tracking-[0.5px] px-2.5 py-2 rounded-lg border cursor-pointer ${moment.featured ? "bg-[#fff4df] border-[#ead1a3] text-[#9a681f]" : "border-[#e5e0d8] text-[#8a8178]"}`}>{moment.featured ? "★ Destacada" : "☆ Destacar"}</button>
+                        <button onClick={() => void handleMomentAction(moment, moment.status === "hidden" ? "restore" : "hide")} className="text-[10px] uppercase tracking-[0.5px] px-2.5 py-2 rounded-lg border border-[#e5e0d8] text-[#8a8178] cursor-pointer">{moment.status === "hidden" ? "👁 Restaurar" : "🙈 Ocultar"}</button>
+                        <button onClick={() => void handleDeleteMoment(moment)} className="text-[10px] uppercase tracking-[0.5px] px-2.5 py-2 rounded-lg border border-red-100 text-red-500 hover:bg-red-50 cursor-pointer">🗑️ Eliminar</button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
           </div>

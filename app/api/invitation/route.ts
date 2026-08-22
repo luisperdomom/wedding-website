@@ -19,10 +19,11 @@ export async function GET(request: Request) {
     }
 
     const guest = guestSnapshot.data()!;
-    const createdAt = guest.createdAt?.toDate?.();
+    const deadlineStart =
+      guest.invitationSentAt?.toDate?.() ?? guest.createdAt?.toDate?.();
     const expired =
-      createdAt instanceof Date &&
-      Date.now() > createdAt.getTime() + INVITATION_DURATION_MS;
+      deadlineStart instanceof Date &&
+      Date.now() > deadlineStart.getTime() + INVITATION_DURATION_MS;
     const rsvpSnapshot = await adminDb.collection("rsvp").doc(guestId).get();
     const legacyRsvpSnapshot = rsvpSnapshot.exists
       ? null

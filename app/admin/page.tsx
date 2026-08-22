@@ -20,7 +20,20 @@ interface Guest {
   createdAt?: string | null;
   phone?: string;
   companion?: string;
+  invitationSentAt?: string | null;
+  reminderSentAt?: string | null;
 }
+
+interface ImportGuestRow {
+  row: number;
+  name: string;
+  phone: string;
+  companion: string;
+  error?: string;
+}
+
+const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+const REMINDER_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -30,7 +43,7 @@ export default function Admin() {
   // Dashboard Data State
   const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [activeTab, setActiveTab] = useState<"rsvps" | "guests">("rsvps");
+  const [activeTab, setActiveTab] = useState<"rsvps" | "guests" | "reminders">("rsvps");
   const [loading, setLoading] = useState(true);
 
   // New Guest Form State
@@ -40,6 +53,11 @@ export default function Admin() {
   const [newGuestPhone, setNewGuestPhone] = useState("");
   const [newGuestCompanion, setNewGuestCompanion] = useState("");
   const [addingGuest, setAddingGuest] = useState(false);
+  const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
+  const [importRows, setImportRows] = useState<ImportGuestRow[]>([]);
+  const [importFileName, setImportFileName] = useState("");
+  const [importError, setImportError] = useState("");
+  const [importingGuests, setImportingGuests] = useState(false);
   
   // Feedback states
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -90,6 +108,7 @@ export default function Admin() {
 
   // Show a slug preview. The final unique ID and secure token are generated server-side.
   useEffect(() => {
+    if (editingGuestId) return;
     if (!newGuestName) {
       setNewGuestId("");
       setNewGuestToken("");
@@ -107,7 +126,7 @@ export default function Admin() {
 
     setNewGuestId(slug);
     setNewGuestToken("Se generará de forma segura");
-  }, [newGuestName]);
+  }, [newGuestName, editingGuestId]);
 
   // Authenticate Admin
   const handleLogin = async (e: React.FormEvent) => {
@@ -147,10 +166,14 @@ export default function Admin() {
 
     setAddingGuest(true);
     try {
-      const response = await fetch("/api/admin/guests", {
-        method: "POST",
+      const endpoint = editingGuestId
+        ? `/api/admin/guests/${encodeURIComponent(editingGuestId)}`
+        : "/api/admin/guests";
+      const response = await fetch(endpoint, {
+        method: editingGuestId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(editingGuestId ? { action: "update-details" } : {}),
           name: newGuestName,
           phone: newGuestPhone,
           companion: newGuestCompanion,
@@ -162,9 +185,22 @@ export default function Admin() {
         return;
       }
       if (!response.ok || !data.guest) {
-        throw new Error(data.error || "No se pudo añadir el invitado.");
+        throw new Error(
+          data.error ||
+            (editingGuestId
+              ? "No se pudo actualizar el invitado."
+              : "No se pudo añadir el invitado."),
+        );
       }
-      setGuests((prev) => [data.guest!, ...prev]);
+      setGuests((prev) =>
+        editingGuestId
+          ? prev.map((guest) =>
+              guest.id === editingGuestId
+                ? { ...guest, ...data.guest!, id: guest.id, token: guest.token }
+                : guest,
+            )
+          : [data.guest!, ...prev],
+      );
 
       // Reset form
       setNewGuestName("");
@@ -172,11 +208,163 @@ export default function Admin() {
       setNewGuestToken("");
       setNewGuestPhone("");
       setNewGuestCompanion("");
+      setEditingGuestId(null);
     } catch (err) {
       console.error("Error al guardar invitado:", err);
-      alert(err instanceof Error ? err.message : "Error al añadir invitado.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : editingGuestId
+            ? "Error al actualizar invitado."
+            : "Error al añadir invitado.",
+      );
     } finally {
       setAddingGuest(false);
+    }
+  };
+
+  const handleEditGuest = (guest: Guest) => {
+    setEditingGuestId(guest.id);
+    setNewGuestName(guest.name);
+    setNewGuestId(guest.id);
+    setNewGuestToken(guest.token);
+    setNewGuestPhone(guest.phone || "");
+    setNewGuestCompanion(guest.companion || "");
+    window.scrollTo({ top: 430, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingGuestId(null);
+    setNewGuestName("");
+    setNewGuestId("");
+    setNewGuestToken("");
+    setNewGuestPhone("");
+    setNewGuestCompanion("");
+  };
+
+  const normalizeHeader = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  const handleDownloadTemplate = async () => {
+    const ExcelJS = await import("exceljs");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Invitados");
+    worksheet.columns = [
+      { header: "Nombre completo", key: "name", width: 32 },
+      { header: "Teléfono", key: "phone", width: 20 },
+      { header: "Acompañante", key: "companion", width: 32 },
+    ];
+    worksheet.addRow({
+      name: "Ejemplo: Juan Pérez",
+      phone: "8095551234",
+      companion: "Ejemplo: María Rodríguez",
+    });
+    worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF3A2A23" },
+    };
+    worksheet.views = [{ state: "frozen", ySplit: 1 }];
+    const output = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([new Uint8Array(output)], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "plantilla_invitados.xlsx";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportFile = async (file?: File) => {
+    if (!file) return;
+    setImportError("");
+    setImportRows([]);
+    setImportFileName(file.name);
+    if (!file.name.toLowerCase().endsWith(".xlsx")) {
+      setImportError("Selecciona un archivo de Excel con extensión .xlsx.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setImportError("El archivo no puede superar 5 MB.");
+      return;
+    }
+
+    try {
+      const ExcelJS = await import("exceljs");
+      const workbook = new ExcelJS.Workbook();
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      await workbook.xlsx.load(bytes as never);
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) throw new Error("El archivo no contiene hojas.");
+
+      const headerIndexes = new Map<string, number>();
+      worksheet.getRow(1).eachCell((cell, columnNumber) => {
+        headerIndexes.set(normalizeHeader(String(cell.text)), columnNumber);
+      });
+      const nameColumn = headerIndexes.get("nombre completo") ?? headerIndexes.get("nombre");
+      const phoneColumn = headerIndexes.get("telefono") ?? headerIndexes.get("celular");
+      const companionColumn = headerIndexes.get("acompanante") ?? headerIndexes.get("invitado");
+      if (!nameColumn) {
+        throw new Error('No encontramos la columna obligatoria "Nombre completo".');
+      }
+
+      const rows: ImportGuestRow[] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const name = String(row.getCell(nameColumn).text).trim();
+        const phone = phoneColumn ? String(row.getCell(phoneColumn).text).trim() : "";
+        const companion = companionColumn
+          ? String(row.getCell(companionColumn).text).trim()
+          : "";
+        if (!name && !phone && !companion) return;
+        let error: string | undefined;
+        if (!name) error = "Falta el nombre.";
+        else if (name.length > 120) error = "El nombre es demasiado largo.";
+        else if (phone.length > 30) error = "El teléfono es demasiado largo.";
+        else if (companion.length > 120) error = "El acompañante es demasiado largo.";
+        rows.push({ row: rowNumber, name, phone, companion, error });
+      });
+      if (rows.length === 0) throw new Error("El archivo no contiene invitados.");
+      if (rows.length > 200) throw new Error("Puedes importar un máximo de 200 invitados a la vez.");
+      setImportRows(rows);
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "No se pudo leer el archivo.");
+    }
+  };
+
+  const handleBulkImport = async () => {
+    if (importRows.length === 0 || importRows.some((row) => row.error)) return;
+    setImportingGuests(true);
+    setImportError("");
+    try {
+      const response = await fetch("/api/admin/guests/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guests: importRows }),
+      });
+      const data = (await response.json()) as { guests?: Guest[]; count?: number; error?: string };
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
+      if (!response.ok || !data.guests) {
+        throw new Error(data.error || "No se pudieron importar los invitados.");
+      }
+      setGuests((current) => [...data.guests!, ...current]);
+      setImportRows([]);
+      setImportFileName("");
+      alert(`${data.count || data.guests.length} invitados importados correctamente.`);
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "No se pudo completar la importación.");
+    } finally {
+      setImportingGuests(false);
     }
   };
 
@@ -256,6 +444,61 @@ export default function Admin() {
       return `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(fullMessage)}`;
     }
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`;
+  };
+
+  const updateGuestStatus = async (
+    guest: Guest,
+    action: "mark-invitation-sent" | "mark-reminder-sent",
+  ) => {
+    try {
+      const response = await fetch(`/api/admin/guests/${encodeURIComponent(guest.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
+      const data = (await response.json()) as { updatedAt?: string; error?: string };
+      if (!response.ok) throw new Error(data.error || "No se pudo guardar el estado.");
+      const field = action === "mark-invitation-sent" ? "invitationSentAt" : "reminderSentAt";
+      setGuests((current) =>
+        current.map((item) =>
+          item.id === guest.id
+            ? { ...item, [field]: data.updatedAt || item[field] || new Date().toISOString() }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error("No se pudo registrar el envío:", error);
+    }
+  };
+
+  const getReminderMessage = (guest: Guest, deadline: Date) => {
+    const personalUrl = `${window.location.origin}/?guest=${guest.id}&token=${guest.token}`;
+    const deadlineText = deadline.toLocaleDateString("es-DO", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    const plural = Boolean(guest.companion?.trim());
+
+    return plural
+      ? `¡Hola ${guest.name}! 🤍 Esperamos que estén muy bien. Queríamos recordarles con mucho cariño que aún tienen pendiente confirmar su asistencia a nuestra boda. 🥂💍\n\nSu invitación estará disponible hasta el ${deadlineText}. Pueden ver todos los detalles y dejarnos saber su respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos su confirmación antes de esa fecha entenderemos que en esta ocasión no podrán acompañarnos.\n\nNos encantaría celebrar con ustedes. ¡Esperamos su respuesta! ✨`
+      : `¡Hola ${guest.name}! 🤍 Esperamos que estés muy bien. Queríamos recordarte con mucho cariño que aún tienes pendiente confirmar tu asistencia a nuestra boda. 🥂💍\n\nTu invitación estará disponible hasta el ${deadlineText}. Puedes ver todos los detalles y dejarnos saber tu respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos tu confirmación antes de esa fecha entenderemos que en esta ocasión no podrás acompañarnos.\n\nNos encantaría celebrar contigo. ¡Esperamos tu respuesta! ✨`;
+  };
+
+  const getReminderWhatsAppUrl = (guest: Guest, deadline: Date) => {
+    const phone = guest.phone ? formatPhoneForWhatsApp(guest.phone) : "";
+    const message = getReminderMessage(guest, deadline);
+    return `https://api.whatsapp.com/send${phone ? `?phone=${phone}&` : "?"}text=${encodeURIComponent(message)}`;
+  };
+
+  const handleCopyReminder = async (guest: Guest, deadline: Date, index: number) => {
+    await navigator.clipboard.writeText(getReminderMessage(guest, deadline));
+    setCopiedMsgIndex(index);
+    setTimeout(() => setCopiedMsgIndex(null), 2000);
   };
 
   // Export RSVP entries to CSV
@@ -391,6 +634,42 @@ export default function Admin() {
     }
   });
 
+  const answeredGuestIds = new Set(rsvps.map((r) => r.guestId || r.id));
+  const unansweredGuests = guests
+    .filter((guest) => !answeredGuestIds.has(guest.id))
+    .map((guest) => {
+      const startValue = guest.invitationSentAt || guest.createdAt;
+      const startDate = startValue ? new Date(startValue) : null;
+      const deadline =
+        startDate && !Number.isNaN(startDate.getTime())
+          ? new Date(startDate.getTime() + INVITATION_DURATION_MS)
+          : null;
+      const remainingMs = deadline ? deadline.getTime() - Date.now() : null;
+      return {
+        guest,
+        deadline,
+        remainingMs,
+        isDue:
+          remainingMs !== null && remainingMs > 0 && remainingMs <= REMINDER_WINDOW_MS,
+        isExpired: remainingMs !== null && remainingMs <= 0,
+      };
+    })
+    .sort((a, b) =>
+      (a.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER) -
+      (b.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER),
+    );
+  const dueReminderCount = unansweredGuests.filter((item) => item.isDue).length;
+
+  const formatRemainingTime = (remainingMs: number | null) => {
+    if (remainingMs === null) return "Fecha no disponible";
+    if (remainingMs <= 0) return "Plazo vencido";
+    const totalHours = Math.ceil(remainingMs / (60 * 60 * 1000));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    if (days === 0) return `${hours} h restantes`;
+    return `${days} d${hours ? ` ${hours} h` : ""} restantes`;
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#3A2A23] pb-20">
       {/* Header */}
@@ -468,6 +747,16 @@ export default function Admin() {
             >
               Lista de Invitados ({totalGuestsInDB})
             </button>
+            <button
+              onClick={() => setActiveTab("reminders")}
+              className={`px-5 py-2.5 rounded-lg text-sm tracking-[1px] font-medium transition-all cursor-pointer ${
+                activeTab === "reminders"
+                  ? "bg-[#3A2A23] text-white"
+                  : "text-[#8a8178] hover:text-[#3A2A23] hover:bg-white border border-transparent"
+              }`}
+            >
+              Recordatorios ({dueReminderCount})
+            </button>
           </div>
 
           {activeTab === "rsvps" && (
@@ -534,8 +823,14 @@ export default function Admin() {
             {/* Add Guest Form */}
             <div className="bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm h-fit">
               <h3 className="text-base uppercase tracking-[1.5px] font-bold mb-4 text-[#3A2A23]">
-                Añadir Nuevo Invitado
+                {editingGuestId ? "Editar Invitado" : "Añadir Nuevo Invitado"}
               </h3>
+
+              {editingGuestId && (
+                <p className="text-xs text-[#8a8178] mb-4 leading-relaxed">
+                  El enlace y el token de seguridad permanecerán iguales.
+                </p>
+              )}
 
               <form onSubmit={handleAddGuest} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -611,9 +906,100 @@ export default function Admin() {
                   disabled={addingGuest || !newGuestName}
                   className="bg-[#3A2A23] hover:bg-[#4E3B33] disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-xs uppercase tracking-[1.5px] font-bold py-3.5 rounded-lg transition-all mt-2 cursor-pointer"
                 >
-                  {addingGuest ? "Añadiendo..." : "Añadir Invitado"}
+                  {addingGuest
+                    ? editingGuestId
+                      ? "Guardando..."
+                      : "Añadiendo..."
+                    : editingGuestId
+                      ? "Guardar Cambios"
+                      : "Añadir Invitado"}
                 </button>
+                {editingGuestId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={addingGuest}
+                    className="border border-[#e5e0d8] hover:border-[#C7A27C] disabled:opacity-40 text-[#8a8178] text-xs uppercase tracking-[1.5px] font-bold py-3 rounded-lg transition-all cursor-pointer"
+                  >
+                    Cancelar Edición
+                  </button>
+                )}
               </form>
+
+              <div className="mt-7 pt-6 border-t border-[#e5e0d8]">
+                <h3 className="text-sm uppercase tracking-[1.5px] font-bold text-[#3A2A23]">
+                  Importar desde Excel
+                </h3>
+                <p className="text-xs text-[#8a8178] mt-2 leading-relaxed">
+                  El nombre es obligatorio. Teléfono y acompañante son opcionales.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void handleDownloadTemplate()}
+                  className="w-full mt-4 border border-[#C7A27C] text-[#8b6747] hover:bg-[#FAF8F5] text-xs uppercase tracking-[1px] font-bold py-3 rounded-lg transition-all cursor-pointer"
+                >
+                  📥 Descargar plantilla
+                </button>
+                <label className="block mt-3 w-full border border-dashed border-[#d7cec4] hover:border-[#C7A27C] bg-[#FAF8F5] text-[#8a8178] text-xs text-center py-4 px-3 rounded-lg transition-all cursor-pointer">
+                  📊 {importFileName || "Seleccionar archivo .xlsx"}
+                  <input
+                    type="file"
+                    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    className="sr-only"
+                    onChange={(event) => void handleImportFile(event.target.files?.[0])}
+                  />
+                </label>
+
+                {importError && (
+                  <p className="mt-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                    {importError}
+                  </p>
+                )}
+
+                {importRows.length > 0 && (
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-semibold text-[#3A2A23]">
+                        Vista previa: {importRows.length} invitaciones
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImportRows([]);
+                          setImportFileName("");
+                          setImportError("");
+                        }}
+                        className="text-[10px] uppercase tracking-[0.5px] text-red-500 cursor-pointer"
+                      >
+                        Limpiar
+                      </button>
+                    </div>
+                    <div className="mt-3 max-h-52 overflow-y-auto border border-[#e5e0d8] rounded-lg divide-y divide-[#f0ebe4]">
+                      {importRows.map((row) => (
+                        <div key={row.row} className="p-3 bg-white text-xs">
+                          <div className="flex justify-between gap-2">
+                            <span className="font-semibold text-[#3A2A23]">{row.name || "Sin nombre"}</span>
+                            <span className="text-[#aaa198]">Fila {row.row}</span>
+                          </div>
+                          <p className="text-[#8a8178] mt-1">
+                            {row.phone || "Sin teléfono"}
+                            {row.companion ? ` · Con ${row.companion}` : " · Sin acompañante"}
+                          </p>
+                          {row.error && <p className="text-red-600 mt-1">{row.error}</p>}
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleBulkImport()}
+                      disabled={importingGuests || importRows.some((row) => row.error)}
+                      className="w-full mt-3 bg-[#7A8468] hover:bg-[#6A7458] disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-xs uppercase tracking-[1px] font-bold py-3.5 rounded-lg transition-all cursor-pointer"
+                    >
+                      {importingGuests ? "Importando..." : `Importar ${importRows.length} invitados`}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Guest List Grid */}
@@ -642,6 +1028,15 @@ export default function Admin() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                        {/* EDITAR DATOS DEL INVITADO */}
+                        <button
+                          onClick={() => handleEditGuest(g)}
+                          className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg transition-all cursor-pointer border bg-white border-[#e5e0d8] hover:border-[#C7A27C] text-[#3A2A23]"
+                          title="Editar nombre, teléfono o acompañante"
+                        >
+                          ✏️ Editar
+                        </button>
+
                         {/* COPIAR SOLO EL LINK */}
                         <button
                           onClick={() => handleCopyLink(g, index)}
@@ -671,6 +1066,7 @@ export default function Admin() {
                         {/* ENVIAR POR WHATSAPP DIRECTO */}
                         <a
                           href={getWhatsAppUrl(g)}
+                          onClick={() => void updateGuestStatus(g, "mark-invitation-sent")}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg transition-all cursor-pointer border bg-[#e2f0d9] border-[#c0e0cc] text-[#4d713c] hover:bg-[#d0eac3] text-center"
@@ -694,6 +1090,125 @@ export default function Admin() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Tab 3: Assisted WhatsApp reminders */}
+        {activeTab === "reminders" && (
+          <div className="mt-6 flex flex-col gap-5">
+            <div className="bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm">
+              <h3 className="text-base uppercase tracking-[1.5px] font-bold text-[#3A2A23]">
+                Recordatorios de confirmación
+              </h3>
+              <p className="text-sm text-[#8a8178] mt-2 leading-relaxed max-w-3xl">
+                Aquí aparecen las invitaciones que aún no tienen respuesta. El botón de WhatsApp se
+                habilita durante los últimos dos días del plazo y abre un mensaje personalizado para
+                que puedas revisarlo antes de enviarlo.
+              </p>
+            </div>
+
+            {loading ? (
+              <div className="bg-white border border-[#e5e0d8] rounded-2xl p-12 text-center text-[#8a8178] animate-pulse text-sm">
+                Revisando invitaciones pendientes...
+              </div>
+            ) : unansweredGuests.length === 0 ? (
+              <div className="bg-white border border-[#e5e0d8] rounded-2xl p-12 text-center text-[#8a8178] text-sm">
+                Todos los invitados han respondido. 🤍
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {unansweredGuests.map(({ guest, deadline, remainingMs, isDue, isExpired }, index) => {
+                  const hasPhone = Boolean(guest.phone && formatPhoneForWhatsApp(guest.phone));
+                  const canSend = Boolean(deadline && hasPhone && isDue);
+                  const statusLabel = isExpired
+                    ? "Vencida"
+                    : isDue
+                      ? "Enviar ahora"
+                      : "Aún no corresponde";
+
+                  return (
+                    <div
+                      key={guest.id}
+                      className={`bg-white border rounded-2xl p-5 shadow-sm ${
+                        isDue ? "border-[#C7A27C]" : "border-[#e5e0d8]"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h4 className="font-semibold text-[#3A2A23]">{guest.name}</h4>
+                          {guest.companion && (
+                            <p className="text-xs text-[#8a8178] mt-1">Con {guest.companion}</p>
+                          )}
+                          <p className="text-xs text-[#8a8178] mt-1">
+                            {guest.phone || "Sin teléfono registrado"}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-[10px] uppercase tracking-[0.8px] font-bold px-2.5 py-1 rounded-full ${
+                            isDue
+                              ? "bg-[#fff4df] text-[#9a681f]"
+                              : isExpired
+                                ? "bg-red-50 text-red-600"
+                                : "bg-[#FAF8F5] text-[#8a8178]"
+                          }`}
+                        >
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-[#f0ebe4] text-xs text-[#8a8178] space-y-1">
+                        <p>
+                          Vence: {deadline ? deadline.toLocaleString("es-DO", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+                        </p>
+                        <p className={isDue ? "font-semibold text-[#9a681f]" : ""}>
+                          {formatRemainingTime(remainingMs)}
+                        </p>
+                        {guest.reminderSentAt && (
+                          <p className="text-[#4d713c]">
+                            ✓ Recordatorio preparado el {new Date(guest.reminderSentAt).toLocaleString("es-DO")}
+                          </p>
+                        )}
+                      </div>
+
+                      {!hasPhone && (
+                        <p className="text-xs text-red-500 mt-3">Añade un teléfono para habilitar WhatsApp.</p>
+                      )}
+
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <button
+                          type="button"
+                          disabled={!deadline || !isDue}
+                          onClick={() => deadline && void handleCopyReminder(guest, deadline, index)}
+                          className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg border border-[#e5e0d8] bg-white text-[#3A2A23] enabled:hover:border-[#C7A27C] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          {copiedMsgIndex === index ? "¡Copiado! ✓" : "✉️ Copiar mensaje"}
+                        </button>
+                        {canSend && deadline ? (
+                          <a
+                            href={getReminderWhatsAppUrl(guest, deadline)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => void updateGuestStatus(guest, "mark-reminder-sent")}
+                            className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg border bg-[#e2f0d9] border-[#c0e0cc] text-[#4d713c] hover:bg-[#d0eac3]"
+                            style={{ textDecoration: "none" }}
+                          >
+                            💬 Abrir WhatsApp
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className="text-xs uppercase tracking-[0.5px] font-semibold px-3 py-2 rounded-lg border border-[#e5e0d8] bg-gray-50 text-gray-400 cursor-not-allowed"
+                          >
+                            💬 Abrir WhatsApp
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </main>

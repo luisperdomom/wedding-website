@@ -57,10 +57,11 @@ export async function POST(request: Request) {
       if (rsvpSnapshot.exists) throw new Error("ALREADY_ANSWERED");
 
       const guest = guestSnapshot.data()!;
-      const createdAt = guest.createdAt?.toDate?.();
+      const deadlineStart =
+        guest.invitationSentAt?.toDate?.() ?? guest.createdAt?.toDate?.();
       if (
-        createdAt instanceof Date &&
-        Date.now() > createdAt.getTime() + INVITATION_DURATION_MS
+        deadlineStart instanceof Date &&
+        Date.now() > deadlineStart.getTime() + INVITATION_DURATION_MS
       ) {
         throw new Error("EXPIRED");
       }

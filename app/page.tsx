@@ -339,7 +339,7 @@ justifyContent:"center",
 textAlign:"center",
 color:"white",
 backgroundColor:"#1c2219", // Elegant dark nature background color while video loads on mobile
-backgroundImage: "url('/mobile-hero.jpg')",
+backgroundImage: "url('/gallery/_JCC0731.jpg')",
 backgroundSize: "cover",
 backgroundPosition: "center"
 }}>
@@ -352,7 +352,7 @@ muted
 loop
 playsInline
 preload="metadata"
-poster="/mobile-hero.jpg"
+poster="/gallery/_JCC0731.jpg"
 style={{
 position:"absolute",
 width:"100%",

@@ -57,7 +57,7 @@ export default function Admin() {
   // Dashboard Data State
   const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [activeTab, setActiveTab] = useState<"rsvps" | "guests" | "reminders" | "moments">("rsvps");
+  const [activeTab, setActiveTab] = useState<"overview" | "rsvps" | "guests" | "reminders" | "moments">("overview");
   const [loading, setLoading] = useState(true);
 
   // New Guest Form State
@@ -76,6 +76,12 @@ export default function Admin() {
   const [momentsLoading, setMomentsLoading] = useState(false);
   const [momentsError, setMomentsError] = useState("");
   const [momentsOpen, setMomentsOpen] = useState(true);
+  const [guestSearch, setGuestSearch] = useState("");
+  const [guestFilter, setGuestFilter] = useState<"all" | "confirmed" | "pending" | "declined" | "companion" | "unsent">("all");
+  const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [reminderFilter, setReminderFilter] = useState<"all" | "due" | "expired" | "sent" | "later">("all");
+  const [selectedGuestIds, setSelectedGuestIds] = useState<Set<string>>(new Set());
   const [momentFilter, setMomentFilter] = useState<"all" | "public" | "private" | "featured" | "hidden" | "image" | "video" | "message">("all");
   const [selectedMoments, setSelectedMoments] = useState<Set<string>>(new Set());
   
@@ -249,6 +255,7 @@ export default function Admin() {
       setNewGuestPhone("");
       setNewGuestCompanion("");
       setEditingGuestId(null);
+      setShowGuestForm(false);
     } catch (err) {
       console.error("Error al guardar invitado:", err);
       alert(
@@ -270,7 +277,7 @@ export default function Admin() {
     setNewGuestToken(guest.token);
     setNewGuestPhone(guest.phone || "");
     setNewGuestCompanion(guest.companion || "");
-    window.scrollTo({ top: 430, behavior: "smooth" });
+    setShowGuestForm(true);
   };
 
   const handleCancelEdit = () => {
@@ -280,6 +287,7 @@ export default function Admin() {
     setNewGuestToken("");
     setNewGuestPhone("");
     setNewGuestCompanion("");
+    setShowGuestForm(false);
   };
 
   const normalizeHeader = (value: string) =>
@@ -486,6 +494,19 @@ export default function Admin() {
 
   const momentDownloadUrl = (url: string) => url.includes("/upload/") ? url.replace("/upload/", "/upload/fl_attachment/") : url;
 
+  const handleBulkGuestAction = async (action: "mark-invitation-sent" | "delete") => {
+    const chosen = guests.filter((guest) => selectedGuestIds.has(guest.id));
+    if (!chosen.length) return;
+    if (action === "delete" && !confirm(`¿Eliminar ${chosen.length} invitados seleccionados? Sus enlaces dejarán de funcionar.`)) return;
+    for (const guest of chosen) {
+      const response = await fetch(`/api/admin/guests/${encodeURIComponent(guest.id)}`, action === "delete" ? { method: "DELETE" } : { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      if (!response.ok) { alert(`No se pudo actualizar a ${guest.name}.`); break; }
+      if (action === "delete") setGuests((current) => current.filter((item) => item.id !== guest.id));
+      else setGuests((current) => current.map((item) => item.id === guest.id ? { ...item, invitationSentAt: item.invitationSentAt || new Date().toISOString() } : item));
+    }
+    setSelectedGuestIds(new Set());
+  };
+
   // Delete guest from Firestore
   const handleDeleteGuest = async (id: string, name: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar a ${name}? Esto anulará su enlace de acceso.`)) {
@@ -621,7 +642,7 @@ export default function Admin() {
 
   // Export RSVP entries to CSV
   const handleExportCSV = () => {
-    if (rsvps.length === 0) {
+    if (dashboardRsvps.length === 0) {
       alert("No hay confirmaciones registradas para exportar.");
       return;
     }
@@ -629,7 +650,7 @@ export default function Admin() {
     const headers = ["Nombre", "Asistencia", "Mensaje", "Fecha de Confirmación"];
     
     // Safely map rsvps properties, handling undefined/null elements
-    const rows = rsvps.map((r) => {
+    const rows = dashboardRsvps.map((r) => {
       let dateStr = "";
       try {
         if (r.created) {
@@ -726,12 +747,23 @@ export default function Admin() {
   }
 
   // Statistics calculations (Exact headcounts based on singular and plural choices)
-  const totalRSVPs = rsvps.length;
   const totalGuestsInDB = guests.length;
+  const currentGuestIds = new Set(guests.map((guest) => guest.id));
+  const rsvpByGuestId = new Map<string, RSVPResponse>();
+  rsvps.forEach((response) => {
+    const guestId = response.guestId || response.id;
+    if (!currentGuestIds.has(guestId)) return;
+    const previous = rsvpByGuestId.get(guestId);
+    if (!previous || String(response.created || "") >= String(previous.created || "")) {
+      rsvpByGuestId.set(guestId, response);
+    }
+  });
+  const dashboardRsvps = [...rsvpByGuestId.values()];
+  const totalRSVPs = dashboardRsvps.length;
 
   // Calculate exact headcount of confirmed individuals
   let attendingCount = 0;
-  rsvps.forEach((r) => {
+  dashboardRsvps.forEach((r) => {
     if (r.attending === "Sí asistiré" || r.attending.startsWith("Solo asistirá")) {
       attendingCount += 1;
     } else if (r.attending === "Ambos asistiremos") {
@@ -741,7 +773,7 @@ export default function Admin() {
 
   // Calculate exact headcount of declining individuals
   let notAttendingCount = 0;
-  rsvps.forEach((r) => {
+  dashboardRsvps.forEach((r) => {
     if (r.attending === "No podré asistir") {
       notAttendingCount += 1;
     } else if (r.attending === "Ninguno asistirá") {
@@ -752,7 +784,7 @@ export default function Admin() {
     }
   });
 
-  const answeredGuestIds = new Set(rsvps.map((r) => r.guestId || r.id));
+  const answeredGuestIds = new Set(rsvpByGuestId.keys());
   const unansweredGuests = guests
     .filter((guest) => !answeredGuestIds.has(guest.id))
     .map((guest) => {
@@ -777,6 +809,27 @@ export default function Admin() {
       (b.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER),
     );
   const dueReminderCount = unansweredGuests.filter((item) => item.isDue).length;
+  const filteredUnansweredGuests = unansweredGuests.filter((item) => reminderFilter === "all" || (reminderFilter === "due" && item.isDue) || (reminderFilter === "expired" && item.isExpired) || (reminderFilter === "sent" && Boolean(item.guest.reminderSentAt)) || (reminderFilter === "later" && !item.isDue && !item.isExpired));
+  const expectedPeople = guests.reduce((total, guest) => total + (guest.companion?.trim() ? 2 : 1), 0);
+  const responseRate = totalGuestsInDB ? Math.round((totalRSVPs / totalGuestsInDB) * 100) : 0;
+  const invitationSentCount = guests.filter((guest) => guest.invitationSentAt).length;
+  const getGuestResponseStatus = (guest: Guest) => {
+    const response = rsvpByGuestId.get(guest.id);
+    if (!response) return "pending" as const;
+    return response.attending === "No podré asistir" || response.attending === "Ninguno asistirá"
+      ? "declined" as const
+      : "confirmed" as const;
+  };
+  const filteredGuests = guests
+    .filter((guest) => {
+      const query = guestSearch.trim().toLocaleLowerCase("es");
+      const matchesSearch = !query || [guest.name, guest.phone, guest.companion].some((value) => value?.toLocaleLowerCase("es").includes(query));
+      const status = getGuestResponseStatus(guest);
+      const matchesFilter = guestFilter === "all" || guestFilter === status || (guestFilter === "companion" && Boolean(guest.companion?.trim())) || (guestFilter === "unsent" && !guest.invitationSentAt);
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const selectedGuest = guests.find((guest) => guest.id === selectedGuestId) ?? null;
   const filteredMoments = moments.filter((moment) => momentFilter === "all" || (momentFilter === "public" && moment.visibility === "public") || (momentFilter === "private" && moment.visibility === "private") || (momentFilter === "featured" && moment.featured) || (momentFilter === "hidden" && moment.status === "hidden") || moment.mediaType === momentFilter);
 
   const formatRemainingTime = (remainingMs: number | null) => {
@@ -807,9 +860,28 @@ export default function Admin() {
         </button>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 mt-8">
+      <div className="max-w-[1500px] mx-auto flex items-start">
+        <aside className="hidden lg:flex w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] px-4 py-7 flex-col border-r border-[#e5e0d8] bg-[#f7f3ed]">
+          <p className="px-3 text-[10px] uppercase tracking-[2px] text-[#a2968b] font-bold mb-3">Organización</p>
+          {([
+            ["overview", "Resumen", "⌂"], ["guests", "Invitados", "◇"], ["rsvps", "Confirmaciones", "✓"], ["reminders", "Recordatorios", "◷"], ["moments", "Momentos", "□"],
+          ] as const).map(([tab, label, icon]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left cursor-pointer transition-all mb-1 ${activeTab === tab ? "bg-[#3A2A23] text-white shadow-sm" : "text-[#75695f] hover:bg-white hover:text-[#3A2A23]"}`}>
+              <span className={`w-7 h-7 rounded-lg grid place-items-center text-sm ${activeTab === tab ? "bg-white/10 text-[#e0bd98]" : "bg-white text-[#a7825e]"}`}>{icon}</span>
+              <span className="flex-1">{label}</span>
+              {tab === "reminders" && dueReminderCount > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#C7A27C] text-white text-[10px] grid place-items-center">{dueReminderCount}</span>}
+            </button>
+          ))}
+          <div className="mt-auto rounded-2xl bg-white border border-[#e5e0d8] p-4">
+            <p className="text-[10px] uppercase tracking-[1px] text-[#8a8178]">Respuestas</p>
+            <p className="text-2xl font-light mt-1">{responseRate}%</p>
+            <div className="h-1.5 rounded-full bg-[#eee8df] mt-3 overflow-hidden"><div className="h-full bg-[#7A8468] rounded-full" style={{ width: `${Math.min(100, responseRate)}%` }} /></div>
+          </div>
+        </aside>
+
+      <main className="min-w-0 flex-1 max-w-6xl mx-auto px-4 sm:px-6 mt-6 sm:mt-8">
         {/* Statistics Widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {activeTab === "overview" && <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5">
           <div className="bg-white p-6 rounded-2xl border border-[#e5e0d8] shadow-sm flex flex-col justify-between">
             <span className="text-xs tracking-[1.5px] uppercase font-bold text-[#8a8178]">Confirmados</span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -835,17 +907,18 @@ export default function Admin() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-[#e5e0d8] shadow-sm flex flex-col justify-between">
-            <span className="text-xs tracking-[1.5px] uppercase font-bold text-[#8a8178]">Invitados</span>
+            <span className="text-xs tracking-[1.5px] uppercase font-bold text-[#8a8178]">Invitaciones</span>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-3xl font-light text-[#3A2A23]">{totalGuestsInDB}</span>
-              <span className="text-xs text-[#8a8178]">en el sistema</span>
+              <span className="text-xs text-[#8a8178]">registradas</span>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* Navigation Tabs & Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-10 border-b border-[#e5e0d8] pb-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 lg:mt-0 border-b border-[#e5e0d8] pb-4">
+          <div className="flex lg:hidden gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <button onClick={() => setActiveTab("overview")} className={`shrink-0 px-4 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${activeTab === "overview" ? "bg-[#3A2A23] text-white" : "bg-white text-[#8a8178]"}`}>Resumen</button>
             <button
               onClick={() => setActiveTab("rsvps")}
               className={`px-5 py-2.5 rounded-lg text-sm tracking-[1px] font-medium transition-all cursor-pointer ${
@@ -898,15 +971,49 @@ export default function Admin() {
           )}
         </div>
 
+        {activeTab === "overview" && (
+          <div className="mt-6 grid grid-cols-1 xl:grid-cols-5 gap-5">
+            <section className="xl:col-span-3 bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div><p className="text-[10px] uppercase tracking-[1.5px] font-bold text-[#8a8178]">Progreso general</p><h2 className="text-xl mt-1">Confirmación de invitados</h2></div>
+                <span className="text-3xl font-light text-[#7A8468]">{responseRate}%</span>
+              </div>
+              <div className="h-3 rounded-full bg-[#eee8df] mt-6 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#9aa287] to-[#7A8468] transition-all" style={{ width: `${Math.min(100, responseRate)}%` }} /></div>
+              <p className="text-xs text-[#8a8178] mt-3">{totalRSVPs} de {totalGuestsInDB} invitaciones han respondido.</p>
+              <div className="grid grid-cols-3 gap-3 mt-7">
+                <button onClick={() => { setGuestFilter("confirmed"); setActiveTab("guests"); }} className="rounded-xl bg-[#eef3e9] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#5f704e]">{guests.filter(g => getGuestResponseStatus(g) === "confirmed").length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#68735e]">Confirmadas</span></button>
+                <button onClick={() => { setGuestFilter("declined"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff0ed] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#b75e52]">{guests.filter(g => getGuestResponseStatus(g) === "declined").length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#9c665f]">Declinaron</span></button>
+                <button onClick={() => { setGuestFilter("pending"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff6e7] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#ad7a32]">{unansweredGuests.length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#967447]">Pendientes</span></button>
+              </div>
+            </section>
+
+            <section className="xl:col-span-2 bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm flex items-center gap-6">
+              <div className="relative w-36 h-36 rounded-full shrink-0" style={{ background: `conic-gradient(#7A8468 0 ${responseRate}%, #eee8df ${responseRate}% 100%)` }}><div className="absolute inset-4 bg-white rounded-full grid place-items-center text-center"><div><span className="block text-2xl font-light">{expectedPeople}</span><span className="text-[9px] uppercase tracking-[1px] text-[#8a8178]">personas</span></div></div></div>
+              <div><h3 className="font-semibold">Lista estimada</h3><p className="text-xs text-[#8a8178] mt-2 leading-relaxed">Incluye invitados principales y acompañantes registrados.</p><p className="text-xs text-[#5f704e] mt-4">{attendingCount} personas confirmadas</p><p className="text-xs text-[#a16a62] mt-1">{notAttendingCount} no asistirán</p></div>
+            </section>
+
+            <section className="xl:col-span-3 bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm">
+              <div className="flex justify-between items-center"><h3 className="font-semibold">Respuestas recientes</h3><button onClick={() => setActiveTab("rsvps")} className="text-xs text-[#8b6747] cursor-pointer">Ver todas →</button></div>
+              <div className="mt-4 divide-y divide-[#f0ebe4]">{dashboardRsvps.slice().sort((a,b) => String(b.created).localeCompare(String(a.created))).slice(0,5).map((response) => <div key={response.id} className="py-3 flex items-center justify-between gap-4"><div><p className="text-sm font-medium">{response.guestName || response.name}</p><p className="text-[10px] text-[#aaa198]">{response.created ? new Date(response.created).toLocaleDateString("es-DO") : "—"}</p></div><span className={`text-[10px] px-2.5 py-1 rounded-full ${response.attending.includes("No") || response.attending.includes("Ninguno") ? "bg-red-50 text-red-600" : "bg-[#eef3e9] text-[#5f704e]"}`}>{response.attending}</span></div>)}{dashboardRsvps.length === 0 && <p className="py-8 text-sm text-center text-[#8a8178]">Todavía no hay respuestas.</p>}</div>
+            </section>
+
+            <section className="xl:col-span-2 bg-[#3A2A23] text-white rounded-2xl p-6 shadow-sm">
+              <p className="text-[10px] uppercase tracking-[1.5px] text-[#d3ae87]">Próximas acciones</p><h3 className="text-xl mt-2">Todo bajo control</h3>
+              <div className="mt-5 space-y-3 text-sm"><button onClick={() => { setShowGuestForm(true); setActiveTab("guests"); }} className="w-full bg-white/8 hover:bg-white/12 rounded-xl p-3 flex justify-between cursor-pointer"><span>Agregar invitados</span><span>＋</span></button><button onClick={() => setActiveTab("reminders")} className="w-full bg-white/8 hover:bg-white/12 rounded-xl p-3 flex justify-between cursor-pointer"><span>Recordatorios por enviar</span><span className="text-[#d3ae87]">{dueReminderCount}</span></button><div className="rounded-xl p-3 flex justify-between text-white/70"><span>Invitaciones enviadas</span><span>{invitationSentCount}/{totalGuestsInDB}</span></div></div>
+            </section>
+          </div>
+        )}
+
         {/* Tab 1: RSVP List */}
         {activeTab === "rsvps" && (
           <div className="bg-white border border-[#e5e0d8] rounded-2xl mt-6 overflow-hidden shadow-sm">
             {loading ? (
               <div className="p-12 text-center text-[#8a8178] animate-pulse text-sm">Cargando confirmaciones...</div>
-            ) : rsvps.length === 0 ? (
+            ) : dashboardRsvps.length === 0 ? (
               <div className="p-12 text-center text-[#8a8178] text-sm">Ningún invitado ha confirmado todavía.</div>
             ) : (
-              <div className="overflow-x-auto">
+              <><div className="sm:hidden divide-y divide-[#f0ebe4]">{dashboardRsvps.map((r) => { const accepts = !(r.attending.includes("No") || r.attending.includes("Ninguno")); return <article key={r.id} className="p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-sm">{r.guestName || r.name || "Invitado"}</p><p className="text-[10px] text-[#aaa198] mt-1">{r.created ? new Date(r.created).toLocaleDateString("es-DO") : "—"}</p></div><span className={`text-[10px] px-2.5 py-1 rounded-full ${accepts ? "bg-[#e2f0d9] text-[#4d713c]" : "bg-red-50 text-red-600"}`}>{r.attending}</span></div>{r.message && <p className="text-xs italic text-[#8a8178] mt-3 leading-relaxed">“{r.message}”</p>}</article>; })}</div>
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#FAF8F5] border-b border-[#e5e0d8] text-xs uppercase tracking-[1px] text-[#8a8178]">
@@ -917,13 +1024,13 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f0ebd8]/50 text-sm">
-                    {rsvps.map((r, i) => (
+                    {dashboardRsvps.map((r, i) => (
                       <tr key={i} className="hover:bg-[#FAF8F5]/50 transition-colors">
                         <td className="px-6 py-4 font-medium text-[#3A2A23]">{r.guestName || r.name || "Invitado sin nombre"}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              r.attending === "Sí asistiré"
+                              !(r.attending.includes("No") || r.attending.includes("Ninguno"))
                                 ? "bg-[#e2f0d9] text-[#4d713c]"
                                 : "bg-red-50 text-red-600"
                             }`}
@@ -941,16 +1048,25 @@ export default function Admin() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div></>
             )}
           </div>
         )}
 
         {/* Tab 2: Guest List and Form */}
         {activeTab === "guests" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+          <div className="mt-6">
+            <div className="bg-white border border-[#e5e0d8] rounded-2xl p-4 shadow-sm mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div className="flex-1 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaa198]">⌕</span><input value={guestSearch} onChange={(event) => setGuestSearch(event.target.value)} placeholder="Buscar por nombre, teléfono o acompañante" className="w-full pl-9 pr-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#e5e0d8] text-sm outline-none focus:border-[#C7A27C]" /></div>
+                <select value={guestFilter} onChange={(event) => setGuestFilter(event.target.value as typeof guestFilter)} className="px-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#e5e0d8] text-sm outline-none cursor-pointer"><option value="all">Todos los estados</option><option value="confirmed">Confirmados</option><option value="pending">Pendientes</option><option value="declined">No asistirán</option><option value="companion">Con acompañante</option><option value="unsent">Invitación no enviada</option></select>
+              </div>
+              <div className="flex gap-2"><button onClick={() => { handleCancelEdit(); setShowGuestForm(true); }} className="bg-[#3A2A23] text-white rounded-xl px-4 py-3 text-xs uppercase tracking-[1px] font-semibold cursor-pointer">＋ Agregar invitado</button><button onClick={() => { setShowGuestForm(true); }} className="border border-[#C7A27C] text-[#8b6747] rounded-xl px-4 py-3 text-xs uppercase tracking-[1px] font-semibold cursor-pointer">Importar Excel</button></div>
+            </div>
+            {selectedGuestIds.size > 0 && <div className="mb-5 rounded-2xl bg-[#3A2A23] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3"><span className="text-sm">{selectedGuestIds.size} invitaciones seleccionadas</span><div className="flex gap-2"><button onClick={() => void handleBulkGuestAction("mark-invitation-sent")} className="bg-white/10 rounded-lg px-3 py-2 text-xs cursor-pointer">Marcar enviadas</button><button onClick={() => void handleBulkGuestAction("delete")} className="bg-red-400/15 text-red-100 rounded-lg px-3 py-2 text-xs cursor-pointer">Eliminar</button><button onClick={() => setSelectedGuestIds(new Set())} className="text-white/60 px-2 text-xs cursor-pointer">Cancelar</button></div></div>}
+          <div className={`grid grid-cols-1 ${showGuestForm ? "lg:grid-cols-3" : "lg:grid-cols-1"} gap-6`}>
             {/* Add Guest Form */}
-            <div className="bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm h-fit">
+            <div className={`${showGuestForm ? "block" : "hidden"} bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm h-fit lg:sticky lg:top-24`}>
               <h3 className="text-base uppercase tracking-[1.5px] font-bold mb-4 text-[#3A2A23]">
                 {editingGuestId ? "Editar Invitado" : "Añadir Nuevo Invitado"}
               </h3>
@@ -1132,10 +1248,8 @@ export default function Admin() {
             </div>
 
             {/* Guest List Grid */}
-            <div className="lg:col-span-2 bg-white border border-[#e5e0d8] rounded-2xl p-6 shadow-sm">
-              <h3 className="text-base uppercase tracking-[1.5px] font-bold mb-4 text-[#3A2A23]">
-                Invitados Registrados
-              </h3>
+            <div className={`${showGuestForm ? "lg:col-span-2" : ""} bg-white border border-[#e5e0d8] rounded-2xl p-4 sm:p-6 shadow-sm`}>
+              <div className="flex items-center justify-between mb-4"><div><h3 className="text-base uppercase tracking-[1.5px] font-bold text-[#3A2A23]">Invitados Registrados</h3><p className="text-xs text-[#8a8178] mt-1">Mostrando {filteredGuests.length} de {guests.length} invitaciones</p></div>{showGuestForm && <button onClick={handleCancelEdit} className="text-xs text-[#8a8178] cursor-pointer">Cerrar formulario ×</button>}</div>
 
               {loading ? (
                 <div className="p-12 text-center text-[#8a8178] animate-pulse text-sm">Cargando lista...</div>
@@ -1143,20 +1257,19 @@ export default function Admin() {
                 <div className="p-12 text-center text-[#8a8178] text-sm">No hay invitados creados todavía.</div>
               ) : (
                 <div className="flex flex-col gap-3 max-h-[550px] overflow-y-auto pr-2">
-                  {guests.map((g, index) => (
+                  {filteredGuests.map((g, index) => (
                     <div
                       key={g.id}
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-[#FAF8F5] bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] hover:border-[#e5e0d8] transition-all gap-4"
                     >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-semibold text-sm text-[#3A2A23]">{g.name}</span>
-                        <div className="flex items-center gap-3 text-xs text-[#8a8178] mt-0.5">
-                          <span>ID: <code className="bg-[#e5e0d8]/30 px-1 py-0.5 rounded text-[10px] font-mono">{g.id}</code></span>
-                          <span>Token: <code className="bg-[#e5e0d8]/30 px-1 py-0.5 rounded text-[10px] font-mono">{g.token}</code></span>
-                        </div>
+                      <div className="flex items-start gap-3"><label className="mt-0.5 cursor-pointer"><input type="checkbox" checked={selectedGuestIds.has(g.id)} onChange={() => setSelectedGuestIds((current) => { const next = new Set(current); if (next.has(g.id)) next.delete(g.id); else next.add(g.id); return next; })} className="accent-[#7A8468]" aria-label={`Seleccionar a ${g.name}`} /></label><div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2 flex-wrap"><button onClick={() => setSelectedGuestId(g.id)} className="font-semibold text-sm text-[#3A2A23] cursor-pointer hover:text-[#8b6747] text-left">{g.name}</button><span className={`text-[9px] uppercase tracking-[.6px] px-2 py-1 rounded-full ${getGuestResponseStatus(g) === "confirmed" ? "bg-[#e2f0d9] text-[#4d713c]" : getGuestResponseStatus(g) === "declined" ? "bg-red-50 text-red-600" : "bg-[#fff4df] text-[#9a681f]"}`}>{getGuestResponseStatus(g) === "confirmed" ? "Confirmado" : getGuestResponseStatus(g) === "declined" ? "No asistirá" : "Pendiente"}</span></div>
+                        <p className="text-xs text-[#8a8178]">{g.phone || "Sin teléfono"}{g.companion ? ` · Con ${g.companion}` : " · Invitación individual"}</p>
+                      </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                        <button onClick={() => setSelectedGuestId(g.id)} className="text-xs px-3 py-2 rounded-lg border bg-white border-[#e5e0d8] text-[#6f6259] cursor-pointer">Ver ficha</button>
                         {/* EDITAR DATOS DEL INVITADO */}
                         <button
                           onClick={() => handleEditGuest(g)}
@@ -1220,6 +1333,7 @@ export default function Admin() {
               )}
             </div>
           </div>
+          </div>
         )}
 
         {/* Tab 3: Assisted WhatsApp reminders */}
@@ -1234,6 +1348,7 @@ export default function Admin() {
                 habilita durante los últimos dos días del plazo y abre un mensaje personalizado para
                 que puedas revisarlo antes de enviarlo.
               </p>
+              <div className="flex gap-2 overflow-x-auto mt-5 [scrollbar-width:none]">{([['all','Todos'],['due','Enviar ahora'],['expired','Vencidos'],['sent','Enviados'],['later','Más adelante']] as const).map(([value,label]) => <button key={value} onClick={() => setReminderFilter(value)} className={`shrink-0 px-3 py-2 rounded-full text-xs border cursor-pointer ${reminderFilter === value ? "bg-[#3A2A23] border-[#3A2A23] text-white" : "border-[#e5e0d8] text-[#75695f]"}`}>{label}</button>)}</div>
             </div>
 
             {loading ? (
@@ -1246,7 +1361,7 @@ export default function Admin() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {unansweredGuests.map(({ guest, deadline, remainingMs, isDue, isExpired }, index) => {
+                {filteredUnansweredGuests.map(({ guest, deadline, remainingMs, isDue, isExpired }, index) => {
                   const hasPhone = Boolean(guest.phone && formatPhoneForWhatsApp(guest.phone));
                   const canSend = Boolean(deadline && hasPhone && isDue);
                   const statusLabel = isExpired
@@ -1409,7 +1524,25 @@ export default function Admin() {
             )}
           </div>
         )}
+
+        {selectedGuest && (() => {
+          const response = rsvpByGuestId.get(selectedGuest.id);
+          const status = getGuestResponseStatus(selectedGuest);
+          const invitationUrl = `${window.location.origin}/?guest=${selectedGuest.id}&token=${selectedGuest.token}`;
+          return <div className="fixed inset-0 z-50 bg-[#261914]/45 flex justify-end" onMouseDown={(event) => event.target === event.currentTarget && setSelectedGuestId(null)}>
+            <aside className="w-full max-w-md h-full bg-[#FAF8F5] shadow-2xl overflow-y-auto">
+              <div className="sticky top-0 z-10 bg-white border-b border-[#e5e0d8] px-6 py-5 flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[1.5px] text-[#8a8178]">Ficha del invitado</p><h2 className="text-xl mt-1">{selectedGuest.name}</h2></div><button onClick={() => setSelectedGuestId(null)} className="w-9 h-9 rounded-full border border-[#e5e0d8] bg-white text-xl cursor-pointer">×</button></div>
+              <div className="p-6 space-y-5">
+                <div className={`rounded-2xl p-5 ${status === "confirmed" ? "bg-[#eaf2e4]" : status === "declined" ? "bg-[#fff0ed]" : "bg-[#fff5e3]"}`}><p className="text-[10px] uppercase tracking-[1px] opacity-60">Estado actual</p><p className="text-lg mt-1 font-semibold">{status === "confirmed" ? "Asistencia confirmada" : status === "declined" ? "No podrá acompañarnos" : "Pendiente de respuesta"}</p>{response && <p className="text-xs mt-2 opacity-70">{response.attending}</p>}</div>
+                <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5 space-y-4"><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Teléfono</p><p className="text-sm mt-1">{selectedGuest.phone || "No registrado"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Acompañante</p><p className="text-sm mt-1">{selectedGuest.companion || "Invitación individual"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Invitación enviada</p><p className="text-sm mt-1">{selectedGuest.invitationSentAt ? new Date(selectedGuest.invitationSentAt).toLocaleString("es-DO") : "Todavía no marcada como enviada"}</p></div>{response?.message && <div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Mensaje</p><p className="text-sm mt-1 italic leading-relaxed">“{response.message}”</p></div>}</div>
+                <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5"><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Enlace personal</p><p className="text-[11px] font-mono break-all text-[#75695f] mt-2">{invitationUrl}</p></div>
+                <div className="grid grid-cols-2 gap-2"><button onClick={() => handleCopyLink(selectedGuest, guests.findIndex(g => g.id === selectedGuest.id))} className="border border-[#e5e0d8] bg-white rounded-xl py-3 text-xs cursor-pointer">Copiar enlace</button><a href={getWhatsAppUrl(selectedGuest)} target="_blank" rel="noopener noreferrer" onClick={() => void updateGuestStatus(selectedGuest, "mark-invitation-sent")} className="bg-[#7A8468] text-white rounded-xl py-3 text-xs text-center">Abrir WhatsApp</a><button onClick={() => { handleEditGuest(selectedGuest); setSelectedGuestId(null); }} className="border border-[#C7A27C] text-[#8b6747] bg-white rounded-xl py-3 text-xs cursor-pointer">Editar datos</button><button onClick={() => { setSelectedGuestId(null); void handleDeleteGuest(selectedGuest.id, selectedGuest.name); }} className="border border-red-100 text-red-500 bg-white rounded-xl py-3 text-xs cursor-pointer">Eliminar</button></div>
+              </div>
+            </aside>
+          </div>;
+        })()}
       </main>
+      </div>
     </div>
   );
 }

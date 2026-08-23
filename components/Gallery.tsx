@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+
+const GALLERY_PHOTOS = [
+  "_JCC0180.jpg", "_JCC0204.jpg", "_JCC0232.jpg", "_JCC0236.jpg", "_JCC0251.jpg",
+  "_JCC0283.jpg", "_JCC0297.jpg", "_JCC0379.jpg", "_JCC0398.jpg", "_JCC0508.jpg",
+  "_JCC0520.jpg", "_JCC0534.jpg", "_JCC0659.jpg", "_JCC0731.jpg", "_JCC0794.jpg",
+  "_JCC0809.jpg", "_JCC0846.jpg", "_JCC0910.jpg", "_JCC0922.jpg", "_JCC0940.jpg",
+  "_JCC0969.jpg", "_JCC1032.jpg", "_JCC1112.jpg",
+];
 
 function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -29,13 +37,19 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
 }
 
 export default function Gallery() {
-  const totalPhotos = 22;
+  const totalPhotos = GALLERY_PHOTOS.length;
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
   
   // Touch gestures state
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const pinchStartDistance = useRef(0);
+  const pinchStartZoom = useRef(1);
+  const pinching = useRef(false);
+  const panStart = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const minSwipeDistance = 50;
 
   // Keyboard navigation
@@ -56,6 +70,11 @@ export default function Gallery() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedImage]);
 
+  useEffect(() => {
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+  }, [selectedImage]);
+
   // Lock body scroll on active modal (Safari iOS scroll lock)
   useEffect(() => {
     if (selectedImage !== null) {
@@ -70,15 +89,44 @@ export default function Gallery() {
 
   // Touch Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const [first, second] = [e.touches[0], e.touches[1]];
+      pinchStartDistance.current = Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+      pinchStartZoom.current = zoom;
+      pinching.current = true;
+      setTouchStart(null);
+      return;
+    }
+    if (zoom > 1) {
+      panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: offset.x, offsetY: offset.y };
+      return;
+    }
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchStartDistance.current) {
+      const [first, second] = [e.touches[0], e.touches[1]];
+      const distance = Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+      const nextZoom = Math.min(4, Math.max(1, pinchStartZoom.current * distance / pinchStartDistance.current));
+      setZoom(nextZoom);
+      if (nextZoom === 1) setOffset({ x: 0, y: 0 });
+      return;
+    }
+    if (zoom > 1 && e.touches.length === 1) {
+      setOffset({ x: panStart.current.offsetX + e.touches[0].clientX - panStart.current.x, y: panStart.current.offsetY + e.touches[0].clientY - panStart.current.y });
+      return;
+    }
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (pinching.current) {
+      if (e.touches.length < 2) pinching.current = false;
+      return;
+    }
+    if (zoom > 1) return;
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -137,7 +185,7 @@ export default function Gallery() {
           >
             <div className="relative w-full h-full rounded-xl overflow-hidden">
               <GalleryCardImage
-                src={`/photo${n}.webp`}
+                src={`/gallery/${GALLERY_PHOTOS[n - 1]}`}
                 alt={`Foto de pre-boda ${n}`}
               />
             </div>
@@ -195,9 +243,10 @@ export default function Gallery() {
           <div 
             onClick={(e) => e.stopPropagation()}
             className="relative max-w-[min(500px,90%)] h-[75vh] w-full"
+            style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`, transition: pinching.current ? "none" : "transform 120ms ease-out", transformOrigin: "center" }}
           >
             <Image
-              src={`/photo${selectedImage}.webp`}
+              src={`/gallery/${GALLERY_PHOTOS[selectedImage - 1]}`}
               alt={`Foto seleccionada ${selectedImage}`}
               fill
               className="object-contain rounded-lg drop-shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
@@ -220,8 +269,11 @@ export default function Gallery() {
           </div>
 
           {/* Contador de imágenes */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 sm:hidden rounded-full bg-black/45 border border-white/10 px-4 py-2 text-[10px] text-white/80 whitespace-nowrap pointer-events-none">
+            ↔ Desliza para ver más fotos
+          </div>
           <div
-            className="absolute bottom-8 text-white/70 text-xs tracking-[1px] select-none"
+            className="absolute bottom-2 sm:bottom-8 text-white/70 text-xs tracking-[1px] select-none"
             style={{ fontFamily: "var(--font-elegant)" }}
           >
             {selectedImage} / {totalPhotos}

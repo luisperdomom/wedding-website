@@ -45,3 +45,6 @@ node_modules
 .env
 .secrets
 .secrets/
+
+# Original high-resolution gallery exports (optimized copies live in public/gallery)
+/_JCC*.jpg

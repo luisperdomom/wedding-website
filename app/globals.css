@@ -236,7 +236,7 @@ h1,h2,h3{
   .hero-section{
     height:100dvh !important;
     min-height:620px;
-    background-position:center 32% !important;
+    background-position:center bottom !important;
   }
 
   .hero-title{
@@ -245,7 +245,7 @@ h1,h2,h3{
   }
 
   .hero-video{
-    object-position:center;
+    object-position:center bottom;
   }
 
   @media (prefers-reduced-motion: reduce){

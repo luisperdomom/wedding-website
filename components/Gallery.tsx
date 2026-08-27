@@ -151,7 +151,7 @@ export default function Gallery() {
   return (
     // REMOVIDO: data-aos="zoom-in" de este contenedor raíz.
     // Esto evita el bug de CSS 3D Stacking Context que desplazaba el visor fixed hacia abajo.
-    <div id="galeria" className="section-light !py-24">
+    <div id="galeria" className="section-light gallery-section !py-24">
       <div className="divider"></div>
 
       <h2 

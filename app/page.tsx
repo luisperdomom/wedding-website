@@ -98,7 +98,6 @@ useEffect(() => {
 }, [guestId, token])
 
 // estados
-const [showGift,setShowGift] = useState(false)
 const [menuOpen,setMenuOpen] = useState(false)
 const [openFAQ,setOpenFAQ] = useState<number | null>(null)
 
@@ -460,6 +459,7 @@ SAN JOSÉ DE OCOA, RD
 
 <div
 id="invitacion"
+className="invitation-section"
 data-aos="fade-up"
 style={{
   padding:"100px 20px",
@@ -578,6 +578,7 @@ style={{
 
 <section
 id="historia"
+className="history-section"
 data-aos="fade-up"
 style={{
 background:"#f6f3ee",
@@ -611,6 +612,7 @@ Nuestra Historia
   {/* COLUMNA 1: RETRATO DE LA PAREJA (FOTO PRINCIPAL) */}
   <div 
     data-aos="fade-right"
+    className="history-photo-frame"
     style={{
       position: "relative",
       width: "100%",
@@ -622,7 +624,7 @@ Nuestra Historia
     }}
   >
     <Image
-      src="/Couple.jpg"
+      src="/DSC08271-2.jpg"
       alt="Luis & Ailyn"
       fill
       className="object-cover"
@@ -708,174 +710,13 @@ Nuestra Historia
 
 </section>
 
-<section
-id="timeline"
-style={{
-  background:"#f6f3ee",
-  padding:"120px 20px",
-  textAlign:"center",
-  position:"relative"
-}}
->
-
-<div style={{ position: "absolute", top: "-40px", left: "0", width: "280px", height: "200px", opacity: 0.45, pointerEvents: "none", filter: "sepia(1) saturate(3) hue-rotate(90deg) brightness(0.45)" }}>
-  <Image
-    src="/floral-top.png"
-    alt=""
-    fill
-    sizes="280px"
-    className="object-contain object-left-top"
-  />
-</div>
-  
-<h2 style={{
-  fontFamily:"var(--font-elegant)",
-  fontSize:"clamp(32px, 6vw, 52px)",
-  letterSpacing:"6px",
-  fontWeight:300,
-  textTransform:"uppercase",
-  marginBottom:"80px",
-  color:"#3b2b20"
-}}>
-  Memory Lane
-</h2>
-
-<div className="relative max-w-[900px] mx-auto px-4 md:px-5">
-
-  {/* Línea vertical central (responsiva) */}
-  <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-[1px] bg-[#e4ddd4] -translate-x-1/2" />
-
-  {/* EVENTO 1 (2017) */}
-  <div 
-    data-aos="fade-right"
-    className="relative flex justify-start mb-16 pl-8 sm:pl-0 sm:justify-start"
-  >
-    {/* Bullet Node */}
-    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
-
-    <div className="w-full sm:w-[45%] sm:rotate-[-1.5deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
-      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
-        <img
-          src="/story1.jpg"
-          alt="2017 · El inicio de todo"
-          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
-          loading="lazy"
-        />
-      </div>
-
-      <h3 style={{
-        fontFamily:"var(--font-elegant)",
-        letterSpacing:"3px",
-        fontSize:"18px",
-        fontWeight:300,
-        color:"#3b2b20",
-        marginBottom: "8px"
-      }}>
-        2017 · El inicio de todo
-      </h3>
-
-      <p style={{
-        fontFamily:"var(--font-body)",
-        color:"#6b635b",
-        fontSize: "14px",
-        lineHeight:"1.6"
-      }}>
-        El año en que empezamos a escribir nuestro camino y a vivir nuestros primeros momentos llenos de risas y complicidad.
-      </p>
-    </div>
-  </div>
-
-  {/* EVENTO 2 (2024 - VIAJE) */}
-  <div 
-    data-aos="fade-left"
-    className="relative flex justify-start pl-8 sm:pl-0 sm:justify-end mb-16"
-  >
-    {/* Bullet Node */}
-    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
-
-    <div className="w-full sm:w-[45%] sm:rotate-[1.5deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
-      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
-        <img
-          src="/story2.jpg"
-          alt="2024 · Coleccionando Destinos"
-          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
-          loading="lazy"
-        />
-      </div>
-
-      <h3 style={{
-        fontFamily:"var(--font-elegant)",
-        letterSpacing:"3px",
-        fontSize:"18px",
-        fontWeight:300,
-        color:"#3b2b20",
-        marginBottom: "8px"
-      }}>
-        2024 · Coleccionando Destinos
-      </h3>
-
-      <p style={{
-        fontFamily:"var(--font-body)",
-        color:"#6b635b",
-        fontSize: "14px",
-        lineHeight:"1.6"
-      }}>
-        Nuestro primer viaje juntos fuera del país, el inicio de nuestra tradición favorita de recorrer el mundo de la mano.
-      </p>
-    </div>
-  </div>
-
-  {/* EVENTO 3 (2024 - PROPUESTA) */}
-  <div 
-    data-aos="fade-right"
-    className="relative flex justify-start pl-8 sm:pl-0 sm:justify-start"
-  >
-    {/* Bullet Node */}
-    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-8 w-3 h-3 rounded-full bg-[#c9a27e] border-2 border-[#f6f3ee] z-10" />
-
-    <div className="w-full sm:w-[45%] sm:rotate-[-1deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-300 bg-white p-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] border border-[#e5e0d8] rounded-xl text-left">
-      <div style={{ position: "relative", width: "100%", height: "auto", marginBottom: "15px" }}>
-        <img
-          src="/story3.jpg"
-          alt="2024 · El Sí más esperado"
-          style={{ width: "100%", height: "auto", borderRadius: "8px", display: "block" }}
-          loading="lazy"
-        />
-      </div>
-
-      <h3 style={{
-        fontFamily:"var(--font-elegant)",
-        letterSpacing:"3px",
-        fontSize:"18px",
-        fontWeight:300,
-        color:"#3b2b20",
-        marginBottom: "8px"
-      }}>
-        2024 · El &ldquo;Sí&rdquo; más esperado
-      </h3>
-
-      <p style={{
-        fontFamily:"var(--font-body)",
-        color:"#6b635b",
-        fontSize: "14px",
-        lineHeight:"1.6"
-      }}>
-        La propuesta. Un atardecer inolvidable que marcó el inicio del viaje definitivo de nuestras vidas.
-      </p>
-    </div>
-  </div>
-
-</div>
-
-</section>
-
 <MusicPlayer />
 
 <Gallery />
 
 {/* EVENTO */}
 
-<section id="evento" style={{
+<section id="evento" className="event-section" style={{
 position:"relative",
 padding:"110px 20px 60px 20px",
 textAlign:"center",
@@ -1227,7 +1068,7 @@ borderRadius:"8px"
 
 {/* WHERE TO STAY */}
 
-<section className="section-dark !py-24">
+<section className="section-dark stay-section !py-24">
 
 <h2 style={{
   fontFamily:"var(--font-elegant)",
@@ -1518,7 +1359,7 @@ borderRadius:"8px"
 
 
 {/* CÓDIGO DE VESTIMENTA */}
-<section id="vestimenta" className="section-light" style={{ textAlign: "center", position: "relative" }}>
+<section id="vestimenta" className="section-light dress-section" style={{ textAlign: "center", position: "relative" }}>
   <div className="divider"></div>
 
   <h2 
@@ -1676,7 +1517,7 @@ borderRadius:"8px"
 
 {/* PLAYLIST */}
 
-<section className="section-light !py-24" style={{textAlign:"center"}}>
+<section className="section-light playlist-section !py-24" style={{textAlign:"center"}}>
 
 <div className="divider"></div>
 
@@ -1754,7 +1595,7 @@ borderRadius:"8px"
 
 {/* REGALOS */}
 
-<section id="regalos" className="section-dark !py-24" style={{textAlign:"center", position: "relative"}}>
+<section id="regalos" className="section-dark gifts-section !py-24" style={{textAlign:"center", position: "relative"}}>
 
 <div className="divider"></div>
 
@@ -1803,8 +1644,13 @@ borderRadius:"8px"
   CUENTAS DE REGALOS
 </p>
 
+<p className="gift-instructions">
+  Elija la cuenta que prefiera y toque el botón para copiar el número. Luego puede pegarlo directamente en la aplicación de su banco.
+</p>
+
 {/* TARJETA DE CUENTAS DE LUJO (STATIONERY CARD) */}
 <div 
+  className="gift-options-card"
   style={{
     maxWidth: "550px",
     margin: "0 auto",
@@ -1831,7 +1677,7 @@ borderRadius:"8px"
   }} />
 
   {/* CUENTA 1 */}
-  <div style={{ width: "100%", zIndex: 10 }}>
+  <div className="gift-account-card" style={{ width: "100%", zIndex: 10 }}>
     <p style={{
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
@@ -1876,7 +1722,7 @@ borderRadius:"8px"
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            Copiar
+            Copiar número de cuenta
           </>
         )}
       </button>
@@ -1886,7 +1732,7 @@ borderRadius:"8px"
   </div>
 
   {/* DIVIDER */}
-  <div style={{
+  <div className="gift-account-divider" style={{
     width:"40px",
     height:"1px",
     background:"rgba(199, 162, 124, 0.25)",
@@ -1894,7 +1740,7 @@ borderRadius:"8px"
   }}/>
 
   {/* CUENTA 2 */}
-  <div style={{ width: "100%", zIndex: 10 }}>
+  <div className="gift-account-card" style={{ width: "100%", zIndex: 10 }}>
     <p style={{
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
@@ -1939,7 +1785,7 @@ borderRadius:"8px"
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            Copiar
+            Copiar número de cuenta
           </>
         )}
       </button>
@@ -1949,7 +1795,7 @@ borderRadius:"8px"
   </div>
 
   {/* DIVIDER */}
-  <div style={{
+  <div className="gift-account-divider" style={{
     width:"40px",
     height:"1px",
     background:"rgba(199, 162, 124, 0.25)",
@@ -1957,7 +1803,7 @@ borderRadius:"8px"
   }}/>
 
   {/* CUENTA 3 */}
-  <div style={{ width: "100%", zIndex: 10 }}>
+  <div className="gift-account-card" style={{ width: "100%", zIndex: 10 }}>
     <p style={{
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
@@ -2002,7 +1848,7 @@ borderRadius:"8px"
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            Copiar
+            Copiar número de cuenta
           </>
         )}
       </button>
@@ -2012,10 +1858,10 @@ borderRadius:"8px"
   </div>
 
   {/* DIVIDER */}
-  <div style={{ width:"40px", height:"1px", background:"rgba(199, 162, 124, 0.25)", zIndex: 10 }}/>
+  <div className="gift-account-divider" style={{ width:"40px", height:"1px", background:"rgba(199, 162, 124, 0.25)", zIndex: 10 }}/>
 
   {/* PAYPAL */}
-  <div style={{ width: "100%", zIndex: 10 }}>
+  <div className="gift-account-card gift-paypal-card" style={{ width: "100%", zIndex: 10 }}>
     <p style={{ fontFamily:"var(--font-elegant)", letterSpacing:"3px", fontSize:"13px", color:"#c7a27c", marginBottom:"10px" }}>
       PAYPAL
     </p>
@@ -2030,7 +1876,7 @@ borderRadius:"8px"
       style={{ background:"#ffffff", color:"#27346a", fontFamily:"var(--font-elegant)", letterSpacing:"1.5px", fontSize:"12px", fontWeight:600, display:"inline-flex", alignItems:"center", gap:"9px" }}
     >
       <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20H5l3-16h7c4 0 6 2 5 6-.7 3-3 5-7 5H9l-1 5Z"/><path d="M10 15 9 21H6"/></svg>
-      ENVIAR POR PAYPAL
+      ABRIR PAYPAL PARA ENVIAR REGALO
     </a>
   </div>
 
@@ -2040,7 +1886,7 @@ borderRadius:"8px"
 
 {/* FAQ */}
 
-<section id="faq" className="section-light">
+<section id="faq" className="section-light faq-section">
 
 <div className="divider"></div>
 
@@ -2080,6 +1926,18 @@ Toca cada pregunta para ver más información
 {
 q:"¿A qué hora empieza la ceremonia?",
 a:"La ceremonia comenzará a las 3:30 PM. Les recomendamos llegar unos minutos antes."
+},
+{
+q:"¿Hay estacionamiento disponible?",
+a:"Sí, el lugar cuenta con estacionamiento para nuestros invitados. Les recomendamos llegar con tiempo para estacionarse y ubicarse con calma."
+},
+{
+q:"¿La celebración será al aire libre?",
+a:"La celebración tendrá espacios al aire libre. Les recomendamos tomarlo en cuenta al elegir su calzado y llevar algo ligero para la noche."
+},
+{
+q:"¿Hasta cuándo puedo confirmar mi asistencia?",
+a:"Agradecemos confirmar su asistencia dentro de los cinco días posteriores a recibir esta invitación. Si no recibimos su respuesta durante ese período, entenderemos con mucho cariño que no podrán acompañarnos y registraremos la invitación como declinada."
 },
 {
 q:"¿Se permiten niños?",
@@ -2192,7 +2050,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
 
 {/* FOOTER FINAL */}
 
-<section style={{
+<section className="footer-section" style={{
   padding: "110px 20px",
   textAlign: "center",
   background: "#1e140f",

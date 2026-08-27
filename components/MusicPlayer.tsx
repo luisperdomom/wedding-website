@@ -42,7 +42,7 @@ export default function MusicPlayer() {
       </audio>
 
       {/* Sección Estándar en la Página */}
-      <section className="section-light !py-24" style={{ textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <section className="section-light music-section !py-24" style={{ textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div className="divider"></div>
 
         <h2 

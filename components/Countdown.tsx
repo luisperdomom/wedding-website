@@ -94,7 +94,7 @@ END:VCALENDAR`;
   const values = [timeLeft.days, timeLeft.hours, timeLeft.minutes, timeLeft.seconds];
 
   return (
-    <section className="section-dark">
+    <section className="section-dark countdown-section">
       <h2 
         className="font-elegant tracking-[6px] font-light uppercase text-[clamp(24px,4vw,42px)] mb-7"
         style={{ fontFamily: "var(--font-elegant)" }}

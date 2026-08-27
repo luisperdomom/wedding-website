@@ -98,7 +98,7 @@ export default function RSVPForm({
 
   if (isValidGuest === null) {
     return (
-      <section id="rsvp" className="section-light !py-24" style={{ textAlign: "center" }}>
+      <section id="rsvp" className="section-light rsvp-section !py-24" style={{ textAlign: "center" }}>
         <div className="divider"></div>
         <p className="text-[#8a8178] animate-pulse" style={{ fontFamily: "var(--font-elegant)" }}>
           Verificando tu invitación...
@@ -108,7 +108,7 @@ export default function RSVPForm({
   }
 
   return (
-    <section id="rsvp" className="section-light !py-24" style={{ textAlign: "center", position: "relative" }}>
+    <section id="rsvp" className="section-light rsvp-section !py-24" style={{ textAlign: "center", position: "relative" }}>
       <div className="divider"></div>
 
       <h2 

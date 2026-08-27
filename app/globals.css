@@ -5,11 +5,15 @@
 ========================= */
 
 :root{
-
-  --cream:#F5F1EA;
-  --brown:#3A2A23;
-  --olive:#7A8468;
-  --gold:#C7A27C;
+  --cream:#F7F3ED;
+  --ivory:#FFFDFC;
+  --sand:#EDE5DA;
+  --brown:#33231D;
+  --olive:#758066;
+  --sage:#DDE3D5;
+  --gold:#C6A078;
+  --terracotta:#B97865;
+  --muted:#74685F;
 
 }
 
@@ -57,8 +61,8 @@ h1,h2,h3{
 /* secciones oscuras */
 
 .section-dark{
-  background:#3A2A23;
-  color:white;
+  background:var(--brown);
+  color:#F4EFE8;
   padding:120px 20px;
   text-align:center;
 }
@@ -149,7 +153,185 @@ h1,h2,h3{
 
 .button-dark{
   background:var(--olive);
-  color:white;
+  color:#F8F4EE;
+  border:1px solid transparent;
+  box-shadow:0 8px 20px rgba(71,81,59,0.12);
+}
+
+.button-dark:hover{ border-color:rgba(198,160,120,.7); }
+
+/* Wedding page color rhythm */
+.invitation-section{
+  background-color:var(--cream) !important;
+  background-image:radial-gradient(circle at 12% 15%, rgba(198,160,120,.10), transparent 28%), radial-gradient(circle at 88% 80%, rgba(117,128,102,.08), transparent 25%);
+}
+
+.countdown-section{
+  background-color:var(--brown) !important;
+  background-image:radial-gradient(circle at 50% 35%, rgba(198,160,120,.12), transparent 42%), linear-gradient(145deg, #38261f, #2b1d18);
+}
+
+.history-section{
+  background-color:var(--sand) !important;
+  background-image:linear-gradient(135deg, rgba(255,255,255,.34), transparent 45%), radial-gradient(circle at 90% 10%, rgba(198,160,120,.10), transparent 22%);
+}
+
+.music-section{ background:linear-gradient(180deg, var(--cream), #F2ECE3) !important; }
+.gallery-section{ background:var(--ivory) !important; }
+.event-section{ background:linear-gradient(145deg, #3C4535, #293025) !important; }
+.stay-section{ background:linear-gradient(150deg, #3A2922, #2D201B) !important; }
+.dress-section{ background:linear-gradient(180deg, var(--cream), #EFE7DC) !important; }
+.playlist-section{ background:#FFFDFC !important; }
+.gifts-section{ background:linear-gradient(145deg, #38251E, #271A16) !important; }
+.faq-section{ background:var(--cream) !important; }
+.rsvp-section{
+  background-color:#F0E3DE !important;
+  background-image:linear-gradient(145deg, #F6ECE8, #E8D7D0) !important;
+}
+.footer-section{ background:linear-gradient(160deg, #241712, #180F0C) !important; }
+
+.gift-instructions{
+  max-width:560px;
+  margin:0 auto 26px;
+  padding:0 18px;
+  color:#D8CDC5;
+  font-family:var(--font-body);
+  font-size:14px;
+  line-height:1.75;
+}
+
+.gift-options-card{
+  max-width:620px !important;
+  padding:0 !important;
+  gap:16px !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
+.gift-options-card > div:first-child{
+  display:none;
+}
+
+.gift-account-divider{ display:none; }
+
+.gift-account-card{
+  padding:26px 28px;
+  border:1px solid rgba(198,160,120,.32);
+  border-radius:14px;
+  background:var(--ivory);
+  box-shadow:0 10px 28px rgba(15,9,7,.14);
+  text-align:left;
+}
+
+.gift-account-card > p:first-child{
+  color:#8D684D !important;
+  margin-bottom:14px !important;
+}
+
+.gift-account-card > p:nth-child(2){
+  color:var(--muted) !important;
+  font-size:15px !important;
+  line-height:2 !important;
+}
+
+.gift-account-card strong{
+  display:inline-block;
+  color:var(--brown) !important;
+  font-size:17px !important;
+  letter-spacing:.5px;
+}
+
+.gift-account-card button{
+  display:flex !important;
+  width:max-content;
+  min-height:40px;
+  margin:14px 0 6px !important;
+  padding:8px 15px !important;
+  border-color:rgba(117,128,102,.45) !important;
+  color:#5F6B52 !important;
+  font-size:11px !important;
+  font-weight:600;
+}
+
+.gift-paypal-card > p:nth-child(2){ margin-bottom:18px !important; }
+
+.gift-paypal-card a{
+  min-height:44px;
+  margin:0;
+  background:var(--brown) !important;
+  color:var(--ivory) !important;
+}
+
+.history-photo-frame{
+  background:var(--ivory);
+  outline:8px solid var(--ivory);
+  outline-offset:-8px;
+  box-shadow:0 24px 55px rgba(65,46,37,.13) !important;
+  transform:rotate(-1deg);
+  transition:transform .5s ease;
+}
+.history-photo-frame:hover{ transform:rotate(0deg) scale(1.01); }
+
+/* Delicate visual bridge between the principal sections */
+.countdown-section,
+.history-section,
+.music-section,
+.gallery-section,
+.event-section,
+.stay-section,
+.dress-section,
+.playlist-section,
+.gifts-section,
+.faq-section,
+.footer-section{
+  position:relative;
+}
+
+.countdown-section::before,
+.history-section::before,
+.music-section::before,
+.gallery-section::before,
+.event-section::before,
+.stay-section::before,
+.dress-section::before,
+.playlist-section::before,
+.gifts-section::before,
+.faq-section::before,
+.footer-section::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:50%;
+  width:74px;
+  height:1px;
+  background:rgba(198,160,120,.72);
+  transform:translateX(-50%);
+  box-shadow:0 0 0 7px transparent;
+  pointer-events:none;
+}
+
+.countdown-section::after,
+.history-section::after,
+.music-section::after,
+.gallery-section::after,
+.event-section::after,
+.stay-section::after,
+.dress-section::after,
+.playlist-section::after,
+.gifts-section::after,
+.faq-section::after,
+.footer-section::after{
+  content:"";
+  position:absolute;
+  top:-4px;
+  left:50%;
+  width:9px;
+  height:9px;
+  border:1px solid rgba(198,160,120,.82);
+  background:inherit;
+  transform:translateX(-50%) rotate(45deg);
+  pointer-events:none;
 }
 
 /* navbar */
@@ -232,6 +414,27 @@ h1,h2,h3{
 /* MOBILE */
 
 @media (max-width:768px){
+
+  .history-section,
+  .dress-section{
+    background-image:none !important;
+  }
+
+  .history-photo-frame{
+    outline-width:6px;
+    transform:none;
+  }
+
+  .gift-account-card{
+    padding:24px 20px;
+  }
+
+  .gift-account-card button,
+  .gift-paypal-card a{
+    width:100% !important;
+    justify-content:center;
+    text-align:center;
+  }
 
   .hero-section{
     height:100dvh !important;

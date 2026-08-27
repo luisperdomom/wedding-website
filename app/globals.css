@@ -217,27 +217,29 @@ h1,h2,h3{
 
 .gift-account-card{
   padding:26px 28px;
-  border:1px solid rgba(198,160,120,.32);
+  border:1px solid rgba(198,160,120,.30);
   border-radius:14px;
-  background:var(--ivory);
-  box-shadow:0 10px 28px rgba(15,9,7,.14);
+  background:rgba(255,255,255,.035);
+  box-shadow:0 12px 30px rgba(15,9,7,.16);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
   text-align:left;
 }
 
 .gift-account-card > p:first-child{
-  color:#8D684D !important;
+  color:var(--gold) !important;
   margin-bottom:14px !important;
 }
 
 .gift-account-card > p:nth-child(2){
-  color:var(--muted) !important;
+  color:#DED3CB !important;
   font-size:15px !important;
   line-height:2 !important;
 }
 
 .gift-account-card strong{
   display:inline-block;
-  color:var(--brown) !important;
+  color:var(--ivory) !important;
   font-size:17px !important;
   letter-spacing:.5px;
 }
@@ -248,8 +250,8 @@ h1,h2,h3{
   min-height:40px;
   margin:14px 0 6px !important;
   padding:8px 15px !important;
-  border-color:rgba(117,128,102,.45) !important;
-  color:#5F6B52 !important;
+  border-color:rgba(198,160,120,.46) !important;
+  color:#E5C29D !important;
   font-size:11px !important;
   font-weight:600;
 }
@@ -259,7 +261,8 @@ h1,h2,h3{
 .gift-paypal-card a{
   min-height:44px;
   margin:0;
-  background:var(--brown) !important;
+  border:1px solid rgba(198,160,120,.55) !important;
+  background:rgba(198,160,120,.12) !important;
   color:var(--ivory) !important;
 }
 

@@ -559,17 +559,12 @@ export default function Admin() {
     });
   };
 
-  // Helper to generate the warm invitation message based on whether they have a companion or not
+  // Generate the personalized invitation message for the primary WhatsApp recipient.
   const getFullInvitationMessage = (guest: Guest) => {
     const baseUrl = window.location.origin;
     const personalUrl = `${baseUrl}/?guest=${guest.id}&token=${guest.token}`;
 
-    const companions = getGuestCompanions(guest);
-    if (companions.length) {
-      return `¡Hola ${guest.name}! 🤍 Nos hace muchísima ilusión contarles que... ¡nos casamos! 🥂💍\n\nQueremos que sean parte de este día tan especial para nosotros, y nos emociona un montón contar contigo y con ${formatNames(companions)}. Les compartimos su invitación con todos los detalles aquí:\n\n${personalUrl}\n\n👉 Por favor, asegúrense de deslizar hasta abajo en la página para ver algunas preguntas y respuestas que les pueden servir de ayuda, y para confirmar su asistencia.\n\nNota: Como los cupos de nuestra boda son súper limitados, la invitación es válida únicamente para las personas indicadas. Si no se detalla un acompañante o pase adicional, les pedimos de corazón respetar este límite. ¡Esperamos que nos entiendan! 🤍\n\nRecuerden que tienen un plazo de 7 días a partir de hoy para confirmar su asistencia a través de la web. ¡Ojalá puedan acompañarnos! ✨`;
-    } else {
-      return `¡Hola ${guest.name}! 🤍 Nos hace muchísima ilusión contarte que... ¡nos casamos! 🥂💍\n\nQueremos de todo corazón que seas parte de este día tan especial para nosotros. Te compartimos tu invitación con todos los detalles aquí:\n\n${personalUrl}\n\n👉 Por favor, asegúrate de deslizar hasta abajo en la página para ver algunas preguntas y respuestas que te pueden servir de ayuda, y para confirmar tu asistencia.\n\nNota: Como los cupos de nuestra boda son súper limitados, la invitación es personal y válida únicamente para ti. Si no se detalla un acompañante o pase adicional, te pedimos de corazón respetar este límite. ¡Esperamos que nos entiendan! 🤍\n\nRecuerda que tienes un plazo de 7 días a partir de hoy para confirmar tu asistencia a través de la web. ¡Ojalá puedas acompañarnos! ✨`;
-    }
+    return `Hola, ${guest.name} 🤍\n\nHoy faltan exactamente 100 días para nuestro gran día y estamos muy felices de compartir contigo nuestra invitación. Ahí encontrarás todos los detalles de la celebración:\n\n${personalUrl}\n\n👉 Por favor, asegúrate de deslizar hasta el final de la página para consultar algunas preguntas y respuestas que pueden servirte de ayuda, así como para confirmar tu asistencia.\n\nNota: Como los cupos de nuestra boda son muy limitados, esta invitación es personal y válida únicamente para ti y para las personas que estén detalladas en ella. Si no se especifica un acompañante o pase adicional, te pedimos de corazón respetar este límite. ¡Esperamos que puedas entenderlo! 🤍\n\nRecuerda que tienes un plazo de 7 días, a partir de hoy, para confirmar tu asistencia a través de la página web. ¡Ojalá puedas acompañarnos!\n\nCon cariño,\nLuis & Ailyn`;
   };
 
   // Copy full elegant invitation message to Clipboard

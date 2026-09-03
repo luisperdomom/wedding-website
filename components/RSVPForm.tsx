@@ -116,7 +116,7 @@ export default function RSVPForm({
     return (
       <section id="rsvp" className="section-light rsvp-section !py-24" style={{ textAlign: "center" }}>
         <div className="divider"></div>
-        <p className="text-[#8a8178] animate-pulse" style={{ fontFamily: "var(--font-elegant)" }}>
+        <p className="text-[#737568] animate-pulse" style={{ fontFamily: "var(--font-elegant)" }}>
           Verificando tu invitación...
         </p>
       </section>
@@ -127,15 +127,15 @@ export default function RSVPForm({
     <section id="rsvp" className="section-light rsvp-section !py-24" style={{ textAlign: "center", position: "relative" }}>
       <div className="divider"></div>
 
-      <h2 
-        className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#3b2b20]"
+      <h2
+        className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#2F3122]"
         style={{ fontFamily: "var(--font-elegant)" }}
       >
         Confirmar asistencia
       </h2>
 
-      <p 
-        className="mb-10 tracking-[0.3px] text-[18px] text-[#8a8178] max-w-[650px] mx-auto leading-relaxed px-4"
+      <p
+        className="mb-10 tracking-[0.3px] text-[18px] text-[#737568] max-w-[650px] mx-auto leading-relaxed px-4"
         style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
       >
         {isPlural ? (
@@ -146,7 +146,7 @@ export default function RSVPForm({
       </p>
 
       {/* TARJETA DE FORMULARIO DE LUJO (STATIONERY CARD) */}
-      <div 
+      <div
         style={{
           maxWidth: "460px",
           margin: "0 auto",
@@ -154,26 +154,26 @@ export default function RSVPForm({
           padding: "50px 30px",
           borderRadius: "16px",
           boxShadow: "0 10px 30px rgba(58, 42, 35, 0.03)",
-          border: "1px solid rgba(199, 162, 124, 0.2)",
+          border: "1px solid rgba(175, 174, 168, 0.2)",
           position: "relative",
           overflow: "hidden"
         }}
-        className="px-4"
+        className="weather-glass-card rsvp-card px-4"
         data-aos="fade-up"
       >
         {/* Inset Border Frame */}
         <div style={{
           position: "absolute",
           inset: "8px",
-          border: "1px solid rgba(199, 162, 124, 0.1)",
+          border: "1px solid rgba(175, 174, 168, 0.1)",
           borderRadius: "10px",
           pointerEvents: "none"
         }} />
 
         {!isValidGuest ? (
           <div style={{ zIndex: 10, position: "relative" }}>
-            <p 
-              className="tracking-[0.3px] text-sm text-[#8a8178] leading-relaxed"
+            <p
+              className="tracking-[0.3px] text-sm text-[#737568] leading-relaxed"
               style={{ fontFamily: "var(--font-elegant)" }}
             >
               Esta invitación es personal e intransferible.<br /><br />
@@ -186,11 +186,11 @@ export default function RSVPForm({
               /* MENSAJE SÍ ASISTIRÁ(N) */
               <>
                 {/* Elegant Gold Heart SVG */}
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" style={{ fill: "rgba(199,162,124,0.08)" }} />
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" style={{ fill: "rgba(175, 174, 168,0.08)" }} />
                 </svg>
-                <p 
-                  className="tracking-[0.3px] text-base text-[#3b2b20] leading-relaxed font-light"
+                <p
+                  className="tracking-[0.3px] text-base text-[#2F3122] leading-relaxed font-light"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
                   {isPlural ? (
@@ -210,14 +210,14 @@ export default function RSVPForm({
               /* MENSAJE NO ASISTIRÁ(N) */
               <>
                 {/* Soft Gold Sad Face SVG */}
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
-                  <circle cx="12" cy="12" r="10" style={{ fill: "rgba(199,162,124,0.03)" }} />
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
+                  <circle cx="12" cy="12" r="10" style={{ fill: "rgba(175, 174, 168,0.03)" }} />
                   <line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="2.5" />
                   <line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="2.5" />
                   <path d="M16 16a4 4 0 0 0-8 0" />
                 </svg>
-                <p 
-                  className="tracking-[0.3px] text-base text-[#3b2b20] leading-relaxed font-light"
+                <p
+                  className="tracking-[0.3px] text-base text-[#2F3122] leading-relaxed font-light"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
                   {isPlural ? (
@@ -238,12 +238,12 @@ export default function RSVPForm({
         ) : isExpired ? (
           <div style={{ zIndex: 10, position: "relative" }} className="flex flex-col items-center">
             {/* Elegant Padlock SVG */}
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "18px" }}>
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <p 
-              className="tracking-[0.3px] text-sm text-[#8a8178] leading-relaxed"
+            <p
+              className="tracking-[0.3px] text-sm text-[#737568] leading-relaxed"
               style={{ fontFamily: "var(--font-body)", lineHeight: "1.7" }}
             >
               Esta invitación ha expirado.<br /><br />
@@ -251,7 +251,7 @@ export default function RSVPForm({
                 ? "El período de 7 días para confirmar su asistencia ha concluido. Lamentablemente, debido a los tiempos de planificación y capacidad limitada de Rancho La Vereda, ya no es posible registrar nuevas confirmaciones."
                 : "El período de 7 días para confirmar tu asistencia ha concluido. Lamentablemente, debido a los tiempos de planificación y capacidad limitada de Rancho La Vereda, ya no es posible registrar nuevas confirmaciones."}<br /><br />
               {isPlural ? "¡Gracias por sus buenos deseos! Los extrañaremos en nuestro gran día." : "¡Gracias por tus buenos deseos! Te extrañaremos en nuestro gran día."}<br /><br />
-              <strong style={{ color: "#3b2b20" }}>Luis & Ailyn</strong>
+              <strong style={{ color: "#2F3122" }}>Luis & Ailyn</strong>
             </p>
           </div>
         ) : (
@@ -260,18 +260,18 @@ export default function RSVPForm({
             className="flex flex-col gap-4 text-left z-10 relative"
           >
             <div className="flex flex-col gap-1.5">
-              <label 
-                className="text-xs text-[#8a8178] tracking-[1px] uppercase font-medium"
+              <label
+                className="text-xs text-[#737568] tracking-[1px] uppercase font-medium"
                 style={{ fontFamily: "var(--font-elegant)" }}
               >
                 {isPlural ? "¿Asistirán al evento?" : "¿Asistirás al evento?"}
               </label>
-              
+
               {isPlural ? (
                 <div className="rounded-lg border border-[#e5e0d8] bg-white p-3.5 space-y-3">
-                  <p className="text-xs text-[#8a8178]">Marca cada persona que asistirá:</p>
+                  <p className="text-xs text-[#737568]">Marca cada persona que asistirá:</p>
                   {[primaryName, ...companionNames].map((name) => (
-                    <label key={name} className="flex items-center gap-3 text-sm text-[#3b2b20] cursor-pointer">
+                    <label key={name} className="flex items-center gap-3 text-sm text-[#2F3122] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={selectedAttendees.includes(name)}
@@ -291,7 +291,7 @@ export default function RSVPForm({
                 <select
                   value={attending}
                   onChange={(e) => setAttending(e.target.value)}
-                  className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20]"
+                  className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#AFAEA8] transition-all text-[#2F3122]"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
                   <option value="Sí asistiré">Sí asistiré</option>
@@ -301,8 +301,8 @@ export default function RSVPForm({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label 
-                className="text-xs text-[#8a8178] tracking-[1px] uppercase font-medium"
+              <label
+                className="text-xs text-[#737568] tracking-[1px] uppercase font-medium"
                 style={{ fontFamily: "var(--font-elegant)" }}
               >
                 Mensaje de felicitación para los novios (Opcional)
@@ -312,7 +312,7 @@ export default function RSVPForm({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Escribe aquí un mensaje especial..."
                 rows={4}
-                className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20] resize-none"
+                className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#AFAEA8] transition-all text-[#2F3122] resize-none"
                 style={{ fontFamily: "var(--font-body)" }}
               />
             </div>

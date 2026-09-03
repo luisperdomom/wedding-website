@@ -19,7 +19,7 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
       position: "relative",
       width: "100%",
       height: "100%",
-      background: "radial-gradient(circle, #fcfaf7 0%, #f3ede2 100%)",
+      background: "radial-gradient(circle, #5F6153 0%, #525446 100%)",
       overflow: "hidden"
     }}>
       <Image
@@ -181,7 +181,7 @@ export default function Gallery() {
           <div 
             key={n} 
             onClick={() => setSelectedImage(n)}
-            className={`break-inside-avoid relative w-full ${getCardHeight(n)} cursor-pointer transition-all duration-350 hover:scale-[1.03] hover:shadow-[0_15px_30px_rgba(58,42,35,0.08)] border border-[#e5e0d8] hover:border-[#C7A27C] rounded-2xl overflow-hidden bg-white p-2`}
+            className={`weather-glass-card gallery-card break-inside-avoid relative w-full ${getCardHeight(n)} cursor-pointer transition-all duration-350 hover:scale-[1.03] hover:shadow-[0_15px_30px_rgba(47,49,34,0.24)] border rounded-2xl overflow-hidden p-2`}
           >
             <div className="relative w-full h-full rounded-xl overflow-hidden">
               <GalleryCardImage

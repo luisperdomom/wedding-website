@@ -5,15 +5,15 @@
 ========================= */
 
 :root{
-  --cream:#F7F3ED;
-  --ivory:#FFFDFC;
-  --sand:#EDE5DA;
-  --brown:#33231D;
-  --olive:#758066;
-  --sage:#DDE3D5;
-  --gold:#C6A078;
-  --terracotta:#B97865;
-  --muted:#74685F;
+  --cream:#F6F5F1;
+  --ivory:#F6F5F1;
+  --sand:#5F6153;
+  --brown:#2F3122;
+  --olive:#525446;
+  --sage:#5F6153;
+  --gold:#AFAEA8;
+  --terracotta:#67695A;
+  --muted:#737568;
 
 }
 
@@ -125,7 +125,7 @@ h1,h2,h3{
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(199, 162, 124, 0.4) 50%,
+    rgba(175, 174, 168, 0.4) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   transform: skewX(-25deg);
@@ -134,7 +134,7 @@ h1,h2,h3{
 
 .button:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 10px 25px rgba(199, 162, 124, 0.2);
+  box-shadow: 0 10px 25px rgba(175, 174, 168, 0.2);
   opacity: 0.95;
 }
 
@@ -158,37 +158,206 @@ h1,h2,h3{
   box-shadow:0 8px 20px rgba(71,81,59,0.12);
 }
 
-.button-dark:hover{ border-color:rgba(198,160,120,.7); }
+.button-dark:hover{ border-color:rgba(175, 174, 168,.7); }
 
 /* Wedding page color rhythm */
 .invitation-section{
-  background-color:var(--cream) !important;
-  background-image:radial-gradient(circle at 12% 15%, rgba(198,160,120,.10), transparent 28%), radial-gradient(circle at 88% 80%, rgba(117,128,102,.08), transparent 25%);
+  background-color:#525446 !important;
+  background-image:radial-gradient(circle at 12% 15%, rgba(175,174,168,.10), transparent 28%), radial-gradient(circle at 88% 80%, rgba(47,49,34,.16), transparent 25%);
 }
 
 .countdown-section{
   background-color:var(--brown) !important;
-  background-image:radial-gradient(circle at 50% 35%, rgba(198,160,120,.12), transparent 42%), linear-gradient(145deg, #38261f, #2b1d18);
+  background-image:radial-gradient(circle at 50% 35%, rgba(175,174,168,.10), transparent 42%), linear-gradient(145deg, #343628, #2F3122);
 }
 
 .history-section{
-  background-color:var(--sand) !important;
-  background-image:linear-gradient(135deg, rgba(255,255,255,.34), transparent 45%), radial-gradient(circle at 90% 10%, rgba(198,160,120,.10), transparent 22%);
+  background-color:#F6F5F1 !important;
+  background-image:linear-gradient(135deg, rgba(255,255,255,.34), transparent 45%), radial-gradient(circle at 90% 10%, rgba(82,84,70,.09), transparent 22%);
 }
 
-.music-section{ background:linear-gradient(180deg, var(--cream), #F2ECE3) !important; }
-.gallery-section{ background:var(--ivory) !important; }
-.event-section{ background:linear-gradient(145deg, #3C4535, #293025) !important; }
-.stay-section{ background:linear-gradient(150deg, #3A2922, #2D201B) !important; }
-.dress-section{ background:linear-gradient(180deg, var(--cream), #EFE7DC) !important; }
-.playlist-section{ background:#FFFDFC !important; }
-.gifts-section{ background:linear-gradient(145deg, #38251E, #271A16) !important; }
-.faq-section{ background:var(--cream) !important; }
-.rsvp-section{
-  background-color:#F0E3DE !important;
-  background-image:linear-gradient(145deg, #F6ECE8, #E8D7D0) !important;
+.music-section{ background:linear-gradient(160deg, #5F6153, #525446) !important; }
+.gallery-section{ background:#2F3122 !important; }
+.event-section{ background:linear-gradient(145deg, #343628, #2F3122) !important; }
+.stay-section{ background:linear-gradient(150deg, #5F6153, #525446) !important; }
+.dress-section{ background:linear-gradient(180deg, #5F6153, #525446) !important; }
+.dress-section > *:not(.dress-background){
+  position:relative;
+  z-index:1;
 }
-.footer-section{ background:linear-gradient(160deg, #241712, #180F0C) !important; }
+.dress-background{
+  position:absolute;
+  z-index:0;
+  inset:0;
+  background-color:#525446;
+  background-image:linear-gradient(180deg, #5F6153 0%, #525446 100%);
+  pointer-events:none;
+}
+.playlist-section{ background:#2F3122 !important; }
+.gifts-section{ background:linear-gradient(145deg, #525446, #2F3122) !important; }
+.faq-section{ background:#2F3122 !important; }
+.rsvp-section{
+  background-color:#525446 !important;
+  background-image:linear-gradient(145deg, #5F6153, #525446) !important;
+}
+.footer-section{ background:linear-gradient(160deg, #2F3122, #232519) !important; }
+
+.weather-glass-card{
+  background:rgba(255,255,255,.025) !important;
+  border:1px solid rgba(175,174,168,.25) !important;
+  box-shadow:0 14px 36px rgba(22,24,16,.16) !important;
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+
+.weather-glass-card h2,
+.weather-glass-card h3,
+.weather-glass-card h4{
+  color:#F6F5F1 !important;
+}
+
+.weather-glass-card p{
+  color:#DADBD2 !important;
+}
+
+.weather-glass-card svg{
+  color:#D9D8CC !important;
+  stroke:#D9D8CC !important;
+}
+
+.invitation-card > p:first-of-type{
+  color:#0C0E09 !important;
+  display:inline-block;
+  position:relative;
+  padding:0 22px 19px;
+  font-weight:700 !important;
+  opacity:1 !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.08);
+}
+
+.invitation-card > p:first-of-type::after{
+  content:"";
+  position:absolute;
+  left:10%;
+  right:10%;
+  bottom:5px;
+  height:1px;
+  background:#0C0E09;
+  box-shadow:0 4px 0 rgba(12,14,9,.28);
+}
+
+.invitation-card > p:first-of-type::before{
+  content:"◆";
+  position:absolute;
+  z-index:1;
+  left:50%;
+  bottom:-1px;
+  transform:translateX(-50%);
+  padding:0 8px;
+  color:#0C0E09;
+  background:#525446;
+  font-family:serif;
+  font-size:7px;
+  line-height:12px;
+}
+
+.music-instruction{
+  color:#FFFFFF !important;
+  opacity:1;
+  text-shadow:0 1px 12px rgba(0,0,0,.22);
+}
+
+.dress-palette-title{
+  color:#FFFFFF !important;
+}
+
+.dress-color-label{
+  color:#FFFFFF !important;
+  text-shadow:0 1px 8px rgba(0,0,0,.28);
+}
+
+.dress-card p span,
+.faq-card svg{
+  color:#D9D8CC !important;
+}
+
+.dress-section > p strong{
+  color:#F6F5F1 !important;
+}
+
+.invitation-section > p,
+.music-section h2,
+.gallery-section h2,
+.dress-section h2,
+.playlist-section h2,
+.faq-section h2,
+.rsvp-section h2{
+  color:#F6F5F1 !important;
+}
+
+.music-section > p,
+.gallery-section > p,
+.dress-section > p,
+.playlist-section > p,
+.faq-section > p,
+.rsvp-section > p{
+  color:#DADBD2 !important;
+}
+
+.music-section p,
+.countdown-section p,
+.event-section p,
+.stay-section p,
+.gifts-section p,
+.footer-section p{
+  color:#DADBD2 !important;
+}
+
+.event-section h3,
+.event-section strong,
+.stay-section a,
+.gifts-section h3,
+.footer-section h3{
+  color:#E1E0D5 !important;
+}
+
+.faq-card > div:first-child p{
+  color:#F6F5F1 !important;
+}
+
+.faq-card > div:last-child p{
+  color:#DADBD2 !important;
+}
+
+.rsvp-card input,
+.rsvp-card select,
+.rsvp-card textarea,
+.rsvp-card form > div > div{
+  background:rgba(255,255,255,.045) !important;
+  border-color:rgba(175,174,168,.25) !important;
+  color:#F6F5F1 !important;
+}
+
+.rsvp-card label,
+.rsvp-card label span,
+.rsvp-card form > div > label{
+  color:#E7E7DE !important;
+}
+
+.rsvp-card input::placeholder,
+.rsvp-card textarea::placeholder{
+  color:#BFC0B5 !important;
+  opacity:1;
+}
+
+.rsvp-card select option{
+  background:#2F3122;
+  color:#F6F5F1;
+}
+
+.gallery-card{
+  border-color:rgba(175,174,168,.22) !important;
+}
 
 .gift-instructions{
   max-width:560px;
@@ -217,7 +386,7 @@ h1,h2,h3{
 
 .gift-account-card{
   padding:26px 28px;
-  border:1px solid rgba(198,160,120,.30);
+  border:1px solid rgba(175, 174, 168,.30);
   border-radius:14px;
   background:rgba(255,255,255,.035);
   box-shadow:0 12px 30px rgba(15,9,7,.16);
@@ -227,7 +396,7 @@ h1,h2,h3{
 }
 
 .gift-account-card > p:first-child{
-  color:var(--gold) !important;
+  color:#D9D8CC !important;
   margin-bottom:14px !important;
 }
 
@@ -250,8 +419,8 @@ h1,h2,h3{
   min-height:40px;
   margin:14px 0 6px !important;
   padding:8px 15px !important;
-  border-color:rgba(198,160,120,.46) !important;
-  color:#E5C29D !important;
+  border-color:rgba(175, 174, 168,.46) !important;
+  color:#D9D8CC !important;
   font-size:11px !important;
   font-weight:600;
 }
@@ -261,8 +430,8 @@ h1,h2,h3{
 .gift-paypal-card a{
   min-height:44px;
   margin:0;
-  border:1px solid rgba(198,160,120,.55) !important;
-  background:rgba(198,160,120,.12) !important;
+  border:1px solid rgba(175, 174, 168,.55) !important;
+  background:rgba(175, 174, 168,.12) !important;
   color:var(--ivory) !important;
 }
 
@@ -308,7 +477,7 @@ h1,h2,h3{
   left:50%;
   width:74px;
   height:1px;
-  background:rgba(198,160,120,.72);
+  background:rgba(175, 174, 168,.72);
   transform:translateX(-50%);
   box-shadow:0 0 0 7px transparent;
   pointer-events:none;
@@ -331,7 +500,7 @@ h1,h2,h3{
   left:50%;
   width:9px;
   height:9px;
-  border:1px solid rgba(198,160,120,.82);
+  border:1px solid rgba(175, 174, 168,.82);
   background:inherit;
   transform:translateX(-50%) rotate(45deg);
   pointer-events:none;
@@ -374,7 +543,7 @@ h1,h2,h3{
 }
 
 .navbar a:hover{
-  color:#c7a27c;
+  color:#AFAEA8;
 }
 
 /* NAVBAR MOBILE */
@@ -419,9 +588,15 @@ h1,h2,h3{
 
 @media (max-width:768px){
 
-  .history-section,
   .dress-section{
-    background-image:none !important;
+    background:#525446 !important;
+    background-image:linear-gradient(180deg, #5F6153, #525446) !important;
+  }
+
+  .dress-background{
+    display:block !important;
+    background-color:#525446 !important;
+    background-image:linear-gradient(180deg, #5F6153 0%, #525446 100%) !important;
   }
 
   .history-photo-frame{
@@ -497,7 +672,7 @@ h1,h2,h3{
     right:-100%;
     width:75%;
     height:100dvh;
-    background:#3A2A23;
+    background:#2F3122;
 
     display:flex;
     flex-direction:column;

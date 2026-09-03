@@ -45,18 +45,18 @@ export default function MusicPlayer() {
       <section className="section-light music-section !py-24" style={{ textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div className="divider"></div>
 
-        <h2 
-          className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#3b2b20]"
+        <h2
+          className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#2F3122]"
           style={{ fontFamily: "var(--font-elegant)" }}
         >
-          Nuestra Canción
+          Un poco de música
         </h2>
 
-        <p 
-          className="mb-10 tracking-[0.3px] text-[18px] text-[#8a8178] max-w-[650px] mx-auto leading-relaxed px-4"
+        <p
+          className="mb-10 tracking-[0.3px] text-[18px] text-[#737568] max-w-[650px] mx-auto leading-relaxed px-4"
           style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
         >
-          Hay melodías que se quedan grabadas en el alma y nos acompañan en cada paso. Esta canción ha sido la banda sonora silenciosa de nuestros mejores momentos; una melodía que cuenta quiénes somos y todo lo que sentimos al dar este gran paso juntos.
+          Elegimos esta canción para acompañar la invitación. Si les apetece, pueden darle play mientras ven los detalles.
         </p>
 
         {/* REPRODUCTOR DE VINILO (TOCADISCOS) */}
@@ -83,7 +83,7 @@ export default function MusicPlayer() {
               className={`hover:scale-105 active:scale-98 ${playing ? "animate-spin [animation-duration:12s]" : ""}`}
             >
               {/* Brillo de reflejo de vinilo (Rayos de luz cruzados) */}
-              <div 
+              <div
                 style={{
                   position: "absolute",
                   inset: 0,
@@ -94,13 +94,13 @@ export default function MusicPlayer() {
               />
 
               {/* Sticker Central del Disco (logo2.jpeg de la pareja) */}
-              <div 
+              <div
                 style={{
                   position: "relative",
                   width: "80px",
                   height: "80px",
                   borderRadius: "50%",
-                  border: "2px solid #c7a27c",
+                  border: "2px solid #AFAEA8",
                   overflow: "hidden",
                   boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
                 }}
@@ -114,27 +114,27 @@ export default function MusicPlayer() {
               </div>
 
               {/* Agujero Central */}
-              <div 
+              <div
                 style={{
                   position: "absolute",
                   width: "12px",
                   height: "12px",
                   borderRadius: "50%",
                   background: "#FAF8F5",
-                  border: "2px solid #c7a27c",
+                  border: "2px solid #AFAEA8",
                   boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)"
                 }}
               />
 
               {/* Botón Play/Pause superpuesto (Se disimula si está sonando) */}
-              <div 
+              <div
                 style={{
                   position: "absolute",
                   width: "48px",
                   height: "48px",
                   borderRadius: "50%",
                   background: "rgba(58, 42, 35, 0.7)",
-                  border: "1px solid rgba(199, 162, 124, 0.4)",
+                  border: "1px solid rgba(175, 174, 168, 0.4)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -143,7 +143,7 @@ export default function MusicPlayer() {
                   transition: "opacity 0.3s ease",
                   pointerEvents: "none"
                 }}
-                className="hover:bg-[#3A2A23] shadow-md"
+                className="hover:bg-[#2F3122] shadow-md"
               >
                 {playing ? (
                   /* Pause SVG Icon */
@@ -178,29 +178,29 @@ export default function MusicPlayer() {
               fill="none"
             >
               {/* Soporte de la base del brazo */}
-              <circle cx="70" cy="25" r="14" fill="#120b08" stroke="#c7a27c" strokeWidth="1" />
-              <circle cx="70" cy="25" r="6" fill="#c7a27c" />
-              
+              <circle cx="70" cy="25" r="14" fill="#120b08" stroke="#AFAEA8" strokeWidth="1" />
+              <circle cx="70" cy="25" r="6" fill="#AFAEA8" />
+
               {/* Soporte de descanso (Resta en este clip cuando no suena) */}
-              <path d="M 75 75 L 85 75 L 85 85" stroke="#8a8178" strokeWidth="1.5" strokeLinecap="round" />
-              
+              <path d="M 75 75 L 85 75 L 85 85" stroke="#737568" strokeWidth="1.5" strokeLinecap="round" />
+
               {/* El Brazo Metálico articulado dorado */}
-              <path d="M 70 25 L 35 130 L 25 155" stroke="#c7a27c" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-              
+              <path d="M 70 25 L 35 130 L 25 155" stroke="#AFAEA8" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+
               {/* Contrapeso (Base superior trasera) */}
-              <rect x="62" y="5" width="16" height="10" rx="1" fill="#2c1a13" stroke="#c7a27c" strokeWidth="1" />
-              
+              <rect x="62" y="5" width="16" height="10" rx="1" fill="#2c1a13" stroke="#AFAEA8" strokeWidth="1" />
+
               {/* Cabezal de Aguja (Cartucho / Cápsula) */}
               <g transform="translate(14, 150) rotate(-22)">
-                <rect x="0" y="0" width="22" height="12" rx="2" fill="#120b08" stroke="#c7a27c" strokeWidth="1" />
+                <rect x="0" y="0" width="22" height="12" rx="2" fill="#120b08" stroke="#AFAEA8" strokeWidth="1" />
                 {/* Aguja pequeña indicadora de contacto */}
-                <path d="M 18 12 L 21 17 M 21 17 L 16 17" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M 18 12 L 21 17 M 21 17 L 16 17" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" />
               </g>
             </svg>
           </div>
 
-          <span 
-            className="tracking-[1.5px] text-[10px] text-[#8a8178] uppercase"
+          <span
+            className="music-instruction tracking-[1.5px] text-[10px] uppercase font-semibold"
             style={{ fontFamily: "var(--font-elegant)" }}
           >
             {playing ? "Tocando en vivo · Toca el disco para pausar" : "Toca el disco para escuchar"}
@@ -219,20 +219,20 @@ export default function MusicPlayer() {
       {/* Widget de Control Flotante */}
       <div
         onClick={toggleMusic}
-        className={`fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-[#C7A27C] cursor-pointer transition-all duration-500 backdrop-blur-md bg-white/80 text-[#3A2A23] ${
+        className={`fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-[#AFAEA8] cursor-pointer transition-all duration-500 backdrop-blur-md bg-white/80 text-[#2F3122] ${
           scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
         } hover:scale-110`}
         title={playing ? "Pausar música" : "Reproducir música"}
       >
         {/* CD rotando si está reproduciéndose */}
-        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border border-[#C7A27C]/30 bg-[#F5F1EA]/80 ${playing ? "animate-spin [animation-duration:8s]" : ""}`}>
+        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border border-[#AFAEA8]/30 bg-[#F5F1EA]/80 ${playing ? "animate-spin [animation-duration:8s]" : ""}`}>
           {/* Elegant Gold Music Note SVG Vector */}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C7A27C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18V5l12-2v13" />
-            <circle cx="6" cy="18" r="3" fill="#C7A27C" />
-            <circle cx="18" cy="16" r="3" fill="#C7A27C" />
+            <circle cx="6" cy="18" r="3" fill="#AFAEA8" />
+            <circle cx="18" cy="16" r="3" fill="#AFAEA8" />
           </svg>
-          <div className="absolute w-2.5 h-2.5 bg-white rounded-full border border-[#C7A27C]/50" />
+          <div className="absolute w-2.5 h-2.5 bg-white rounded-full border border-[#AFAEA8]/50" />
         </div>
       </div>
     </>

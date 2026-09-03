@@ -95,7 +95,7 @@ END:VCALENDAR`;
 
   return (
     <section className="section-dark countdown-section">
-      <h2 
+      <h2
         className="font-elegant tracking-[6px] font-light uppercase text-[clamp(24px,4vw,42px)] mb-7"
         style={{ fontFamily: "var(--font-elegant)" }}
       >
@@ -108,13 +108,13 @@ END:VCALENDAR`;
             key={index}
             className="min-w-[100px] p-5 border border-white/15 rounded-lg bg-white/3"
           >
-            <div 
+            <div
               className="text-[clamp(30px,6vw,50px)] font-light"
               style={{ fontFamily: "var(--font-elegant)" }}
             >
               {val}
             </div>
-            <p 
+            <p
               className="mt-2.5 tracking-[3px] text-[11px] opacity-70"
               style={{ fontFamily: "var(--font-elegant)" }}
             >
@@ -130,7 +130,7 @@ END:VCALENDAR`;
           onClick={() => setShowDropdown(!showDropdown)}
           style={{
             fontFamily: "var(--font-elegant)",
-            border: "1px solid rgba(199, 162, 124, 0.4)",
+            border: "1px solid rgba(175, 174, 168, 0.4)",
             background: "rgba(255, 255, 255, 0.02)",
             color: "#e5dcd3",
             cursor: "pointer",
@@ -143,10 +143,10 @@ END:VCALENDAR`;
             gap: "10px",
             transition: "all 0.3s ease",
           }}
-          className="hover:bg-white/5 hover:border-[#c7a27c] hover:scale-103 active:scale-98 select-none"
+          className="hover:bg-white/5 hover:border-[#AFAEA8] hover:scale-103 active:scale-98 select-none"
         >
           {/* Calendar SVG Icon */}
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />
@@ -162,8 +162,8 @@ END:VCALENDAR`;
               position: "absolute",
               top: "100%",
               marginTop: "12px",
-              background: "#1e140f",
-              border: "1px solid rgba(199, 162, 124, 0.35)",
+              background: "#2F3122",
+              border: "1px solid rgba(175, 174, 168, 0.45)",
               borderRadius: "12px",
               boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
               width: "210px",
@@ -185,7 +185,7 @@ END:VCALENDAR`;
                 color: "#e5dcd3",
                 padding: "14px 20px",
                 textAlign: "left",
-                borderBottom: "1px solid rgba(199, 162, 124, 0.15)",
+                borderBottom: "1px solid rgba(175, 174, 168, 0.15)",
                 transition: "background 0.2s ease"
               }}
               className="hover:bg-white/5 block"
@@ -201,7 +201,7 @@ END:VCALENDAR`;
                 color: "#e5dcd3",
                 padding: "14px 20px",
                 textAlign: "left",
-                borderBottom: "1px solid rgba(199, 162, 124, 0.15)",
+                borderBottom: "1px solid rgba(175, 174, 168, 0.15)",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",

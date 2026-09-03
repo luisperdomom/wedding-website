@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense, type MouseEvent } from "react"
+import { useEffect, useRef, useState, Suspense, type MouseEvent } from "react"
 import { useSearchParams } from "next/navigation"
 import AOS from "aos"
 import "aos/dist/aos.css"
@@ -35,7 +35,7 @@ const weddingDate = new Date("2026-12-12T16:00:00")
 // leer parametro del link
 const params = useSearchParams()
 const guestId = params.get("guest")
-const token = params.get("token") 
+const token = params.get("token")
 
 // estados dinámicos de validación
 const [guestName, setGuestName] = useState<string | null>(null)
@@ -46,6 +46,49 @@ const [isExpired, setIsExpired] = useState(false)
 const [isPlural, setIsPlural] = useState(false)
 const [primaryName, setPrimaryName] = useState("")
 const [companionNames, setCompanionNames] = useState<string[]>([])
+const heroVideoRef = useRef<HTMLVideoElement>(null)
+const [heroVideoNeedsTap, setHeroVideoNeedsTap] = useState(false)
+
+useEffect(() => {
+  const video = heroVideoRef.current
+  if (!video) return
+
+  video.muted = true
+  video.defaultMuted = true
+  video.setAttribute("muted", "")
+  video.setAttribute("playsinline", "")
+
+  const playVideo = () => {
+    if (document.hidden) return
+    void video.play()
+      .then(() => setHeroVideoNeedsTap(false))
+      .catch(() => setHeroVideoNeedsTap(true))
+  }
+
+  const handleVisibility = () => {
+    if (!document.hidden) playVideo()
+  }
+
+  video.addEventListener("canplay", playVideo)
+  window.addEventListener("pageshow", playVideo)
+  document.addEventListener("visibilitychange", handleVisibility)
+  playVideo()
+
+  return () => {
+    video.removeEventListener("canplay", playVideo)
+    window.removeEventListener("pageshow", playVideo)
+    document.removeEventListener("visibilitychange", handleVisibility)
+  }
+}, [isValidGuest])
+
+const startHeroVideo = () => {
+  const video = heroVideoRef.current
+  if (!video) return
+  video.muted = true
+  void video.play()
+    .then(() => setHeroVideoNeedsTap(false))
+    .catch(() => setHeroVideoNeedsTap(true))
+}
 
 useEffect(() => {
   async function verifyGuest() {
@@ -154,7 +197,7 @@ if (isValidGuest === null) {
     <div style={{
       fontFamily: "var(--font-elegant)",
       background: "#faf8f5",
-      color: "#3A2A23",
+      color: "#2F3122",
       height: "100vh",
       display: "flex",
       flexDirection: "column",
@@ -175,7 +218,7 @@ if (isValidGuest === false) {
     <div style={{
       fontFamily: "var(--font-elegant)",
       background: "#faf8f5",
-      color: "#3A2A23",
+      color: "#2F3122",
       height: "100vh",
       display: "flex",
       flexDirection: "column",
@@ -187,7 +230,7 @@ if (isValidGuest === false) {
       overflow: "hidden"
     }}>
       <GoldenPetals />
-      
+
       <div style={{
         maxWidth: "460px",
         background: "white",
@@ -206,7 +249,7 @@ if (isValidGuest === false) {
             priority
           />
         </div>
-        
+
         <h2 style={{
           fontFamily: "var(--font-elegant)",
           letterSpacing: "4px",
@@ -214,7 +257,7 @@ if (isValidGuest === false) {
           textTransform: "uppercase",
           fontSize: "24px",
           marginBottom: "20px",
-          color: "#3A2A23"
+          color: "#2F3122"
         }}>
           Invitación Privada
         </h2>
@@ -223,7 +266,7 @@ if (isValidGuest === false) {
           fontFamily: "var(--font-body)",
           lineHeight: "1.8",
           fontSize: "14px",
-          color: "#8a8178",
+          color: "#737568",
           marginBottom: "30px",
           padding: "0 10px"
         }}>
@@ -233,7 +276,7 @@ if (isValidGuest === false) {
         <div style={{
           width: "60px",
           height: "1px",
-          background: "#c7a27c",
+          background: "#AFAEA8",
           margin: "20px auto"
         }} />
 
@@ -242,7 +285,7 @@ if (isValidGuest === false) {
           letterSpacing: "3px",
           fontWeight: 300,
           fontSize: "16px",
-          color: "#3A2A23"
+          color: "#2F3122"
         }}>
           Luis & Ailyn
         </h3>
@@ -305,8 +348,6 @@ aria-expanded={menuOpen}
 
 <a href="#inicio" onClick={(event)=>handleMenuNavigation(event, "inicio")}>Inicio</a>
 
-<a href="#historia" onClick={(event)=>handleMenuNavigation(event, "historia")}>Historia</a>
-
 <a href="#galeria" onClick={(event)=>handleMenuNavigation(event, "galeria")}>Galería</a>
 
 <a href="#evento" onClick={(event)=>handleMenuNavigation(event, "evento")}>Evento</a>
@@ -343,13 +384,16 @@ backgroundPosition: "center"
 
 {/* VIDEO */}
 <video
+ref={heroVideoRef}
 className="hero-video"
 autoPlay
 muted
 loop
 playsInline
-preload="metadata"
+preload="auto"
 poster="/hero-wedding-poster.jpg"
+onLoadedData={startHeroVideo}
+onClick={startHeroVideo}
 style={{
 position:"absolute",
 width:"100%",
@@ -369,6 +413,34 @@ width:"100%",
 height:"100%",
 background:"linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.55) 100%)"
 }} />
+
+{heroVideoNeedsTap && (
+  <button
+    type="button"
+    onClick={startHeroVideo}
+    aria-label="Reproducir video de portada"
+    style={{
+      position:"absolute",
+      zIndex:3,
+      left:"50%",
+      bottom:"88px",
+      transform:"translateX(-50%)",
+      padding:"10px 18px",
+      border:"1px solid rgba(255,255,255,.72)",
+      borderRadius:"999px",
+      background:"rgba(12,14,9,.55)",
+      color:"#fff",
+      fontFamily:"var(--font-elegant)",
+      fontSize:"11px",
+      letterSpacing:"1.8px",
+      textTransform:"uppercase",
+      backdropFilter:"blur(5px)",
+      WebkitBackdropFilter:"blur(5px)"
+    }}
+  >
+    Reproducir video
+  </button>
+)}
 
 {/* HERO CONTENT */}
 <div style={{
@@ -466,7 +538,8 @@ style={{
 }}
 >
 
-  <div 
+  <div
+    className="weather-glass-card invitation-card"
     style={{
       maxWidth: "650px",
       margin: "0 auto",
@@ -474,7 +547,7 @@ style={{
       padding: "60px 40px",
       borderRadius: "16px",
       boxShadow: "0 10px 30px rgba(58, 42, 35, 0.03)",
-      border: "1px solid rgba(199, 162, 124, 0.2)",
+      border: "1px solid rgba(175, 174, 168, 0.2)",
       position: "relative",
       overflow: "hidden"
     }}
@@ -483,18 +556,18 @@ style={{
     <div style={{
       position: "absolute",
       inset: "8px",
-      border: "1px solid rgba(199, 162, 124, 0.1)",
+      border: "1px solid rgba(175, 174, 168, 0.1)",
       borderRadius: "10px",
       pointerEvents: "none"
     }} />
 
     {/* Dynamic Guest Greeting (Calligraphy de Ultra Lujo - Pinyon Script) */}
     {guestName && (
-      <p 
+      <p
         style={{
           fontFamily: "var(--font-pinyon)",
           fontSize: "clamp(30px, 6.5vw, 48px)",
-          color: "#c7a27c",
+          color: "#AFAEA8",
           marginBottom: "15px",
           lineHeight: "1.1",
           fontWeight: 300,
@@ -514,7 +587,7 @@ style={{
       fontWeight: 300,
       textTransform: "uppercase",
       fontSize: "clamp(20px, 3vw, 28px)",
-      color: "#3a2a23",
+      color: "#2F3122",
       marginBottom: "25px"
     }}>
       {isPlural ? "Están invitados" : "Estás invitado"}
@@ -564,7 +637,7 @@ style={{
     fontWeight: 300,
     fontSize: "22px",
     marginTop: "40px",
-    color: "#3a2a23"
+    color: "#2F3122"
   }}>
     Luis & Ailyn
   </p>
@@ -572,142 +645,6 @@ style={{
 </div>
 
 <Countdown targetDate="2026-12-12T16:00:00" />
-
-<section
-id="historia"
-className="history-section"
-data-aos="fade-up"
-style={{
-background:"#f6f3ee",
-padding:"120px 20px",
-textAlign:"center"
-}}
->
-
-<h2 style={{
-fontFamily:"var(--font-elegant)",
-letterSpacing:"6px",
-fontWeight:300,
-textTransform:"uppercase",
-fontSize:"clamp(26px, 5vw, 40px)",
-marginBottom:"20px",
-color:"#3b2b20"
-}}>
-Nuestra Historia
-</h2>
-
-<div style={{
-  maxWidth: "1050px",
-  margin: "60px auto",
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-  gap: "50px",
-  alignItems: "center",
-  padding: "0 24px"
-}}>
-
-  {/* COLUMNA 1: RETRATO DE LA PAREJA (FOTO PRINCIPAL) */}
-  <div 
-    data-aos="fade-right"
-    className="history-photo-frame"
-    style={{
-      position: "relative",
-      width: "100%",
-      height: "540px",
-      borderRadius: "16px",
-      overflow: "hidden",
-      boxShadow: "0 15px 40px rgba(58, 42, 35, 0.08)",
-      border: "1px solid rgba(199, 162, 124, 0.15)"
-    }}
-  >
-    <Image
-      src="/DSC08271-2.jpg"
-      alt="Luis & Ailyn"
-      fill
-      className="object-cover"
-      loading="lazy"
-    />
-  </div>
-
-  {/* COLUMNA 2: TEXTO DE NUESTRA HISTORIA */}
-  <div style={{ textAlign: "left" }}>
-    
-    {/* ICONO VECTORIAL - DESTINOS CRUZADOS */}
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#c7a27c" strokeWidth="1.2" style={{ marginBottom: "25px", opacity: 0.8, display: "block" }}>
-      <path d="M5 20C15 20 20 15 20 5" />
-      <path d="M5 20C15 20 20 25 20 35" />
-      <path d="M35 20C25 20 20 15 20 5" />
-      <path d="M35 20C25 20 20 25 20 35" />
-      <circle cx="20" cy="20" r="2" fill="#c7a27c" />
-    </svg>
-
-    {/* PÁRRAFO 1 - CON LETRA CAPITAL (DROP CAP) */}
-    <p className="mobile-readable"
-      data-aos="fade-up"
-      data-aos-delay="0"
-      style={{
-        marginBottom:"35px",
-        letterSpacing:"0.3px",
-        fontSize:"16px",
-        color:"#5a5048",
-        fontFamily:"var(--font-serif)",
-        lineHeight:"2.1",
-        textAlign: "justify"
-      }}
-    >
-      <span style={{
-        float: "left",
-        fontFamily: "var(--font-serif)",
-        fontSize: "65px",
-        lineHeight: "45px",
-        paddingTop: "6px",
-        paddingRight: "10px",
-        color: "#c7a27c",
-        fontWeight: 300
-      }}>N</span>
-      uestra historia comenzó en el lugar menos pensado: el pasillo de un call center. Todo empezó con una pregunta de lo más simple para coordinar la hora de un almuerzo, una excusa que Luis encontró para hablar con Ailyn por primera vez.
-    </p>
-
-    {/* PÁRRAFO 2 */}
-    <p className="mobile-readable"
-      data-aos="fade-up"
-      data-aos-delay="200"
-      style={{
-        marginBottom:"35px",
-        letterSpacing:"0.3px",
-        fontSize:"16px",
-        color:"#5a5048",
-        fontFamily:"var(--font-serif)",
-        lineHeight:"2.1",
-        textAlign: "justify"
-      }}
-    >
-      Esa primera conversación casual se convirtió en risas del día a día, luego en una bonita amistad y, con el tiempo, en el amor más sincero de nuestras vidas.
-    </p>
-
-    {/* PÁRRAFO 3 */}
-    <p className="mobile-readable"
-      data-aos="fade-up"
-      data-aos-delay="400"
-      style={{
-        marginBottom:"0px",
-        letterSpacing:"0.3px",
-        fontSize:"16px",
-        color:"#5a5048",
-        fontFamily:"var(--font-serif)",
-        lineHeight:"2.1",
-        textAlign: "justify"
-      }}
-    >
-      Desde entonces, hemos compartido viajes, retos y un sinfín de momentos inolvidables. Hoy, estamos listos para dar el paso más importante y comenzar una nueva etapa juntos.
-    </p>
-
-  </div>
-</div>
-
-</section>
-
-<MusicPlayer />
 
 <Gallery />
 
@@ -717,7 +654,7 @@ Nuestra Historia
 position:"relative",
 padding:"110px 20px 60px 20px",
 textAlign:"center",
-background:"#3A2A23",
+background:"#2F3122",
 color:"white"
 }}>
 
@@ -751,7 +688,7 @@ margin:"0 auto",
 width:"100%",
 maxWidth:"420px",
 padding:"14px",
-background:"#c7a27c",
+background:"#AFAEA8",
 borderRadius:"6px",
 boxShadow:"0 15px 40px rgba(0,0,0,0.25)"
 }}>
@@ -776,7 +713,7 @@ borderRadius:"8px"
     className="button"
     style={{
       background: "transparent",
-      border: "1px solid #c7a27c",
+      border: "1px solid #AFAEA8",
       color: "#fff",
       display: "flex",
       alignItems: "center",
@@ -788,7 +725,7 @@ borderRadius:"8px"
       textDecoration: "none"
     }}
   >
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#c7a27c" }}>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#AFAEA8" }}>
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -801,7 +738,7 @@ borderRadius:"8px"
     className="button"
     style={{
       background: "transparent",
-      border: "1px solid #c7a27c",
+      border: "1px solid #AFAEA8",
       color: "#fff",
       display: "flex",
       alignItems: "center",
@@ -813,7 +750,7 @@ borderRadius:"8px"
       textDecoration: "none"
     }}
   >
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#c7a27c" }}>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#AFAEA8" }}>
       <polygon points="3 11 22 2 13 21 11 13 3 11" />
     </svg>
     Abrir en Waze
@@ -838,22 +775,22 @@ borderRadius:"8px"
   margin: "50px auto 0 auto",
   maxWidth: "600px",
   background: "rgba(255, 255, 255, 0.02)",
-  border: "1px solid rgba(199, 162, 124, 0.25)",
+  border: "1px solid rgba(175, 174, 168, 0.25)",
   borderRadius: "16px",
   padding: "24px",
   boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
   textAlign: "center"
 }}>
   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M12 20v2M17.66 17.66l1.41 1.41M22 12h-2M19.07 4.93l-1.41 1.41" />
-      <circle cx="12" cy="12" r="4" fill="rgba(199,162,124,0.1)" />
+      <circle cx="12" cy="12" r="4" fill="rgba(175, 174, 168,0.1)" />
     </svg>
     <h4 style={{
       fontSize: "12px",
       textTransform: "uppercase",
       letterSpacing: "3px",
-      color: "#c7a27c",
+      color: "#AFAEA8",
       fontFamily: "var(--font-elegant)",
       margin: 0,
       fontWeight: "bold"
@@ -880,7 +817,7 @@ borderRadius:"8px"
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
         <span style={{ fontSize: "24px" }}>🌤</span>
         <div>
-          <span style={{ fontSize: "10px", color: "#c7a27c", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Tarde (Ceremonia)</span>
+          <span style={{ fontSize: "10px", color: "#AFAEA8", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Tarde (Ceremonia)</span>
           <span style={{ fontSize: "18px", fontFamily: "var(--font-elegant)", fontWeight: "bold", color: "#fff" }}>22°C - 24°C</span>
         </div>
       </div>
@@ -900,7 +837,7 @@ borderRadius:"8px"
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
         <span style={{ fontSize: "24px" }}>🌙</span>
         <div>
-          <span style={{ fontSize: "10px", color: "#c7a27c", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Noche (Fiesta)</span>
+          <span style={{ fontSize: "10px", color: "#AFAEA8", letterSpacing: "1px", textTransform: "uppercase", display: "block" }}>Noche (Fiesta)</span>
           <span style={{ fontSize: "18px", fontFamily: "var(--font-elegant)", fontWeight: "bold", color: "#fff" }}>14°C - 16°C</span>
         </div>
       </div>
@@ -912,7 +849,7 @@ borderRadius:"8px"
 
   {/* NOTA DE VESTIMENTA / RECOMENDACIÓN */}
   <div style={{
-    borderTop: "1px dashed rgba(199, 162, 124, 0.25)",
+    borderTop: "1px dashed rgba(175, 174, 168, 0.25)",
     paddingTop: "16px",
     display: "flex",
     alignItems: "flex-start",
@@ -928,7 +865,7 @@ borderRadius:"8px"
       margin: 0,
       opacity: 0.9
     }}>
-      <strong style={{ color: "#c7a27c" }}>Nota sobre el clima:</strong> Como Rancho La Vereda se encuentra en una zona montañosa, al caer la noche la temperatura suele bajar bastante. Les sugerimos contemplar un abrigo, saco, chaqueta o chal elegante dentro de su vestuario para disfrutar cómodamente de toda la celebración.
+      <strong style={{ color: "#AFAEA8" }}>Nota sobre el clima:</strong> Como Rancho La Vereda se encuentra en una zona montañosa, al caer la noche la temperatura suele bajar bastante. Les sugerimos contemplar un abrigo, saco, chaqueta o chal elegante dentro de su vestuario para disfrutar cómodamente de toda la celebración.
     </p>
   </div>
 </div>
@@ -940,7 +877,7 @@ borderRadius:"8px"
     letterSpacing: "4px",
     textTransform: "uppercase",
     fontSize: "20px",
-    color: "#c7a27c",
+    color: "#AFAEA8",
     marginBottom: "40px"
   }}>
     Programa de la Boda
@@ -960,7 +897,7 @@ borderRadius:"8px"
       top: "10px",
       bottom: "10px",
       width: "1px",
-      background: "rgba(199, 162, 124, 0.3)"
+      background: "rgba(175, 174, 168, 0.3)"
     }} />
 
     {[
@@ -1017,12 +954,12 @@ borderRadius:"8px"
           width: "19px",
           height: "19px",
           borderRadius: "50%",
-          background: "#3A2A23",
-          border: "1px solid #c7a27c",
+          background: "#2F3122",
+          border: "1px solid #AFAEA8",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#c7a27c"
+          color: "#AFAEA8"
         }}>
           {step.icon}
         </div>
@@ -1032,7 +969,7 @@ borderRadius:"8px"
             fontSize: "11px",
             fontFamily: "var(--font-elegant)",
             letterSpacing: "1.5px",
-            color: "#c7a27c",
+            color: "#AFAEA8",
             fontWeight: "bold",
             display: "block"
           }}>
@@ -1064,6 +1001,8 @@ borderRadius:"8px"
 </div>
 
 </section>
+
+<MusicPlayer />
 
 {/* WHERE TO STAY */}
 
@@ -1109,7 +1048,7 @@ borderRadius:"8px"
   {/* OPCIÓN 1: Entire Home */}
   <div style={{
     background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(199, 162, 124, 0.15)",
+    border: "1px solid rgba(175, 174, 168, 0.15)",
     borderRadius: "16px",
     padding: "30px 24px",
     textAlign: "left",
@@ -1119,7 +1058,7 @@ borderRadius:"8px"
     minHeight: "260px"
   }} className="hover:scale-[1.02] transition-all duration-300">
     <div>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
@@ -1131,13 +1070,13 @@ borderRadius:"8px"
       </p>
 
       {/* Specs bar for Option 1 */}
-      <div style={{ 
-        display: "flex", 
-        flexWrap: "wrap", 
-        gap: "8px", 
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
         marginBottom: "18px",
         fontSize: "11px",
-        color: "#c7a27c",
+        color: "#AFAEA8",
         fontFamily: "var(--font-elegant)",
         letterSpacing: "0.5px"
       }}>
@@ -1170,7 +1109,7 @@ borderRadius:"8px"
   {/* OPCIÓN 2: Entire Cottage */}
   <div style={{
     background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(199, 162, 124, 0.15)",
+    border: "1px solid rgba(175, 174, 168, 0.15)",
     borderRadius: "16px",
     padding: "30px 24px",
     textAlign: "left",
@@ -1180,7 +1119,7 @@ borderRadius:"8px"
     minHeight: "260px"
   }} className="hover:scale-[1.02] transition-all duration-300">
     <div>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
         <path d="M12 2L2 12h3v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8h3L12 2z" />
       </svg>
       <h3 style={{ fontFamily: "var(--font-elegant)", fontSize: "18px", letterSpacing: "2px", color: "#fff", marginBottom: "6px", fontWeight: 300 }}>
@@ -1191,13 +1130,13 @@ borderRadius:"8px"
       </p>
 
       {/* Specs bar for Option 2 */}
-      <div style={{ 
-        display: "flex", 
-        flexWrap: "wrap", 
-        gap: "8px", 
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
         marginBottom: "18px",
         fontSize: "11px",
-        color: "#c7a27c",
+        color: "#AFAEA8",
         fontFamily: "var(--font-elegant)",
         letterSpacing: "0.5px"
       }}>
@@ -1230,7 +1169,7 @@ borderRadius:"8px"
   {/* OPCIÓN 3: Entire Rental Unit */}
   <div style={{
     background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(199, 162, 124, 0.15)",
+    border: "1px solid rgba(175, 174, 168, 0.15)",
     borderRadius: "16px",
     padding: "30px 24px",
     textAlign: "left",
@@ -1240,7 +1179,7 @@ borderRadius:"8px"
     minHeight: "260px"
   }} className="hover:scale-[1.02] transition-all duration-300">
     <div>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
         <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
         <line x1="9" y1="22" x2="9" y2="16" />
         <line x1="15" y1="22" x2="15" y2="16" />
@@ -1255,13 +1194,13 @@ borderRadius:"8px"
       </p>
 
       {/* Specs bar for Option 3 */}
-      <div style={{ 
-        display: "flex", 
-        flexWrap: "wrap", 
-        gap: "8px", 
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
         marginBottom: "18px",
         fontSize: "11px",
-        color: "#c7a27c",
+        color: "#AFAEA8",
         fontFamily: "var(--font-elegant)",
         letterSpacing: "0.5px"
       }}>
@@ -1294,7 +1233,7 @@ borderRadius:"8px"
   {/* OPCIÓN 4: Entire Villa */}
   <div style={{
     background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(199, 162, 124, 0.15)",
+    border: "1px solid rgba(175, 174, 168, 0.15)",
     borderRadius: "16px",
     padding: "30px 24px",
     textAlign: "left",
@@ -1304,7 +1243,7 @@ borderRadius:"8px"
     minHeight: "260px"
   }} className="hover:scale-[1.02] transition-all duration-300">
     <div>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "15px" }}>
         <path d="M2 22h20M4 6h16M3 10h18M4 6v4M20 6v4M6 10v12M18 10v12M12 10v12" />
         <path d="M12 2L2 6h20L12 2z" />
       </svg>
@@ -1314,15 +1253,15 @@ borderRadius:"8px"
       <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#e6ddd5", lineHeight: "1.5", marginBottom: "8px" }}>
         Villa de lujo ideal para estancias de grupos familiares numerosos. Espaciosa, cómoda y totalmente equipada.
       </p>
-      
+
       {/* Specs bar for Option 4 */}
-      <div style={{ 
-        display: "flex", 
-        flexWrap: "wrap", 
-        gap: "8px", 
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
         marginBottom: "18px",
         fontSize: "11px",
-        color: "#c7a27c",
+        color: "#AFAEA8",
         fontFamily: "var(--font-elegant)",
         letterSpacing: "0.5px"
       }}>
@@ -1358,21 +1297,31 @@ borderRadius:"8px"
 
 
 {/* CÓDIGO DE VESTIMENTA */}
-<section id="vestimenta" className="section-light dress-section" style={{ textAlign: "center", position: "relative" }}>
+<section
+  id="vestimenta"
+  className="section-light dress-section"
+  style={{
+    textAlign: "center",
+    position: "relative",
+    backgroundColor: "#525446",
+    backgroundImage: "linear-gradient(180deg, #5F6153 0%, #525446 100%)"
+  }}
+>
+  <div className="dress-background" aria-hidden="true" />
   <div className="divider"></div>
 
-  <h2 
-    className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#3b2b20]"
+  <h2
+    className="tracking-[6px] font-light uppercase text-[clamp(26px,5vw,40px)] mb-5 text-[#2F3122]"
     style={{ fontFamily: "var(--font-elegant)" }}
   >
     Código de Vestimenta
   </h2>
 
-  <p 
-    className="mb-8 tracking-[0.3px] text-[20px] text-[#8a8178] max-w-[700px] mx-auto leading-relaxed px-4"
+  <p
+    className="mb-8 tracking-[0.3px] text-[20px] text-[#737568] max-w-[700px] mx-auto leading-relaxed px-4"
     style={{ fontFamily: "var(--font-elegant)" }}
   >
-    Para acompañarnos en este gran día, les sugerimos un estilo <strong style={{ color: "#3b2b20", fontWeight: 400 }}>Formal Campestre</strong>.
+    Para acompañarnos en este gran día, les sugerimos un estilo <strong style={{ color: "#2F3122", fontWeight: 400 }}>Formal Campestre</strong>.
   </p>
 
   <div style={{
@@ -1384,50 +1333,50 @@ borderRadius:"8px"
     padding: "0 20px"
   }}>
     {/* DAMAS */}
-    <div style={{
+    <div className="weather-glass-card dress-card" style={{
       background: "white",
       padding: "28px",
       borderRadius: "12px",
       boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
       border: "1px solid #e5e0d8"
     }}>
-      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#C7A27C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#AFAEA8" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
         <path d="M19 7c0 5-2 8-6 11l5 7-7 16h26l-7-16 5-7c-4-3-6-6-6-11-3 2-7 2-10 0Z"/><path d="M18 25h12M24 10v15"/>
       </svg>
-      <h3 
-        className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
+      <h3
+        className="text-lg uppercase tracking-[2px] text-[#2F3122] mt-3 mb-3"
         style={{ fontFamily: "var(--font-elegant)" }}
       >
         Damas
       </h3>
-      <p 
-        className="text-sm text-[#8a8178] leading-relaxed"
+      <p
+        className="text-sm text-[#737568] leading-relaxed"
         style={{ fontFamily: "var(--font-body)" }}
       >
         Vestido formal largo o midi, en telas frescas y fluidas. Sugerimos tonos inspirados en la naturaleza, como tierra, oliva, salvia, terracota o rosa empolvado. <br />
-        <span className="text-xs italic text-[#C7A27C] block mt-1.5">* Se solicita evitar el uso de blanco, marfil, crema o azul.</span>
+        <span className="text-xs italic text-[#AFAEA8] block mt-1.5">* Se solicita evitar el uso de blanco, marfil, crema o azul.</span>
       </p>
     </div>
 
     {/* CABALLEROS */}
-    <div style={{
+    <div className="weather-glass-card dress-card" style={{
       background: "white",
       padding: "28px",
       borderRadius: "12px",
       boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
       border: "1px solid #e5e0d8"
     }}>
-      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#C7A27C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+      <svg aria-hidden="true" width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="#AFAEA8" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
         <path d="M15 9 7 14l3 9 5-3v21h18V20l5 3 3-9-8-5-4 6H19l-4-6Z"/><path d="m20 9 4 6 4-6M24 15v26"/>
       </svg>
-      <h3 
-        className="text-lg uppercase tracking-[2px] text-[#3b2b20] mt-3 mb-3"
+      <h3
+        className="text-lg uppercase tracking-[2px] text-[#2F3122] mt-3 mb-3"
         style={{ fontFamily: "var(--font-elegant)" }}
       >
         Caballeros
       </h3>
-      <p 
-        className="text-sm text-[#8a8178] leading-relaxed"
+      <p
+        className="text-sm text-[#737568] leading-relaxed"
         style={{ fontFamily: "var(--font-body)" }}
       >
         Traje formal de lino o algodón en tonos claros, o guayabera blanca de manga larga con pantalón de vestir neutro y calzado formal.
@@ -1437,8 +1386,8 @@ borderRadius:"8px"
 
   {/* PALETA DE COLORES */}
   <div style={{ margin: "50px auto 30px auto", maxWidth: "750px" }}>
-    <h4 
-      className="text-xs uppercase tracking-[3px] text-[#8a8178] mb-6 font-bold"
+    <h4
+      className="dress-palette-title text-xs uppercase tracking-[3px] mb-6 font-bold"
       style={{ fontFamily: "var(--font-elegant)" }}
     >
       Paleta de Colores Sugerida
@@ -1458,7 +1407,7 @@ borderRadius:"8px"
         { color: "#A9D39E", name: "Pistachio Green" }
       ].map((item, i) => (
         <div key={i} className="flex flex-col items-center gap-1.5 group cursor-help" style={{ minWidth: "80px" }}>
-          <div 
+          <div
             style={{
               width: "42px",
               height: "42px",
@@ -1470,7 +1419,7 @@ borderRadius:"8px"
             }}
             className="hover:scale-110"
           />
-          <span className="text-[9px] tracking-[0.5px] text-[#8a8178] uppercase text-center" style={{ fontFamily: "var(--font-elegant)" }}>
+          <span className="dress-color-label text-[9px] tracking-[0.5px] uppercase text-center font-semibold" style={{ fontFamily: "var(--font-elegant)" }}>
             {item.name}
           </span>
         </div>
@@ -1480,8 +1429,8 @@ borderRadius:"8px"
 
   {/* GALERÍA DE INSPIRACIÓN */}
   <div style={{ marginTop: "60px", padding: "0 20px" }}>
-    <h4 
-      className="text-xs uppercase tracking-[3px] text-[#8a8178] mb-6 font-bold"
+    <h4
+      className="dress-palette-title text-xs uppercase tracking-[3px] mb-6 font-bold"
       style={{ fontFamily: "var(--font-elegant)" }}
     >
       Inspiraciones de Vestuario
@@ -1495,7 +1444,7 @@ borderRadius:"8px"
         { src: "/codigo7.jpeg", label: "Inspiración 5" },
         { src: "/codigo4.jpeg", label: "Inspiración 6" }
       ].map((img, i) => (
-        <div 
+        <div
           key={i}
           className="relative w-full h-[340px] rounded-lg overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-[#e5e0d8] group"
         >
@@ -1527,16 +1476,16 @@ borderRadius:"8px"
   textTransform:"uppercase",
   fontSize:"clamp(26px, 5vw, 40px)",
   marginBottom:"20px",
-  color:"#3b2b20"
+  color:"#2F3122"
 }}>
-  Nuestra Playlist
+  Una canción para nosotros
 </h2>
 
 <p style={{
   marginBottom:"30px",
   letterSpacing:"0.3px",
   fontSize:"18px",
-  color:"#8a8178",
+  color:"#737568",
   fontFamily:"var(--font-serif)",
   fontStyle: "italic",
   maxWidth: "650px",
@@ -1544,8 +1493,7 @@ borderRadius:"8px"
   lineHeight: "1.6",
   padding: "0 20px"
 }}>
-  La música tiene el poder de guardar recuerdos. Queremos crear una playlist que nos acompañe en nuestra nueva vida juntos; un espacio donde puedan dedicarnos una canción, compartir un tema que les recuerde a nosotros, o simplemente regalarnos una melodía para escuchar en el camino.<br /><br />
-  Añadan sus canciones favoritas para que formen parte de nuestra banda sonora de amor.
+  Hay canciones que uno comparte porque dicen algo que a veces cuesta poner en palabras. Si tienen una para nosotros, agréguenla a esta playlist. Nos encantará escucharlas y descubrir cuál eligió cada uno.
 </p>
 
 {/* SPOTIFY EMBEDDED PLAYER */}
@@ -1554,9 +1502,9 @@ borderRadius:"8px"
   width: "100%",
   maxWidth: "500px",
   padding: "8px",
-  background: "#1c110c",
+  background: "#2F3122",
   borderRadius: "16px",
-  border: "1px solid rgba(199, 162, 124, 0.2)",
+  border: "1px solid rgba(175, 174, 168, 0.2)",
   boxShadow: "0 15px 40px rgba(58, 42, 35, 0.05)"
 }} data-aos="fade-up">
   <iframe
@@ -1626,8 +1574,8 @@ borderRadius:"8px"
 </p>
 
 {/* ICONO VECTORIAL - DETALLE DE REGALO */}
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c7a27c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "40px auto 10px auto", display: "block", opacity: 0.85 }}>
-  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" style={{ fill: "rgba(199,162,124,0.05)" }} />
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#AFAEA8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "40px auto 10px auto", display: "block", opacity: 0.85 }}>
+  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" style={{ fill: "rgba(175, 174, 168,0.05)" }} />
   <path d="M12 22V7M2 12h20" />
   <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
   <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
@@ -1637,7 +1585,7 @@ borderRadius:"8px"
   fontFamily:"var(--font-elegant)",
   letterSpacing:"3px",
   fontSize:"15px",
-  color: "#c7a27c",
+  color: "#AFAEA8",
   marginBottom: "35px"
 }}>
   CUENTAS DE REGALOS
@@ -1648,7 +1596,7 @@ borderRadius:"8px"
 </p>
 
 {/* TARJETA DE CUENTAS DE LUJO (STATIONERY CARD) */}
-<div 
+<div
   className="gift-options-card"
   style={{
     maxWidth: "550px",
@@ -1657,7 +1605,7 @@ borderRadius:"8px"
     padding: "45px 25px",
     borderRadius: "16px",
     boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
-    border: "1px solid rgba(199, 162, 124, 0.18)",
+    border: "1px solid rgba(175, 174, 168, 0.18)",
     position: "relative",
     display: "flex",
     flexDirection: "column",
@@ -1670,7 +1618,7 @@ borderRadius:"8px"
   <div style={{
     position: "absolute",
     inset: "8px",
-    border: "1px solid rgba(199, 162, 124, 0.08)",
+    border: "1px solid rgba(175, 174, 168, 0.08)",
     borderRadius: "10px",
     pointerEvents: "none"
   }} />
@@ -1681,7 +1629,7 @@ borderRadius:"8px"
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
       fontSize:"13px",
-      color: "#c7a27c",
+      color: "#AFAEA8",
       marginBottom:"12px"
     }}>
       BANCO POPULAR
@@ -1699,8 +1647,8 @@ borderRadius:"8px"
         style={{
           marginLeft: "12px",
           background: "none",
-          border: `1px solid ${copiedText === "816921621" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
-          color: copiedText === "816921621" ? "#a8c3a0" : "#c7a27c",
+          border: `1px solid ${copiedText === "816921621" ? "#a8c3a0" : "rgba(175, 174, 168, 0.3)"}`,
+          color: copiedText === "816921621" ? "#a8c3a0" : "#AFAEA8",
           cursor: "pointer",
           fontSize: "11px",
           fontFamily: "var(--font-elegant)",
@@ -1734,7 +1682,7 @@ borderRadius:"8px"
   <div className="gift-account-divider" style={{
     width:"40px",
     height:"1px",
-    background:"rgba(199, 162, 124, 0.25)",
+    background:"rgba(175, 174, 168, 0.25)",
     zIndex: 10
   }}/>
 
@@ -1744,7 +1692,7 @@ borderRadius:"8px"
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
       fontSize:"13px",
-      color: "#c7a27c",
+      color: "#AFAEA8",
       marginBottom:"12px"
     }}>
       BHD
@@ -1762,8 +1710,8 @@ borderRadius:"8px"
         style={{
           marginLeft: "12px",
           background: "none",
-          border: `1px solid ${copiedText === "34139820016" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
-          color: copiedText === "34139820016" ? "#a8c3a0" : "#c7a27c",
+          border: `1px solid ${copiedText === "34139820016" ? "#a8c3a0" : "rgba(175, 174, 168, 0.3)"}`,
+          color: copiedText === "34139820016" ? "#a8c3a0" : "#AFAEA8",
           cursor: "pointer",
           fontSize: "11px",
           fontFamily: "var(--font-elegant)",
@@ -1797,7 +1745,7 @@ borderRadius:"8px"
   <div className="gift-account-divider" style={{
     width:"40px",
     height:"1px",
-    background:"rgba(199, 162, 124, 0.25)",
+    background:"rgba(175, 174, 168, 0.25)",
     zIndex: 10
   }}/>
 
@@ -1807,7 +1755,7 @@ borderRadius:"8px"
       fontFamily:"var(--font-elegant)",
       letterSpacing:"3px",
       fontSize:"13px",
-      color: "#c7a27c",
+      color: "#AFAEA8",
       marginBottom:"12px"
     }}>
       BANRESERVAS
@@ -1825,8 +1773,8 @@ borderRadius:"8px"
         style={{
           marginLeft: "12px",
           background: "none",
-          border: `1px solid ${copiedText === "9606316788" ? "#a8c3a0" : "rgba(199, 162, 124, 0.3)"}`,
-          color: copiedText === "9606316788" ? "#a8c3a0" : "#c7a27c",
+          border: `1px solid ${copiedText === "9606316788" ? "#a8c3a0" : "rgba(175, 174, 168, 0.3)"}`,
+          color: copiedText === "9606316788" ? "#a8c3a0" : "#AFAEA8",
           cursor: "pointer",
           fontSize: "11px",
           fontFamily: "var(--font-elegant)",
@@ -1857,11 +1805,11 @@ borderRadius:"8px"
   </div>
 
   {/* DIVIDER */}
-  <div className="gift-account-divider" style={{ width:"40px", height:"1px", background:"rgba(199, 162, 124, 0.25)", zIndex: 10 }}/>
+  <div className="gift-account-divider" style={{ width:"40px", height:"1px", background:"rgba(175, 174, 168, 0.25)", zIndex: 10 }}/>
 
   {/* PAYPAL */}
   <div className="gift-account-card gift-paypal-card" style={{ width: "100%", zIndex: 10 }}>
-    <p style={{ fontFamily:"var(--font-elegant)", letterSpacing:"3px", fontSize:"13px", color:"#c7a27c", marginBottom:"10px" }}>
+    <p style={{ fontFamily:"var(--font-elegant)", letterSpacing:"3px", fontSize:"13px", color:"#AFAEA8", marginBottom:"10px" }}>
       PAYPAL
     </p>
     <p style={{ fontFamily:"var(--font-body)", fontSize:"13px", color:"#e6ddd5", marginBottom:"18px" }}>
@@ -1906,7 +1854,7 @@ fontFamily:"var(--font-elegant)",
 letterSpacing:"4px",
 textTransform:"uppercase",
 fontSize:"11px",
-color:"#8a8178",
+color:"#737568",
 textAlign:"center",
 marginBottom:"35px"
 }}>
@@ -1962,7 +1910,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     cursor: "pointer",
     textAlign: "left"
   }}
-  className="hover:border-[#C7A27C] hover:shadow-[0_8px_25px_rgba(58,42,35,0.05)]"
+  className="weather-glass-card faq-card hover:border-[#AFAEA8] hover:shadow-[0_8px_25px_rgba(58,42,35,0.05)]"
 >
 
   <div
@@ -1976,7 +1924,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
       fontFamily:"var(--font-elegant)",
       letterSpacing:"1.5px",
       fontSize:"14px",
-      color: "#3a2a23",
+      color: "#2F3122",
       margin: 0,
       fontWeight: 400
     }}>
@@ -1984,15 +1932,15 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     </p>
 
     {/* Chevron SVG con Rotación de 180 grados suave */}
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="#c7a27c" 
-      strokeWidth="1.8" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#AFAEA8"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       style={{
         transform: openFAQ === index ? "rotate(180deg)" : "rotate(0deg)",
         transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -2062,7 +2010,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     width: "105px",
     height: "105px",
     borderRadius: "50%",
-    border: "1px dashed rgba(199, 162, 124, 0.4)",
+    border: "1px dashed rgba(175, 174, 168, 0.4)",
     margin: "0 auto 35px auto",
     display: "flex",
     alignItems: "center",
@@ -2116,7 +2064,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     letterSpacing: "4px",
     textTransform: "uppercase",
     fontSize: "11px",
-    color: "#c7a27c",
+    color: "#AFAEA8",
     marginTop: "12px",
     fontWeight: "bold"
   }}>
@@ -2126,7 +2074,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
   <div style={{
     width: "40px",
     height: "1px",
-    background: "rgba(199, 162, 124, 0.3)",
+    background: "rgba(175, 174, 168, 0.3)",
     margin: "40px auto 0 auto"
   }}/>
 

@@ -1498,6 +1498,8 @@ borderRadius:"8px"
 
 <a
   href="https://open.spotify.com/playlist/01LWwYl7aQokexMUVdpasv?si=3a39bccd9be04bb0&pt=c14a9189ffb8e659c03c5d5fcb6ec6ce"
+  target="_blank"
+  rel="noopener noreferrer"
   className="button button-dark"
   style={{
     fontFamily:"var(--font-elegant)",

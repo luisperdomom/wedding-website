@@ -1934,7 +1934,7 @@ a:"La celebración tendrá espacios al aire libre. Les recomendamos tomarlo en c
 },
 {
 q:"¿Hasta cuándo puedo confirmar mi asistencia?",
-a:"Agradecemos confirmar su asistencia dentro de los cinco días posteriores a recibir esta invitación. Si no recibimos su respuesta durante ese período, entenderemos con mucho cariño que no podrán acompañarnos y registraremos la invitación como declinada."
+a:"Agradecemos confirmar su asistencia dentro de los siete días posteriores a recibir esta invitación. Si no recibimos su respuesta durante ese período, entenderemos con mucho cariño que no podrán acompañarnos y registraremos la invitación como declinada."
 },
 {
 q:"¿Se permiten niños?",
@@ -2004,7 +2004,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
 
   <div
     style={{
-      maxHeight: openFAQ === index ? "120px" : "0px",
+      maxHeight: openFAQ === index ? "320px" : "0px",
       opacity: openFAQ === index ? 1 : 0,
       overflow: "hidden",
       transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, margin-top 0.4s ease",

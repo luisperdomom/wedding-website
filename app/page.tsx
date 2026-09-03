@@ -517,7 +517,7 @@ style={{
       color: "#3a2a23",
       marginBottom: "25px"
     }}>
-      Estás invitado
+      {isPlural ? "Están invitados" : "Estás invitado"}
     </h2>
 
     <p style={{
@@ -828,7 +828,9 @@ borderRadius:"8px"
   opacity: 0.85,
   fontStyle: "italic"
 }}>
-  Habrá estacionamiento disponible en el lugar. Nuestro equipo estará listo para guiarte al llegar.
+  {isPlural
+    ? "Habrá estacionamiento disponible en el lugar. Nuestro equipo estará listo para guiarlos al llegar."
+    : "Habrá estacionamiento disponible en el lugar. Nuestro equipo estará listo para guiarte al llegar."}
 </p>
 
 {/* WIDGET DE CLIMA PREMIUM */}
@@ -2089,7 +2091,9 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
     opacity: 0.9,
     lineHeight: "1.6"
   }}>
-    Con amor, y la mayor ilusión de compartir este día junto a ti.
+    {isPlural
+      ? "Con amor, y la mayor ilusión de compartir este día junto a ustedes."
+      : "Con amor, y la mayor ilusión de compartir este día junto a ti."}
   </p>
 
   {/* Nombres en tipografía elegante original */}

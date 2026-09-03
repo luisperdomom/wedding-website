@@ -49,7 +49,7 @@ export default function RSVPForm({
     e.preventDefault();
 
     if (alreadyAnswered) {
-      alert("Ya hemos recibido tu confirmación.");
+      alert(isPlural ? "Ya hemos recibido su confirmación." : "Ya hemos recibido tu confirmación.");
       return;
     }
 
@@ -247,8 +247,10 @@ export default function RSVPForm({
               style={{ fontFamily: "var(--font-body)", lineHeight: "1.7" }}
             >
               Esta invitación ha expirado.<br /><br />
-              El período de 7 días para confirmar tu asistencia ha concluido. Lamentablemente, debido a los tiempos de planificación y capacidad limitada de Rancho La Vereda, ya no es posible registrar nuevas confirmaciones.<br /><br />
-              ¡Gracias por tus buenos deseos! Te extrañaremos en nuestro gran día.<br /><br />
+              {isPlural
+                ? "El período de 7 días para confirmar su asistencia ha concluido. Lamentablemente, debido a los tiempos de planificación y capacidad limitada de Rancho La Vereda, ya no es posible registrar nuevas confirmaciones."
+                : "El período de 7 días para confirmar tu asistencia ha concluido. Lamentablemente, debido a los tiempos de planificación y capacidad limitada de Rancho La Vereda, ya no es posible registrar nuevas confirmaciones."}<br /><br />
+              {isPlural ? "¡Gracias por sus buenos deseos! Los extrañaremos en nuestro gran día." : "¡Gracias por tus buenos deseos! Te extrañaremos en nuestro gran día."}<br /><br />
               <strong style={{ color: "#3b2b20" }}>Luis & Ailyn</strong>
             </p>
           </div>

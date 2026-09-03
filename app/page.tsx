@@ -1496,8 +1496,30 @@ borderRadius:"8px"
   Hay canciones que uno comparte porque dicen algo que a veces cuesta poner en palabras. Si tienen una para nosotros, agréguenla a esta playlist. Nos encantará escucharlas y descubrir cuál eligió cada uno.
 </p>
 
+{/* SPOTIFY EMBEDDED PLAYER */}
+<div style={{
+  margin: "0 auto 40px auto",
+  width: "100%",
+  maxWidth: "500px",
+  padding: "8px",
+  background: "#2F3122",
+  borderRadius: "16px",
+  border: "1px solid rgba(175, 174, 168, 0.2)",
+  boxShadow: "0 15px 40px rgba(58, 42, 35, 0.05)"
+}} data-aos="fade-up">
+  <iframe
+    src="https://open.spotify.com/embed/playlist/0lGCAXvaOWhHGyNiL1J5zI?utm_source=generator&theme=0"
+    title="Playlist de Spotify"
+    width="100%"
+    height="152"
+    style={{ border: 0, borderRadius: "12px" }}
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    loading="lazy"
+  />
+</div>
+
 <a
-  href="https://open.spotify.com/playlist/01LWwYl7aQokexMUVdpasv?si=3a39bccd9be04bb0&pt=c14a9189ffb8e659c03c5d5fcb6ec6ce"
+  href="https://open.spotify.com/playlist/0lGCAXvaOWhHGyNiL1J5zI?si=b37ed3a8e4e24250&pt=5836d1d897283ff3377b9c3eb949ba09"
   target="_blank"
   rel="noopener noreferrer"
   className="button button-dark"

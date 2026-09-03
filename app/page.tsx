@@ -12,6 +12,7 @@ import RSVPForm from "@/components/RSVPForm"
 import Image from "next/image"
 import GoldenPetals from "@/components/GoldenPetals"
 import VirtualEnvelope from "@/components/VirtualEnvelope"
+import { formatNames } from "@/lib/guest-names"
 
 function Divider(){
   return(
@@ -44,7 +45,7 @@ const [guestAttendingChoice, setGuestAttendingChoice] = useState<string | null>(
 const [isExpired, setIsExpired] = useState(false)
 const [isPlural, setIsPlural] = useState(false)
 const [primaryName, setPrimaryName] = useState("")
-const [companionName, setCompanionName] = useState("")
+const [companionNames, setCompanionNames] = useState<string[]>([])
 
 useEffect(() => {
   async function verifyGuest() {
@@ -64,20 +65,17 @@ useEffect(() => {
       if (result.valid) {
           const guestData = result.guest
           setPrimaryName(guestData.name)
-          if (guestData.companion && guestData.companion.trim()) {
-            const compName = guestData.companion.trim()
-            setCompanionName(compName)
-            const firstChar = compName.toLowerCase()
-            const startsWithI = firstChar.startsWith("i")
-            const startsWithHi = firstChar.startsWith("hi") && !firstChar.startsWith("hie")
-            
-            const conjunction = (startsWithI || startsWithHi) ? " e " : " y "
-            setGuestName(`${guestData.name}${conjunction}${compName}`)
+          const companions = Array.isArray(guestData.companions)
+            ? guestData.companions.filter((name: unknown): name is string => typeof name === "string" && Boolean(name.trim()))
+            : []
+          if (companions.length) {
+            setCompanionNames(companions)
+            setGuestName(formatNames([guestData.name, ...companions]))
             setIsPlural(true)
           } else {
             setGuestName(guestData.name)
             setIsPlural(false)
-            setCompanionName("")
+            setCompanionNames([])
           }
           setIsValidGuest(true)
           setIsExpired(result.expired === true)
@@ -338,7 +336,7 @@ justifyContent:"center",
 textAlign:"center",
 color:"white",
 backgroundColor:"#1c2219", // Elegant dark nature background color while video loads on mobile
-backgroundImage: "url('/gallery/_JCC0731.jpg')",
+backgroundImage: "url('/hero-wedding-poster.jpg')",
 backgroundSize: "cover",
 backgroundPosition: "center"
 }}>
@@ -351,17 +349,16 @@ muted
 loop
 playsInline
 preload="metadata"
-poster="/gallery/_JCC0731.jpg"
+poster="/hero-wedding-poster.jpg"
 style={{
 position:"absolute",
 width:"100%",
 height:"100%",
-objectFit:"cover",
 top:0,
 left:0
 }}
 >
-<source src="/nature-optimized.mp4" type="video/mp4" />
+<source src="/hero-wedding.mp4" type="video/mp4" />
 </video>
 
 {/* OVERLAY */}
@@ -1561,7 +1558,7 @@ borderRadius:"8px"
   boxShadow: "0 15px 40px rgba(58, 42, 35, 0.05)"
 }} data-aos="fade-up">
   <iframe
-    src="https://open.spotify.com/embed/playlist/2da7zmucwCTjehbLgaBcxR?utm_source=generator&theme=0"
+    src="https://open.spotify.com/embed/playlist/01LWwYl7aQokexMUVdpasv?utm_source=generator&theme=0"
     width="100%"
     height="152"
     style={{ border: 0, borderRadius: "12px" }}
@@ -1571,7 +1568,7 @@ borderRadius:"8px"
 </div>
 
 <a
-  href="https://open.spotify.com/playlist/2da7zmucwCTjehbLgaBcxR?si=5bae9463894248a5&pt=7b2020ccfe79c28e13b1b6f7b822ccd5"
+  href="https://open.spotify.com/playlist/01LWwYl7aQokexMUVdpasv?si=3a39bccd9be04bb0&pt=c14a9189ffb8e659c03c5d5fcb6ec6ce"
   target="_blank"
   className="button button-dark"
   style={{
@@ -2044,7 +2041,7 @@ a:"Debido a la capacidad del evento, las invitaciones no incluyen acompañantes 
   isExpired={isExpired}
   attendingChoice={guestAttendingChoice}
   primaryName={primaryName}
-  companionName={companionName}
+  companionNames={companionNames}
   isPlural={isPlural}
 />
 

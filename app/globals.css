@@ -411,6 +411,7 @@ h1,h2,h3{
 }
 
 .hero-video{
+  object-fit:cover;
   object-position:center;
 }
 
@@ -451,6 +452,7 @@ h1,h2,h3{
   }
 
   .hero-video{
+    object-fit:cover;
     object-position:center bottom;
   }
 

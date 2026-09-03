@@ -13,7 +13,7 @@ interface RSVPFormProps {
   attendingChoice: string | null; // Load existing selection dynamically
   isPlural: boolean;
   primaryName: string;
-  companionName: string;
+  companionNames: string[];
 }
 
 export default function RSVPForm({
@@ -27,9 +27,10 @@ export default function RSVPForm({
   attendingChoice,
   isPlural,
   primaryName,
-  companionName,
+  companionNames,
 }: RSVPFormProps) {
   const [attending, setAttending] = useState("");
+  const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,11 +38,12 @@ export default function RSVPForm({
   // Initialize form default values based on whether they have a companion or not
   useEffect(() => {
     if (isPlural) {
-      setAttending("Ambos asistiremos");
+      setSelectedAttendees([primaryName, ...companionNames]);
+      setAttending("Todos asistiremos");
     } else {
       setAttending("Sí asistiré");
     }
-  }, [isPlural]);
+  }, [isPlural, primaryName, companionNames]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,6 +66,18 @@ export default function RSVPForm({
     setLoading(true);
 
     try {
+      const attendees = isPlural
+        ? selectedAttendees
+        : attending === "Sí asistiré" ? [primaryName] : [];
+      const submittedChoice = attendees.length === 0
+        ? (isPlural ? "Ninguno asistirá" : "No podré asistir")
+        : attendees.length === 1 && !isPlural
+          ? "Sí asistiré"
+          : attendees.length === 1
+            ? `Solo asistirá ${attendees[0]}`
+            : attendees.length === 1 + companionNames.length
+              ? "Todos asistiremos"
+              : `Asistirán: ${attendees.join(", ")}`;
       const response = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,12 +85,14 @@ export default function RSVPForm({
           guestId,
           token,
           attending,
+          attendees,
           message,
         }),
       });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(data.error || "No se pudo guardar la confirmación.");
 
+      setAttending(submittedChoice);
       setSubmitted(true);
       setAlreadyAnswered(true);
     } catch (error) {
@@ -93,7 +109,7 @@ export default function RSVPForm({
   // Helper to determine if they are attending or not based on their choice string
   const isAttendingSelection = (choice: string | null) => {
     if (!choice) return false;
-    return choice === "Sí asistiré" || choice === "Ambos asistiremos" || choice.startsWith("Solo asistirá");
+    return choice === "Sí asistiré" || choice === "Ambos asistiremos" || choice === "Todos asistiremos" || choice.startsWith("Solo asistirá") || choice.startsWith("Asistirán:");
   };
 
   if (isValidGuest === null) {
@@ -250,18 +266,24 @@ export default function RSVPForm({
               </label>
               
               {isPlural ? (
-                /* DROPDOWN PLURAL (CON OPCIONES INDIVIDUALES DE ASISTENCIA) */
-                <select
-                  value={attending}
-                  onChange={(e) => setAttending(e.target.value)}
-                  className="w-full p-3.5 rounded-lg border border-[#e5e0d8] bg-white text-sm outline-none focus:border-[#C7A27C] transition-all text-[#3b2b20]"
-                  style={{ fontFamily: "var(--font-body)" }}
-                >
-                  <option value="Ambos asistiremos">Ambos asistiremos</option>
-                  <option value={`Solo asistirá ${primaryName}`}>Solo asistirá {primaryName}</option>
-                  <option value={`Solo asistirá ${companionName}`}>Solo asistirá {companionName}</option>
-                  <option value="Ninguno asistirá">Ninguno asistirá</option>
-                </select>
+                <div className="rounded-lg border border-[#e5e0d8] bg-white p-3.5 space-y-3">
+                  <p className="text-xs text-[#8a8178]">Marca cada persona que asistirá:</p>
+                  {[primaryName, ...companionNames].map((name) => (
+                    <label key={name} className="flex items-center gap-3 text-sm text-[#3b2b20] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedAttendees.includes(name)}
+                        onChange={(event) => setSelectedAttendees((current) =>
+                          event.target.checked
+                            ? [...current, name]
+                            : current.filter((item) => item !== name)
+                        )}
+                        className="accent-[#7A8468] w-4 h-4"
+                      />
+                      <span>{name}</span>
+                    </label>
+                  ))}
+                </div>
               ) : (
                 /* DROPDOWN SINGULAR ESTÁNDAR */
                 <select

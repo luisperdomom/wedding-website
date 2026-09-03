@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { MAX_COMPANIONS, normalizeCompanions } from "@/lib/guest-names";
 
 export async function DELETE(
   _request: Request,
@@ -45,14 +46,14 @@ export async function PATCH(
       name?: unknown;
       phone?: unknown;
       companion?: unknown;
+      companions?: unknown;
     };
     const action = typeof body.action === "string" ? body.action : "";
     if (action === "update-details") {
       const name = typeof body.name === "string" ? body.name.trim() : "";
       const phone = typeof body.phone === "string" ? body.phone.trim() : "";
-      const companion =
-        typeof body.companion === "string" ? body.companion.trim() : "";
-      if (!name || name.length > 120 || phone.length > 30 || companion.length > 120) {
+      const companions = normalizeCompanions(body.companions, body.companion);
+      if (!name || name.length > 120 || phone.length > 30 || companions.length > MAX_COMPANIONS || companions.some((item) => item.length > 120)) {
         return NextResponse.json({ error: "Datos del invitado inválidos." }, { status: 400 });
       }
 
@@ -65,10 +66,11 @@ export async function PATCH(
       await guestRef.update({
         name,
         phone: phone || FieldValue.delete(),
-        companion: companion || FieldValue.delete(),
+        companions: companions.length ? companions : FieldValue.delete(),
+        companion: FieldValue.delete(),
       });
       return NextResponse.json({
-        guest: { id, name, phone, companion },
+        guest: { id, name, phone, companions },
       });
     }
 

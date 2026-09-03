@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { MAX_COMPANIONS, normalizeCompanions } from "@/lib/guest-names";
 
 const TOKEN_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -34,13 +35,13 @@ export async function POST(request: Request) {
       name?: unknown;
       phone?: unknown;
       companion?: unknown;
+      companions?: unknown;
     };
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
-    const companion =
-      typeof body.companion === "string" ? body.companion.trim() : "";
+    const companions = normalizeCompanions(body.companions, body.companion);
 
-    if (!name || name.length > 120 || phone.length > 30 || companion.length > 120) {
+    if (!name || name.length > 120 || phone.length > 30 || companions.length > MAX_COMPANIONS || companions.some((item) => item.length > 120)) {
       return NextResponse.json({ error: "Datos del invitado inválidos." }, { status: 400 });
     }
 
@@ -61,12 +62,12 @@ export async function POST(request: Request) {
       token,
       createdAt: FieldValue.serverTimestamp(),
       ...(phone ? { phone } : {}),
-      ...(companion ? { companion } : {}),
+      ...(companions.length ? { companions } : {}),
     };
     await adminDb.collection("guests").doc(id).create(payload);
 
     return NextResponse.json(
-      { guest: { id, name, token, phone, companion, createdAt: new Date().toISOString() } },
+      { guest: { id, name, token, phone, companions, createdAt: new Date().toISOString() } },
       { status: 201 },
     );
   } catch (error) {

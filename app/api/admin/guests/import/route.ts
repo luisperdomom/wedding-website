@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { MAX_COMPANIONS, normalizeCompanions } from "@/lib/guest-names";
 
 const TOKEN_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const MAX_IMPORT_ROWS = 200;
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as {
-      guests?: Array<{ name?: unknown; phone?: unknown; companion?: unknown }>;
+      guests?: Array<{ name?: unknown; phone?: unknown; companion?: unknown; companions?: unknown }>;
     };
     if (!Array.isArray(body.guests) || body.guests.length === 0 || body.guests.length > MAX_IMPORT_ROWS) {
       return NextResponse.json(
@@ -43,10 +44,10 @@ export async function POST(request: Request) {
       row: index + 2,
       name: typeof row.name === "string" ? row.name.trim() : "",
       phone: typeof row.phone === "string" ? row.phone.trim() : "",
-      companion: typeof row.companion === "string" ? row.companion.trim() : "",
+      companions: normalizeCompanions(row.companions, row.companion),
     }));
     const invalid = rows.find(
-      (row) => !row.name || row.name.length > 120 || row.phone.length > 30 || row.companion.length > 120,
+      (row) => !row.name || row.name.length > 120 || row.phone.length > 30 || row.companions.length > MAX_COMPANIONS || row.companions.some((name) => name.length > 120),
     );
     if (invalid) {
       return NextResponse.json(
@@ -85,9 +86,9 @@ export async function POST(request: Request) {
         token,
         createdAt: FieldValue.serverTimestamp(),
         ...(row.phone ? { phone: row.phone } : {}),
-        ...(row.companion ? { companion: row.companion } : {}),
+        ...(row.companions.length ? { companions: row.companions } : {}),
       });
-      return { id, name: row.name, token, phone: row.phone, companion: row.companion };
+      return { id, name: row.name, token, phone: row.phone, companions: row.companions };
     });
 
     await batch.commit();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatNames, MAX_COMPANIONS, normalizeCompanions } from "@/lib/guest-names";
 
 // Interface Definitions
 interface RSVPResponse {
@@ -9,6 +10,8 @@ interface RSVPResponse {
   guestName: string;
   name?: string; // Soporte para registros antiguos de prueba
   attending: string;
+  attendees?: string[];
+  invitedCount?: number;
   message?: string;
   created: string | null;
 }
@@ -20,6 +23,7 @@ interface Guest {
   createdAt?: string | null;
   phone?: string;
   companion?: string;
+  companions?: string[];
   invitationSentAt?: string | null;
   reminderSentAt?: string | null;
 }
@@ -28,7 +32,7 @@ interface ImportGuestRow {
   row: number;
   name: string;
   phone: string;
-  companion: string;
+  companions: string[];
   error?: string;
 }
 
@@ -48,6 +52,12 @@ interface AdminMoment {
 
 const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 const REMINDER_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+
+const getGuestCompanions = (guest: Pick<Guest, "companions" | "companion">) =>
+  normalizeCompanions(guest.companions, guest.companion);
+
+const parseCompanionInput = (value: string) =>
+  value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -222,7 +232,7 @@ export default function Admin() {
           ...(editingGuestId ? { action: "update-details" } : {}),
           name: newGuestName,
           phone: newGuestPhone,
-          companion: newGuestCompanion,
+          companions: parseCompanionInput(newGuestCompanion),
         }),
       });
       const data = (await response.json()) as { guest?: Guest; error?: string };
@@ -276,7 +286,7 @@ export default function Admin() {
     setNewGuestId(guest.id);
     setNewGuestToken(guest.token);
     setNewGuestPhone(guest.phone || "");
-    setNewGuestCompanion(guest.companion || "");
+    setNewGuestCompanion(getGuestCompanions(guest).join("\n"));
     setShowGuestForm(true);
   };
 
@@ -304,12 +314,17 @@ export default function Admin() {
     worksheet.columns = [
       { header: "Nombre completo", key: "name", width: 32 },
       { header: "Teléfono", key: "phone", width: 20 },
-      { header: "Acompañante", key: "companion", width: 32 },
+      ...Array.from({ length: MAX_COMPANIONS }, (_, index) => ({
+        header: `Acompañante ${index + 1}`,
+        key: `companion${index + 1}`,
+        width: 30,
+      })),
     ];
     worksheet.addRow({
       name: "Ejemplo: Juan Pérez",
       phone: "8095551234",
-      companion: "Ejemplo: María Rodríguez",
+      companion1: "Ejemplo: María Rodríguez",
+      companion2: "Ejemplo: Pedro Pérez",
     });
     worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
     worksheet.getRow(1).fill = {
@@ -358,7 +373,11 @@ export default function Admin() {
       });
       const nameColumn = headerIndexes.get("nombre completo") ?? headerIndexes.get("nombre");
       const phoneColumn = headerIndexes.get("telefono") ?? headerIndexes.get("celular");
-      const companionColumn = headerIndexes.get("acompanante") ?? headerIndexes.get("invitado");
+      const companionColumns = Array.from({ length: MAX_COMPANIONS }, (_, index) =>
+        headerIndexes.get(`acompanante ${index + 1}`),
+      );
+      const legacyCompanionColumn = headerIndexes.get("acompanante") ?? headerIndexes.get("invitado");
+      if (!companionColumns[0] && legacyCompanionColumn) companionColumns[0] = legacyCompanionColumn;
       if (!nameColumn) {
         throw new Error('No encontramos la columna obligatoria "Nombre completo".');
       }
@@ -368,16 +387,16 @@ export default function Admin() {
         if (rowNumber === 1) return;
         const name = String(row.getCell(nameColumn).text).trim();
         const phone = phoneColumn ? String(row.getCell(phoneColumn).text).trim() : "";
-        const companion = companionColumn
-          ? String(row.getCell(companionColumn).text).trim()
-          : "";
-        if (!name && !phone && !companion) return;
+        const companions = companionColumns
+          .map((column) => column ? String(row.getCell(column).text).trim() : "")
+          .filter(Boolean);
+        if (!name && !phone && companions.length === 0) return;
         let error: string | undefined;
         if (!name) error = "Falta el nombre.";
         else if (name.length > 120) error = "El nombre es demasiado largo.";
         else if (phone.length > 30) error = "El teléfono es demasiado largo.";
-        else if (companion.length > 120) error = "El acompañante es demasiado largo.";
-        rows.push({ row: rowNumber, name, phone, companion, error });
+        else if (companions.some((companion) => companion.length > 120)) error = "Un acompañante es demasiado largo.";
+        rows.push({ row: rowNumber, name, phone, companions, error });
       });
       if (rows.length === 0) throw new Error("El archivo no contiene invitados.");
       if (rows.length > 200) throw new Error("Puedes importar un máximo de 200 invitados a la vez.");
@@ -545,8 +564,9 @@ export default function Admin() {
     const baseUrl = window.location.origin;
     const personalUrl = `${baseUrl}/?guest=${guest.id}&token=${guest.token}`;
 
-    if (guest.companion && guest.companion.trim()) {
-      return `¡Hola ${guest.name}! 🤍 Nos hace muchísima ilusión contarles que... ¡nos casamos! 🥂💍\n\nQueremos que sean parte de este día tan especial para nosotros, y nos emociona un montón contar contigo y con ${guest.companion.trim()}. Les compartimos su invitación con todos los detalles aquí:\n\n${personalUrl}\n\n👉 Por favor, asegúrense de deslizar hasta abajo en la página para ver algunas preguntas y respuestas que les pueden servir de ayuda, y para confirmar su asistencia.\n\nNota: Como los cupos de nuestra boda son súper limitados, la invitación es válida únicamente para las personas indicadas. Si no se detalla un acompañante o pase adicional, les pedimos de corazón respetar este límite. ¡Esperamos que nos entiendan! 🤍\n\nRecuerden que tienen un plazo de 7 días a partir de hoy para confirmar su asistencia a través de la web. ¡Ojalá puedan acompañarnos! ✨`;
+    const companions = getGuestCompanions(guest);
+    if (companions.length) {
+      return `¡Hola ${guest.name}! 🤍 Nos hace muchísima ilusión contarles que... ¡nos casamos! 🥂💍\n\nQueremos que sean parte de este día tan especial para nosotros, y nos emociona un montón contar contigo y con ${formatNames(companions)}. Les compartimos su invitación con todos los detalles aquí:\n\n${personalUrl}\n\n👉 Por favor, asegúrense de deslizar hasta abajo en la página para ver algunas preguntas y respuestas que les pueden servir de ayuda, y para confirmar su asistencia.\n\nNota: Como los cupos de nuestra boda son súper limitados, la invitación es válida únicamente para las personas indicadas. Si no se detalla un acompañante o pase adicional, les pedimos de corazón respetar este límite. ¡Esperamos que nos entiendan! 🤍\n\nRecuerden que tienen un plazo de 7 días a partir de hoy para confirmar su asistencia a través de la web. ¡Ojalá puedan acompañarnos! ✨`;
     } else {
       return `¡Hola ${guest.name}! 🤍 Nos hace muchísima ilusión contarte que... ¡nos casamos! 🥂💍\n\nQueremos de todo corazón que seas parte de este día tan especial para nosotros. Te compartimos tu invitación con todos los detalles aquí:\n\n${personalUrl}\n\n👉 Por favor, asegúrate de deslizar hasta abajo en la página para ver algunas preguntas y respuestas que te pueden servir de ayuda, y para confirmar tu asistencia.\n\nNota: Como los cupos de nuestra boda son súper limitados, la invitación es personal y válida únicamente para ti. Si no se detalla un acompañante o pase adicional, te pedimos de corazón respetar este límite. ¡Esperamos que nos entiendan! 🤍\n\nRecuerda que tienes un plazo de 7 días a partir de hoy para confirmar tu asistencia a través de la web. ¡Ojalá puedas acompañarnos! ✨`;
     }
@@ -621,7 +641,7 @@ export default function Admin() {
       day: "numeric",
       month: "long",
     });
-    const plural = Boolean(guest.companion?.trim());
+    const plural = getGuestCompanions(guest).length > 0;
 
     return plural
       ? `¡Hola ${guest.name}! 🤍 Esperamos que estén muy bien. Queríamos recordarles con mucho cariño que aún tienen pendiente confirmar su asistencia a nuestra boda. 🥂💍\n\nSu invitación estará disponible hasta el ${deadlineText}. Pueden ver todos los detalles y dejarnos saber su respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos su confirmación antes de esa fecha entenderemos que en esta ocasión no podrán acompañarnos.\n\nNos encantaría celebrar con ustedes. ¡Esperamos su respuesta! ✨`
@@ -764,6 +784,10 @@ export default function Admin() {
   // Calculate exact headcount of confirmed individuals
   let attendingCount = 0;
   dashboardRsvps.forEach((r) => {
+    if (Array.isArray(r.attendees)) {
+      attendingCount += r.attendees.length;
+      return;
+    }
     if (r.attending === "Sí asistiré" || r.attending.startsWith("Solo asistirá")) {
       attendingCount += 1;
     } else if (r.attending === "Ambos asistiremos") {
@@ -774,6 +798,10 @@ export default function Admin() {
   // Calculate exact headcount of declining individuals
   let notAttendingCount = 0;
   dashboardRsvps.forEach((r) => {
+    if (Array.isArray(r.attendees) && typeof r.invitedCount === "number") {
+      notAttendingCount += Math.max(0, r.invitedCount - r.attendees.length);
+      return;
+    }
     if (r.attending === "No podré asistir") {
       notAttendingCount += 1;
     } else if (r.attending === "Ninguno asistirá") {
@@ -810,7 +838,7 @@ export default function Admin() {
     );
   const dueReminderCount = unansweredGuests.filter((item) => item.isDue).length;
   const filteredUnansweredGuests = unansweredGuests.filter((item) => reminderFilter === "all" || (reminderFilter === "due" && item.isDue) || (reminderFilter === "expired" && item.isExpired) || (reminderFilter === "sent" && Boolean(item.guest.reminderSentAt)) || (reminderFilter === "later" && !item.isDue && !item.isExpired));
-  const expectedPeople = guests.reduce((total, guest) => total + (guest.companion?.trim() ? 2 : 1), 0);
+  const expectedPeople = guests.reduce((total, guest) => total + 1 + getGuestCompanions(guest).length, 0);
   const responseRate = totalGuestsInDB ? Math.round((totalRSVPs / totalGuestsInDB) * 100) : 0;
   const invitationSentCount = guests.filter((guest) => guest.invitationSentAt).length;
   const getGuestResponseStatus = (guest: Guest) => {
@@ -823,9 +851,9 @@ export default function Admin() {
   const filteredGuests = guests
     .filter((guest) => {
       const query = guestSearch.trim().toLocaleLowerCase("es");
-      const matchesSearch = !query || [guest.name, guest.phone, guest.companion].some((value) => value?.toLocaleLowerCase("es").includes(query));
+      const matchesSearch = !query || [guest.name, guest.phone, ...getGuestCompanions(guest)].some((value) => value?.toLocaleLowerCase("es").includes(query));
       const status = getGuestResponseStatus(guest);
-      const matchesFilter = guestFilter === "all" || guestFilter === status || (guestFilter === "companion" && Boolean(guest.companion?.trim())) || (guestFilter === "unsent" && !guest.invitationSentAt);
+      const matchesFilter = guestFilter === "all" || guestFilter === status || (guestFilter === "companion" && getGuestCompanions(guest).length > 0) || (guestFilter === "unsent" && !guest.invitationSentAt);
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
@@ -1109,13 +1137,14 @@ export default function Admin() {
                   <label className="text-xs text-[#8a8178] uppercase tracking-[0.5px] font-medium">
                     Acompañante(s) (Opcional)
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Ej. Ailyn Santana"
+                  <textarea
+                    rows={4}
+                    placeholder={"Un nombre por línea\nEj. Ailyn Santana\nEj. Pedro Pérez"}
                     value={newGuestCompanion}
                     onChange={(e) => setNewGuestCompanion(e.target.value)}
                     className="p-3 rounded-lg border border-[#e5e0d8] text-sm outline-none focus:border-[#C7A27C] transition-all bg-[#FAF8F5] text-[#3A2A23]"
                   />
+                  <p className="text-[10px] text-[#aaa198]">Máximo {MAX_COMPANIONS} acompañantes; escribe un nombre por línea.</p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -1176,7 +1205,7 @@ export default function Admin() {
                   Importar desde Excel
                 </h3>
                 <p className="text-xs text-[#8a8178] mt-2 leading-relaxed">
-                  El nombre es obligatorio. Teléfono y acompañante son opcionales.
+                  El nombre es obligatorio. Puedes incluir hasta {MAX_COMPANIONS} acompañantes, cada uno en su propia columna.
                 </p>
                 <button
                   type="button"
@@ -1228,7 +1257,7 @@ export default function Admin() {
                           </div>
                           <p className="text-[#8a8178] mt-1">
                             {row.phone || "Sin teléfono"}
-                            {row.companion ? ` · Con ${row.companion}` : " · Sin acompañante"}
+                            {row.companions.length ? ` · Con ${formatNames(row.companions)}` : " · Sin acompañantes"}
                           </p>
                           {row.error && <p className="text-red-600 mt-1">{row.error}</p>}
                         </div>
@@ -1264,7 +1293,7 @@ export default function Admin() {
                     >
                       <div className="flex items-start gap-3"><label className="mt-0.5 cursor-pointer"><input type="checkbox" checked={selectedGuestIds.has(g.id)} onChange={() => setSelectedGuestIds((current) => { const next = new Set(current); if (next.has(g.id)) next.delete(g.id); else next.add(g.id); return next; })} className="accent-[#7A8468]" aria-label={`Seleccionar a ${g.name}`} /></label><div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2 flex-wrap"><button onClick={() => setSelectedGuestId(g.id)} className="font-semibold text-sm text-[#3A2A23] cursor-pointer hover:text-[#8b6747] text-left">{g.name}</button><span className={`text-[9px] uppercase tracking-[.6px] px-2 py-1 rounded-full ${getGuestResponseStatus(g) === "confirmed" ? "bg-[#e2f0d9] text-[#4d713c]" : getGuestResponseStatus(g) === "declined" ? "bg-red-50 text-red-600" : "bg-[#fff4df] text-[#9a681f]"}`}>{getGuestResponseStatus(g) === "confirmed" ? "Confirmado" : getGuestResponseStatus(g) === "declined" ? "No asistirá" : "Pendiente"}</span></div>
-                        <p className="text-xs text-[#8a8178]">{g.phone || "Sin teléfono"}{g.companion ? ` · Con ${g.companion}` : " · Invitación individual"}</p>
+                        <p className="text-xs text-[#8a8178]">{g.phone || "Sin teléfono"}{getGuestCompanions(g).length ? ` · Con ${formatNames(getGuestCompanions(g))}` : " · Invitación individual"}</p>
                       </div>
                       </div>
 
@@ -1380,8 +1409,8 @@ export default function Admin() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="font-semibold text-[#3A2A23]">{guest.name}</h4>
-                          {guest.companion && (
-                            <p className="text-xs text-[#8a8178] mt-1">Con {guest.companion}</p>
+                          {getGuestCompanions(guest).length > 0 && (
+                            <p className="text-xs text-[#8a8178] mt-1">Con {formatNames(getGuestCompanions(guest))}</p>
                           )}
                           <p className="text-xs text-[#8a8178] mt-1">
                             {guest.phone || "Sin teléfono registrado"}
@@ -1534,7 +1563,7 @@ export default function Admin() {
               <div className="sticky top-0 z-10 bg-white border-b border-[#e5e0d8] px-6 py-5 flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[1.5px] text-[#8a8178]">Ficha del invitado</p><h2 className="text-xl mt-1">{selectedGuest.name}</h2></div><button onClick={() => setSelectedGuestId(null)} className="w-9 h-9 rounded-full border border-[#e5e0d8] bg-white text-xl cursor-pointer">×</button></div>
               <div className="p-6 space-y-5">
                 <div className={`rounded-2xl p-5 ${status === "confirmed" ? "bg-[#eaf2e4]" : status === "declined" ? "bg-[#fff0ed]" : "bg-[#fff5e3]"}`}><p className="text-[10px] uppercase tracking-[1px] opacity-60">Estado actual</p><p className="text-lg mt-1 font-semibold">{status === "confirmed" ? "Asistencia confirmada" : status === "declined" ? "No podrá acompañarnos" : "Pendiente de respuesta"}</p>{response && <p className="text-xs mt-2 opacity-70">{response.attending}</p>}</div>
-                <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5 space-y-4"><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Teléfono</p><p className="text-sm mt-1">{selectedGuest.phone || "No registrado"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Acompañante</p><p className="text-sm mt-1">{selectedGuest.companion || "Invitación individual"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Invitación enviada</p><p className="text-sm mt-1">{selectedGuest.invitationSentAt ? new Date(selectedGuest.invitationSentAt).toLocaleString("es-DO") : "Todavía no marcada como enviada"}</p></div>{response?.message && <div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Mensaje</p><p className="text-sm mt-1 italic leading-relaxed">“{response.message}”</p></div>}</div>
+                <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5 space-y-4"><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Teléfono</p><p className="text-sm mt-1">{selectedGuest.phone || "No registrado"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Acompañantes</p><p className="text-sm mt-1">{getGuestCompanions(selectedGuest).length ? formatNames(getGuestCompanions(selectedGuest)) : "Invitación individual"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Invitación enviada</p><p className="text-sm mt-1">{selectedGuest.invitationSentAt ? new Date(selectedGuest.invitationSentAt).toLocaleString("es-DO") : "Todavía no marcada como enviada"}</p></div>{response?.message && <div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Mensaje</p><p className="text-sm mt-1 italic leading-relaxed">“{response.message}”</p></div>}</div>
                 <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5"><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Enlace personal</p><p className="text-[11px] font-mono break-all text-[#75695f] mt-2">{invitationUrl}</p></div>
                 <div className="grid grid-cols-2 gap-2"><button onClick={() => handleCopyLink(selectedGuest, guests.findIndex(g => g.id === selectedGuest.id))} className="border border-[#e5e0d8] bg-white rounded-xl py-3 text-xs cursor-pointer">Copiar enlace</button><a href={getWhatsAppUrl(selectedGuest)} target="_blank" rel="noopener noreferrer" onClick={() => void updateGuestStatus(selectedGuest, "mark-invitation-sent")} className="bg-[#7A8468] text-white rounded-xl py-3 text-xs text-center">Abrir WhatsApp</a><button onClick={() => { handleEditGuest(selectedGuest); setSelectedGuestId(null); }} className="border border-[#C7A27C] text-[#8b6747] bg-white rounded-xl py-3 text-xs cursor-pointer">Editar datos</button><button onClick={() => { setSelectedGuestId(null); void handleDeleteGuest(selectedGuest.id, selectedGuest.name); }} className="border border-red-100 text-red-500 bg-white rounded-xl py-3 text-xs cursor-pointer">Eliminar</button></div>
               </div>

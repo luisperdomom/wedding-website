@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { normalizeCompanions } from "@/lib/guest-names";
 
 const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -19,6 +20,7 @@ export async function GET(request: Request) {
     }
 
     const guest = guestSnapshot.data()!;
+    const companions = normalizeCompanions(guest.companions, guest.companion);
     const deadlineStart =
       guest.invitationSentAt?.toDate?.() ?? guest.createdAt?.toDate?.();
     const expired =
@@ -40,7 +42,7 @@ export async function GET(request: Request) {
       valid: true,
       guest: {
         name: guest.name,
-        companion: guest.companion ?? "",
+        companions,
       },
       expired,
       answered: Boolean(existingRsvp),

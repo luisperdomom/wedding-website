@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { formatNames, normalizeCompanions } from "@/lib/guest-names";
 
 const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 const FIXED_CHOICES = new Set([
@@ -17,11 +18,15 @@ export async function POST(request: Request) {
       token?: unknown;
       attending?: unknown;
       message?: unknown;
+      attendees?: unknown;
     };
     const guestId = typeof body.guestId === "string" ? body.guestId : "";
     const token = typeof body.token === "string" ? body.token : "";
     const attending = typeof body.attending === "string" ? body.attending : "";
     const message = typeof body.message === "string" ? body.message.trim() : "";
+    const attendees = Array.isArray(body.attendees)
+      ? body.attendees.filter((name): name is string => typeof name === "string")
+      : [];
 
     if (
       !/^[a-z0-9-]{1,100}$/.test(guestId) ||
@@ -57,6 +62,8 @@ export async function POST(request: Request) {
       if (rsvpSnapshot.exists) throw new Error("ALREADY_ANSWERED");
 
       const guest = guestSnapshot.data()!;
+      const companions = normalizeCompanions(guest.companions, guest.companion);
+      const invitedNames = [guest.name, ...companions];
       const deadlineStart =
         guest.invitationSentAt?.toDate?.() ?? guest.createdAt?.toDate?.();
       if (
@@ -66,21 +73,31 @@ export async function POST(request: Request) {
         throw new Error("EXPIRED");
       }
 
-      const individualChoices = [
-        `Solo asistirá ${guest.name}`,
-        ...(guest.companion ? [`Solo asistirá ${guest.companion}`] : []),
-      ];
-      if (!FIXED_CHOICES.has(attending) && !individualChoices.includes(attending)) {
+      const uniqueAttendees = [...new Set(attendees)];
+      const hasStructuredAttendees = Array.isArray(body.attendees);
+      const validStructuredAttendees = uniqueAttendees.every((name) => invitedNames.includes(name));
+      const individualChoices = invitedNames.map((name) => `Solo asistirá ${name}`);
+      if (
+        (hasStructuredAttendees && !validStructuredAttendees) ||
+        (!hasStructuredAttendees && !FIXED_CHOICES.has(attending) && !individualChoices.includes(attending))
+      ) {
         throw new Error("INVALID_CHOICE");
       }
 
-      const guestName = guest.companion
-        ? `${guest.name} y ${guest.companion}`
-        : guest.name;
+      const guestName = formatNames(invitedNames);
+      const finalAttending = hasStructuredAttendees
+        ? uniqueAttendees.length === 0
+          ? "Ninguno asistirá"
+          : uniqueAttendees.length === invitedNames.length
+            ? invitedNames.length === 1 ? "Sí asistiré" : "Todos asistiremos"
+            : `Asistirán: ${formatNames(uniqueAttendees)}`
+        : attending;
       transaction.create(rsvpRef, {
         guestId,
         guestName,
-        attending,
+        attending: finalAttending,
+        ...(hasStructuredAttendees ? { attendees: uniqueAttendees } : {}),
+        invitedCount: invitedNames.length,
         message,
         created: FieldValue.serverTimestamp(),
       });

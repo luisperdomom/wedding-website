@@ -1082,9 +1082,32 @@ export default function Admin() {
             <div className="bg-white border border-[#e5e0d8] rounded-2xl p-4 shadow-sm mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaa198]">⌕</span><input value={guestSearch} onChange={(event) => setGuestSearch(event.target.value)} placeholder="Buscar por nombre, teléfono o acompañante" className="w-full pl-9 pr-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#e5e0d8] text-sm outline-none focus:border-[#C7A27C]" /></div>
-                <select value={guestFilter} onChange={(event) => setGuestFilter(event.target.value as typeof guestFilter)} className="px-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#e5e0d8] text-sm outline-none cursor-pointer"><option value="all">Todos los estados</option><option value="confirmed">Confirmados</option><option value="pending">Pendientes</option><option value="declined">No asistirán</option><option value="companion">Con acompañante</option><option value="unsent">Invitación no enviada</option></select>
+                <select value={guestFilter === "companion" || guestFilter === "unsent" ? guestFilter : ""} onChange={(event) => setGuestFilter((event.target.value || "all") as typeof guestFilter)} className="px-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#e5e0d8] text-sm outline-none cursor-pointer"><option value="">Más filtros</option><option value="companion">Con acompañante</option><option value="unsent">Invitación no enviada</option></select>
               </div>
               <div className="flex gap-2"><button onClick={() => { handleCancelEdit(); setShowGuestForm(true); }} className="bg-[#3A2A23] text-white rounded-xl px-4 py-3 text-xs uppercase tracking-[1px] font-semibold cursor-pointer">＋ Agregar invitado</button><button onClick={() => { setShowGuestForm(true); }} className="border border-[#C7A27C] text-[#8b6747] rounded-xl px-4 py-3 text-xs uppercase tracking-[1px] font-semibold cursor-pointer">Importar Excel</button></div>
+            </div>
+            <div className="mb-5 flex gap-2 overflow-x-auto rounded-2xl border border-[#e5e0d8] bg-white p-2 shadow-sm [scrollbar-width:none]" role="tablist" aria-label="Estado de los invitados">
+              {([
+                ["all", "Todos", guests.length],
+                ["confirmed", "Confirmados", guests.filter((guest) => getGuestResponseStatus(guest) === "confirmed").length],
+                ["pending", "Pendientes", unansweredGuests.length],
+                ["declined", "Rechazaron", guests.filter((guest) => getGuestResponseStatus(guest) === "declined").length],
+              ] as const).map(([value, label, count]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={guestFilter === value}
+                  onClick={() => setGuestFilter(value)}
+                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                    guestFilter === value
+                      ? "bg-[#3A2A23] text-white shadow-sm"
+                      : "text-[#75695f] hover:bg-[#FAF8F5] hover:text-[#3A2A23]"
+                  }`}
+                >
+                  {label} <span className={guestFilter === value ? "text-white/70" : "text-[#aaa198]"}>({count})</span>
+                </button>
+              ))}
             </div>
             {selectedGuestIds.size > 0 && <div className="mb-5 rounded-2xl bg-[#3A2A23] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3"><span className="text-sm">{selectedGuestIds.size} invitaciones seleccionadas</span><div className="flex gap-2"><button onClick={() => void handleBulkGuestAction("mark-invitation-sent")} className="bg-white/10 rounded-lg px-3 py-2 text-xs cursor-pointer">Marcar enviadas</button><button onClick={() => void handleBulkGuestAction("delete")} className="bg-red-400/15 text-red-100 rounded-lg px-3 py-2 text-xs cursor-pointer">Eliminar</button><button onClick={() => setSelectedGuestIds(new Set())} className="text-white/60 px-2 text-xs cursor-pointer">Cancelar</button></div></div>}
           <div className={`grid grid-cols-1 ${showGuestForm ? "lg:grid-cols-3" : "lg:grid-cols-1"} gap-6`}>

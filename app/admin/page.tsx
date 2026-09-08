@@ -636,11 +636,15 @@ export default function Admin() {
       day: "numeric",
       month: "long",
     });
-    const plural = getGuestCompanions(guest).length > 0;
+    const hasCompanions = getGuestCompanions(guest).length > 0;
+    const confirmationScope = hasCompanions
+      ? "tu asistencia y la de las demás personas incluidas en tu invitación"
+      : "tu asistencia";
+    const celebrationScope = hasCompanions
+      ? "contigo y con las demás personas incluidas en tu invitación"
+      : "contigo";
 
-    return plural
-      ? `¡Hola ${guest.name}! 🤍 Esperamos que estén muy bien. Queríamos recordarles con mucho cariño que aún tienen pendiente confirmar su asistencia a nuestra boda. 🥂💍\n\nSu invitación estará disponible hasta el ${deadlineText}. Pueden ver todos los detalles y dejarnos saber su respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos su confirmación antes de esa fecha entenderemos que en esta ocasión no podrán acompañarnos.\n\nNos encantaría celebrar con ustedes. ¡Esperamos su respuesta! ✨`
-      : `¡Hola ${guest.name}! 🤍 Esperamos que estés muy bien. Queríamos recordarte con mucho cariño que aún tienes pendiente confirmar tu asistencia a nuestra boda. 🥂💍\n\nTu invitación estará disponible hasta el ${deadlineText}. Puedes ver todos los detalles y dejarnos saber tu respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos tu confirmación antes de esa fecha entenderemos que en esta ocasión no podrás acompañarnos.\n\nNos encantaría celebrar contigo. ¡Esperamos tu respuesta! ✨`;
+    return `¡Hola, ${guest.name}! 🤍\n\nEsperamos que estés muy bien. Queríamos recordarte con mucho cariño que aún tienes pendiente confirmar ${confirmationScope} a nuestra boda. 🥂💍\n\nTu invitación estará disponible hasta el ${deadlineText}. Puedes ver todos los detalles y dejarnos saber tu respuesta aquí:\n\n${personalUrl}\n\nComo estamos organizando cada detalle y contamos con cupos limitados, si no recibimos tu confirmación antes de esa fecha, entenderemos que no podrás acompañarnos y liberaremos los lugares reservados en tu invitación.\n\nNos encantaría celebrar ${celebrationScope}. ¡Esperamos tu respuesta! ✨`;
   };
 
   const getReminderWhatsAppUrl = (guest: Guest, deadline: Date) => {
@@ -832,13 +836,24 @@ export default function Admin() {
       (b.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER),
     );
   const dueReminderCount = unansweredGuests.filter((item) => item.isDue).length;
+  const expiredGuestIds = new Set(
+    unansweredGuests.filter((item) => item.isExpired).map((item) => item.guest.id),
+  );
+  notAttendingCount += unansweredGuests
+    .filter((item) => item.isExpired)
+    .reduce(
+      (total, item) => total + 1 + getGuestCompanions(item.guest).length,
+      0,
+    );
   const filteredUnansweredGuests = unansweredGuests.filter((item) => reminderFilter === "all" || (reminderFilter === "due" && item.isDue) || (reminderFilter === "expired" && item.isExpired) || (reminderFilter === "sent" && Boolean(item.guest.reminderSentAt)) || (reminderFilter === "later" && !item.isDue && !item.isExpired));
   const expectedPeople = guests.reduce((total, guest) => total + 1 + getGuestCompanions(guest).length, 0);
   const responseRate = totalGuestsInDB ? Math.round((totalRSVPs / totalGuestsInDB) * 100) : 0;
   const invitationSentCount = guests.filter((guest) => guest.invitationSentAt).length;
   const getGuestResponseStatus = (guest: Guest) => {
     const response = rsvpByGuestId.get(guest.id);
-    if (!response) return "pending" as const;
+    if (!response) {
+      return expiredGuestIds.has(guest.id) ? "expired" as const : "pending" as const;
+    }
     return response.attending === "No podré asistir" || response.attending === "Ninguno asistirá"
       ? "declined" as const
       : "confirmed" as const;
@@ -848,7 +863,7 @@ export default function Admin() {
       const query = guestSearch.trim().toLocaleLowerCase("es");
       const matchesSearch = !query || [guest.name, guest.phone, ...getGuestCompanions(guest)].some((value) => value?.toLocaleLowerCase("es").includes(query));
       const status = getGuestResponseStatus(guest);
-      const matchesFilter = guestFilter === "all" || guestFilter === status || (guestFilter === "companion" && getGuestCompanions(guest).length > 0) || (guestFilter === "unsent" && !guest.invitationSentAt);
+      const matchesFilter = guestFilter === "all" || guestFilter === status || (guestFilter === "declined" && status === "expired") || (guestFilter === "companion" && getGuestCompanions(guest).length > 0) || (guestFilter === "unsent" && !guest.invitationSentAt);
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
@@ -1005,8 +1020,8 @@ export default function Admin() {
               <p className="text-xs text-[#8a8178] mt-3">{totalRSVPs} de {totalGuestsInDB} invitaciones han respondido.</p>
               <div className="grid grid-cols-3 gap-3 mt-7">
                 <button onClick={() => { setGuestFilter("confirmed"); setActiveTab("guests"); }} className="rounded-xl bg-[#eef3e9] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#5f704e]">{guests.filter(g => getGuestResponseStatus(g) === "confirmed").length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#68735e]">Confirmadas</span></button>
-                <button onClick={() => { setGuestFilter("declined"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff0ed] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#b75e52]">{guests.filter(g => getGuestResponseStatus(g) === "declined").length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#9c665f]">Declinaron</span></button>
-                <button onClick={() => { setGuestFilter("pending"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff6e7] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#ad7a32]">{unansweredGuests.length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#967447]">Pendientes</span></button>
+                <button onClick={() => { setGuestFilter("declined"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff0ed] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#b75e52]">{guests.filter(g => ["declined", "expired"].includes(getGuestResponseStatus(g))).length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#9c665f]">Declinaron</span></button>
+                <button onClick={() => { setGuestFilter("pending"); setActiveTab("guests"); }} className="rounded-xl bg-[#fff6e7] p-4 text-left cursor-pointer"><span className="block text-2xl text-[#ad7a32]">{guests.filter(g => getGuestResponseStatus(g) === "pending").length}</span><span className="text-[10px] uppercase tracking-[.8px] text-[#967447]">Pendientes</span></button>
               </div>
             </section>
 
@@ -1310,7 +1325,7 @@ export default function Admin() {
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-[#FAF8F5] bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] hover:border-[#e5e0d8] transition-all gap-4"
                     >
                       <div className="flex items-start gap-3"><label className="mt-0.5 cursor-pointer"><input type="checkbox" checked={selectedGuestIds.has(g.id)} onChange={() => setSelectedGuestIds((current) => { const next = new Set(current); if (next.has(g.id)) next.delete(g.id); else next.add(g.id); return next; })} className="accent-[#7A8468]" aria-label={`Seleccionar a ${g.name}`} /></label><div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-2 flex-wrap"><button onClick={() => setSelectedGuestId(g.id)} className="font-semibold text-sm text-[#3A2A23] cursor-pointer hover:text-[#8b6747] text-left">{g.name}</button><span className={`text-[9px] uppercase tracking-[.6px] px-2 py-1 rounded-full ${getGuestResponseStatus(g) === "confirmed" ? "bg-[#e2f0d9] text-[#4d713c]" : getGuestResponseStatus(g) === "declined" ? "bg-red-50 text-red-600" : "bg-[#fff4df] text-[#9a681f]"}`}>{getGuestResponseStatus(g) === "confirmed" ? "Confirmado" : getGuestResponseStatus(g) === "declined" ? "No asistirá" : "Pendiente"}</span></div>
+                        <div className="flex items-center gap-2 flex-wrap"><button onClick={() => setSelectedGuestId(g.id)} className="font-semibold text-sm text-[#3A2A23] cursor-pointer hover:text-[#8b6747] text-left">{g.name}</button><span className={`text-[9px] uppercase tracking-[.6px] px-2 py-1 rounded-full ${getGuestResponseStatus(g) === "confirmed" ? "bg-[#e2f0d9] text-[#4d713c]" : getGuestResponseStatus(g) === "expired" ? "bg-[#f3e5e2] text-[#9f5148]" : getGuestResponseStatus(g) === "declined" ? "bg-red-50 text-red-600" : "bg-[#fff4df] text-[#9a681f]"}`}>{getGuestResponseStatus(g) === "confirmed" ? "Confirmado" : getGuestResponseStatus(g) === "expired" ? "Declinada por vencimiento" : getGuestResponseStatus(g) === "declined" ? "No asistirá" : "Pendiente"}</span></div>
                         <p className="text-xs text-[#8a8178]">{g.phone || "Sin teléfono"}{getGuestCompanions(g).length ? ` · Con ${formatNames(getGuestCompanions(g))}` : " · Invitación individual"}</p>
                       </div>
                       </div>
@@ -1580,7 +1595,7 @@ export default function Admin() {
             <aside className="w-full max-w-md h-full bg-[#FAF8F5] shadow-2xl overflow-y-auto">
               <div className="sticky top-0 z-10 bg-white border-b border-[#e5e0d8] px-6 py-5 flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[1.5px] text-[#8a8178]">Ficha del invitado</p><h2 className="text-xl mt-1">{selectedGuest.name}</h2></div><button onClick={() => setSelectedGuestId(null)} className="w-9 h-9 rounded-full border border-[#e5e0d8] bg-white text-xl cursor-pointer">×</button></div>
               <div className="p-6 space-y-5">
-                <div className={`rounded-2xl p-5 ${status === "confirmed" ? "bg-[#eaf2e4]" : status === "declined" ? "bg-[#fff0ed]" : "bg-[#fff5e3]"}`}><p className="text-[10px] uppercase tracking-[1px] opacity-60">Estado actual</p><p className="text-lg mt-1 font-semibold">{status === "confirmed" ? "Asistencia confirmada" : status === "declined" ? "No podrá acompañarnos" : "Pendiente de respuesta"}</p>{response && <p className="text-xs mt-2 opacity-70">{response.attending}</p>}</div>
+                <div className={`rounded-2xl p-5 ${status === "confirmed" ? "bg-[#eaf2e4]" : status === "declined" || status === "expired" ? "bg-[#fff0ed]" : "bg-[#fff5e3]"}`}><p className="text-[10px] uppercase tracking-[1px] opacity-60">Estado actual</p><p className="text-lg mt-1 font-semibold">{status === "confirmed" ? "Asistencia confirmada" : status === "expired" ? "Declinada por vencimiento" : status === "declined" ? "No podrá acompañarnos" : "Pendiente de respuesta"}</p>{response && <p className="text-xs mt-2 opacity-70">{response.attending}</p>}</div>
                 <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5 space-y-4"><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Teléfono</p><p className="text-sm mt-1">{selectedGuest.phone || "No registrado"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Acompañantes</p><p className="text-sm mt-1">{getGuestCompanions(selectedGuest).length ? formatNames(getGuestCompanions(selectedGuest)) : "Invitación individual"}</p></div><div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Invitación enviada</p><p className="text-sm mt-1">{selectedGuest.invitationSentAt ? new Date(selectedGuest.invitationSentAt).toLocaleString("es-DO") : "Todavía no marcada como enviada"}</p></div>{response?.message && <div><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Mensaje</p><p className="text-sm mt-1 italic leading-relaxed">“{response.message}”</p></div>}</div>
                 <div className="bg-white border border-[#e5e0d8] rounded-2xl p-5"><p className="text-[10px] uppercase tracking-[1px] text-[#aaa198]">Enlace personal</p><p className="text-[11px] font-mono break-all text-[#75695f] mt-2">{invitationUrl}</p></div>
                 <div className="grid grid-cols-2 gap-2"><button onClick={() => handleCopyLink(selectedGuest, guests.findIndex(g => g.id === selectedGuest.id))} className="border border-[#e5e0d8] bg-white rounded-xl py-3 text-xs cursor-pointer">Copiar enlace</button><a href={getWhatsAppUrl(selectedGuest)} target="_blank" rel="noopener noreferrer" onClick={() => void updateGuestStatus(selectedGuest, "mark-invitation-sent")} className="bg-[#7A8468] text-white rounded-xl py-3 text-xs text-center">Abrir WhatsApp</a><button onClick={() => { handleEditGuest(selectedGuest); setSelectedGuestId(null); }} className="border border-[#C7A27C] text-[#8b6747] bg-white rounded-xl py-3 text-xs cursor-pointer">Editar datos</button><button onClick={() => { setSelectedGuestId(null); void handleDeleteGuest(selectedGuest.id, selectedGuest.name); }} className="border border-red-100 text-red-500 bg-white rounded-xl py-3 text-xs cursor-pointer">Eliminar</button></div>

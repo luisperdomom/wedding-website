@@ -12,6 +12,14 @@ function serializeDocument(
     created: data.created?.toDate?.().toISOString() ?? data.created ?? null,
     createdAt:
       data.createdAt?.toDate?.().toISOString() ?? data.createdAt ?? null,
+    invitationSentAt:
+      data.invitationSentAt?.toDate?.().toISOString() ??
+      data.invitationSentAt ??
+      null,
+    reminderSentAt:
+      data.reminderSentAt?.toDate?.().toISOString() ??
+      data.reminderSentAt ??
+      null,
   };
 }
 

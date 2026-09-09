@@ -858,6 +858,41 @@ export default function Admin() {
       ? "declined" as const
       : "confirmed" as const;
   };
+  const getRsvpAttendanceDetails = (response: RSVPResponse) => {
+    const guest = guests.find((item) => item.id === (response.guestId || response.id));
+    const invitedNames = guest
+      ? [guest.name, ...getGuestCompanions(guest)]
+      : [response.guestName || response.name || "Invitado"];
+
+    let attendingNames: string[];
+    if (Array.isArray(response.attendees)) {
+      attendingNames = response.attendees;
+    } else if (response.attending === "No podré asistir" || response.attending === "Ninguno asistirá") {
+      attendingNames = [];
+    } else if (response.attending === "Sí asistiré") {
+      attendingNames = invitedNames.slice(0, 1);
+    } else if (response.attending === "Ambos asistiremos") {
+      attendingNames = invitedNames.slice(0, 2);
+    } else if (response.attending === "Todos asistiremos") {
+      attendingNames = invitedNames;
+    } else if (response.attending.startsWith("Solo asistirá ")) {
+      attendingNames = [response.attending.replace("Solo asistirá ", "").trim()];
+    } else if (response.attending.startsWith("Asistirán: ")) {
+      attendingNames = response.attending
+        .replace("Asistirán: ", "")
+        .split(",")
+        .map((name) => name.trim())
+        .filter(Boolean);
+    } else {
+      attendingNames = invitedNames;
+    }
+
+    const attendingSet = new Set(attendingNames);
+    return {
+      attendingNames,
+      decliningNames: invitedNames.filter((name) => !attendingSet.has(name)),
+    };
+  };
   const filteredGuests = guests
     .filter((guest) => {
       const query = guestSearch.trim().toLocaleLowerCase("es");
@@ -1050,40 +1085,36 @@ export default function Admin() {
             ) : dashboardRsvps.length === 0 ? (
               <div className="p-12 text-center text-[#8a8178] text-sm">Ningún invitado ha confirmado todavía.</div>
             ) : (
-              <><div className="sm:hidden divide-y divide-[#f0ebe4]">{dashboardRsvps.map((r) => { const accepts = !(r.attending.includes("No") || r.attending.includes("Ninguno")); return <article key={r.id} className="p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-sm">{r.guestName || r.name || "Invitado"}</p><p className="text-[10px] text-[#aaa198] mt-1">{r.created ? new Date(r.created).toLocaleDateString("es-DO") : "—"}</p></div><span className={`text-[10px] px-2.5 py-1 rounded-full ${accepts ? "bg-[#e2f0d9] text-[#4d713c]" : "bg-red-50 text-red-600"}`}>{r.attending}</span></div>{r.message && <p className="text-xs italic text-[#8a8178] mt-3 leading-relaxed">“{r.message}”</p>}</article>; })}</div>
+              <><div className="sm:hidden divide-y divide-[#f0ebe4]">{dashboardRsvps.map((r) => {
+                const { attendingNames, decliningNames } = getRsvpAttendanceDetails(r);
+                return <article key={r.id} className="p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-sm">{r.guestName || r.name || "Invitado"}</p><p className="text-[10px] text-[#aaa198] mt-1">{r.created ? new Date(r.created).toLocaleDateString("es-DO") : "—"}</p></div></div><div className="grid grid-cols-1 gap-2 mt-4"><div className="rounded-xl bg-[#eef3e9] px-3 py-2.5"><p className="text-[9px] uppercase tracking-[.8px] font-bold text-[#68735e]">Asisten</p><p className="text-xs text-[#4d713c] mt-1">{attendingNames.length ? attendingNames.join(", ") : "Nadie"}</p></div><div className="rounded-xl bg-[#fff0ed] px-3 py-2.5"><p className="text-[9px] uppercase tracking-[.8px] font-bold text-[#9c665f]">No asisten</p><p className="text-xs text-[#a16a62] mt-1">{decliningNames.length ? decliningNames.join(", ") : "Nadie"}</p></div></div>{r.message && <p className="text-xs italic text-[#8a8178] mt-3 leading-relaxed">“{r.message}”</p>}</article>;
+              })}</div>
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#FAF8F5] border-b border-[#e5e0d8] text-xs uppercase tracking-[1px] text-[#8a8178]">
                       <th className="px-6 py-4.5 font-bold">Invitado</th>
-                      <th className="px-6 py-4.5 font-bold">Asistencia</th>
+                      <th className="px-6 py-4.5 font-bold">Asisten</th>
+                      <th className="px-6 py-4.5 font-bold">No asisten</th>
                       <th className="px-6 py-4.5 font-bold">Mensaje de Felicitación</th>
                       <th className="px-6 py-4.5 font-bold">Fecha</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f0ebd8]/50 text-sm">
-                    {dashboardRsvps.map((r, i) => (
-                      <tr key={i} className="hover:bg-[#FAF8F5]/50 transition-colors">
+                    {dashboardRsvps.map((r, i) => {
+                      const { attendingNames, decliningNames } = getRsvpAttendanceDetails(r);
+                      return <tr key={i} className="hover:bg-[#FAF8F5]/50 transition-colors">
                         <td className="px-6 py-4 font-medium text-[#3A2A23]">{r.guestName || r.name || "Invitado sin nombre"}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              !(r.attending.includes("No") || r.attending.includes("Ninguno"))
-                                ? "bg-[#e2f0d9] text-[#4d713c]"
-                                : "bg-red-50 text-red-600"
-                            }`}
-                          >
-                            {r.attending}
-                          </span>
-                        </td>
+                        <td className="px-6 py-4 text-xs text-[#4d713c] max-w-[220px]">{attendingNames.length ? attendingNames.join(", ") : <span className="text-[#aaa198]">Nadie</span>}</td>
+                        <td className="px-6 py-4 text-xs text-[#a16a62] max-w-[220px]">{decliningNames.length ? decliningNames.join(", ") : <span className="text-[#aaa198]">Nadie</span>}</td>
                         <td className="px-6 py-4 text-[#8a8178] italic max-w-md truncate" title={r.message}>
                           {r.message ? `"${r.message}"` : <span className="text-gray-300">Ninguno</span>}
                         </td>
                         <td className="px-6 py-4 text-xs text-[#8a8178]">
                           {r.created ? new Date(r.created).toLocaleDateString() : "—"}
                         </td>
-                      </tr>
-                    ))}
+                      </tr>;
+                    })}
                   </tbody>
                 </table>
               </div></>
@@ -1105,8 +1136,8 @@ export default function Admin() {
               {([
                 ["all", "Todos", guests.length],
                 ["confirmed", "Confirmados", guests.filter((guest) => getGuestResponseStatus(guest) === "confirmed").length],
-                ["pending", "Pendientes", unansweredGuests.length],
-                ["declined", "Rechazaron", guests.filter((guest) => getGuestResponseStatus(guest) === "declined").length],
+                ["pending", "Pendientes", guests.filter((guest) => getGuestResponseStatus(guest) === "pending").length],
+                ["declined", "No asistirán", guests.filter((guest) => ["declined", "expired"].includes(getGuestResponseStatus(guest))).length],
               ] as const).map(([value, label, count]) => (
                 <button
                   key={value}
